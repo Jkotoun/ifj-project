@@ -13,30 +13,30 @@
 //types of tokens
 typedef enum token_type
 {
-    ID,
-    KEYWORD,
-    EOL_TYPE,
-    EOF_TYPE,
-    SHORT_VAR_DECLARATION,
-    LEFT_BRACKET,
-    RIGHT_BRACKET,
-    CURLY_BRACKET_LEFT,
-    CURLY_BRACKET_RIGHT,
-    PLUS,
-    MINUS,
-    MULTIPLICATION,
-    DIVISON,
-    COMMA,
-    ASSIGNMENT,
-    SEMICOLON,
-    LESS,
-    LESS_EQUAL,
-    GREATER,
-    GREATER_EQUAL,
-    EQUALS,
-    NOT_EQUALS,
-    DECIMAL_LITERAL,
-    INTEGER_LITERAL
+    ID_TOKEN,
+    KEYWORD_TOKEN,
+    EOL_TOKEN,
+    EOF_TOKEN,
+    SHORT_VAR_DECLARATION_TOKEN,
+    LEFT_BRACKET_TOKEN,
+    RIGHT_BRACKET_TOKEN,
+    CURLY_BRACKET_LEFT_TOKEN,
+    CURLY_BRACKET_RIGHT_TOKEN,
+    PLUS_TOKEN,
+    MINUS_TOKEN,
+    MULTIPLICATION_TOKEN,
+    DIVISON_TOKEN,
+    COMMA_TOKEN,
+    ASSIGNMENT_TOKEN,
+    SEMICOLON_TOKEN,
+    LESS_TOKEN,
+    LESS_EQUAL_TOKEN,
+    GREATER_TOKEN,
+    GREATER_EQUAL_TOKEN,
+    EQUALS_TOKEN,
+    NOT_EQUALS_TOKEN,
+    DECIMAL_LITERAL_TOKEN,
+    INTEGER_LITERAL_TOKEN,
 }token_type;
 
 //all keywords in IFJ20
@@ -56,17 +56,17 @@ typedef enum keyword
 typedef enum state
 {
     INITIAL_STATE,
+    EQUALS_ONCE_STATE,
     COLON_STATE,
     EXCLAMATION_MARK_STATE,
     GREATER_STATE,
     LESS_STATE,
-    INT_STATE,
+    NUM_STATE,
     REAL_POINT_STATE,
     REAL_NO_EXP_STATE,
     EXP_STATE,
     REAL_WITH_EXP_STATE,
     ID_KEYWORD_STATE,
-    ID_STATE,
     STRING_STATE,
     ESCAPE_STRING_STATE,
     HEXA_ESCAPE_START_STATE,
@@ -88,7 +88,7 @@ typedef struct keyword_str_pair
 typedef struct token
 {
     token_type type;
-    union
+    struct
     {
         int64_t integer;
         double decimal;
