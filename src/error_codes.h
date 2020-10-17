@@ -1,3 +1,8 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Josef Kotoun - xkotou06
+ * Error codes
+*/
 #ifndef err_codes
 #define err_codes
 
