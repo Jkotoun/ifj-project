@@ -9,8 +9,8 @@
 #define SYNTAX_ERR 2
 
 //semantic analysis errors
-#define UNDEFINED_VAR_ERR 3 //undefined function or variable
-#define VAR_REDEFINITION_ERR 3 //redefinition of function or variable
+#define VAR_DEFINITION_ERR 3 //undefined function/variable or redefinition
+
 
 #define DEFINED_VAR_DATATYPE_ERR 4 //data type error of new defined variable 
 #define DATATYPE_COMPATIBILITY_ERR 5 //data types incompatibility in expression
