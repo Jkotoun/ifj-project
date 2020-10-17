@@ -7,33 +7,74 @@
 #define scanner_h
 #include "str.h"
 #include <stdbool.h>
-
+#include <stdint.h>
 
 
 //types of tokens
 typedef enum token_type
 {
     ID,
+    KEYWORD,
+    EOL_TYPE,
+    EOF_TYPE,
+    SHORT_VAR_DECLARATION,
     LEFT_BRACKET,
     RIGHT_BRACKET,
+    CURLY_BRACKET_LEFT,
+    CURLY_BRACKET_RIGHT,
     PLUS,
     MINUS,
-    EOL_type,
-    EOF_type
+    MULTIPLICATION,
+    DIVISON,
+    COMMA,
+    ASSIGNMENT,
+    SEMICOLON,
+    LESS,
+    LESS_EQUAL,
+    GREATER,
+    GREATER_EQUAL,
+    EQUALS,
+    NOT_EQUALS,
+    DECIMAL_LITERAL,
+    INTEGER_LITERAL
 }token_type;
 
 //all keywords in IFJ20
 typedef enum keyword
 {
-    else_keyword,
-    int_keyword
+    ELSE_KEYWORD,
+    FLOAT64_KEYWORD,
+    FOR_KEYWORD,
+    FUNC_KEYWORD,
+    IF_KEYWORD,
+    INT_KEYWORD,
+    PACKAGE_KEYWORD,
+    RETURN_KEYWORD,
+    STRING_KEYWORD
 }keyword;
 //scanner finite automaton states
 typedef enum state
 {
-    initial_state,
-    keyword_or_id,
-
+    INITIAL_STATE,
+    COLON_STATE,
+    EXCLAMATION_MARK_STATE,
+    GREATER_STATE,
+    LESS_STATE,
+    INT_STATE,
+    REAL_POINT_STATE,
+    REAL_NO_EXP_STATE,
+    EXP_STATE,
+    REAL_WITH_EXP_STATE,
+    ID_KEYWORD_STATE,
+    ID_STATE,
+    STRING_STATE,
+    ESCAPE_STRING_STATE,
+    HEXA_ESCAPE_START_STATE,
+    HEXA_ESCAPE_FIRST_STATE,
+    SLASH_STATE,
+    ONE_LINE_COMMENT_STATE,
+    BLOCK_COMMENT_STATE,
+    BLOCK_COMMENT_STAR_STATE
 }state;
 
 //pairs of keyword and its string representation
@@ -49,9 +90,11 @@ typedef struct token
     token_type type;
     union
     {
-        int integer;
+        int64_t integer;
+        double decimal;
         string *str;
         keyword keyword;
+        
     };
 }token;
 
