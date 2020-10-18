@@ -19,13 +19,11 @@ static keyword_str_pair all_keywords_pairs[] =
     {FLOAT64_KEYWORD, "float64"},
     {FOR_KEYWORD, "for"},
     {FUNC_KEYWORD, "func"},
-    {IF_KEYWORD, "func"},
+    {IF_KEYWORD, "if"},
     {PACKAGE_KEYWORD, "package"},
     {RETURN_KEYWORD, "return"},
     {STRING_KEYWORD, "string"}
 };
-//global variable for source file to compile
-FILE *source_file;
 //iterates over keywords pairs strings and if its same, returns true and passes enum code of keyword to parameter *keyword
 bool str_is_keyword(string *str, keyword *keyword)
 {
@@ -40,10 +38,6 @@ bool str_is_keyword(string *str, keyword *keyword)
     }
     return false;
 }
-void setSourceFile(FILE* file)
-{
-    source_file = file;
-}
 
 int get_token(token *token)
 {
@@ -56,13 +50,14 @@ int get_token(token *token)
     state scanner_state = INITIAL_STATE;
     while(1)
     {   
-        c = getc(source_file);
+        c = getc(stdin);
         switch(scanner_state)
         {
             case INITIAL_STATE:
-                if(isspace(c))
+                if(c == '\n')
                 {
-                    scanner_state = INITIAL_STATE;
+                    token->type = EOL_TOKEN;
+                    return OK;
                 }
                 else if (c == ';') 
                 { 
@@ -82,11 +77,30 @@ int get_token(token *token)
                 else if (c == '=') 
                 { 
                     scanner_state = EQUALS_ONCE_STATE;
-                    return OK;
                 }
                 else if (c == '-') 
                 { 
                     token->type = MINUS_TOKEN; 
+                    return OK;
+                }
+                else if(c == '{')
+                {
+                    token->type = CURLY_BRACKET_LEFT_TOKEN;
+                    return OK;
+                }
+                else if(c == '}')
+                {
+                    token->type = CURLY_BRACKET_RIGHT_TOKEN;
+                    return OK;
+                }
+                else if(c == ')')
+                {
+                    token->type = RIGHT_BRACKET_TOKEN;
+                    return OK;
+                }
+                else if(c == '(')
+                {
+                    token->type = LEFT_BRACKET_TOKEN;
                     return OK;
                 }
                 else if (c == '*') 
@@ -128,15 +142,14 @@ int get_token(token *token)
                 {
                     scanner_state = STRING_STATE; 
                 }
-                else if(c == '\n')
-                {
-                    token->type = EOL_TOKEN;
-                    return OK;
-                }
                 else if(c == EOF)
                 {
                     token->type = EOF_TOKEN;
                     return OK;  
+                }
+                else if(isspace(c))
+                {
+                    scanner_state = INITIAL_STATE;
                 }     
                 else
                 {
@@ -161,7 +174,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c,source_file);
+                    ungetc(c,stdin);
                     token->type = ASSIGNMENT_TOKEN;
                 }
                 return OK;
@@ -184,7 +197,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c, source_file);
+                    ungetc(c, stdin);
                     token->type = LESS_TOKEN;
                 }
                 return OK;
@@ -196,7 +209,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c, source_file);
+                    ungetc(c, stdin);
                     token->type = GREATER_TOKEN;
                 }
                 return OK;
@@ -212,7 +225,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c,source_file);
+                    ungetc(c,stdin);
                     token->type = DIVISON_TOKEN;
                     return OK;
                 }
@@ -224,7 +237,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c,source_file);
+                    ungetc(c,stdin);
                     keyword keyword_from_str;
                     if(str_is_keyword(token->str,&keyword_from_str))
                     {
@@ -257,7 +270,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c,source_file);
+                    ungetc(c,stdin);
                     token->type = INTEGER_LITERAL_TOKEN;
                     //convert string to int and clear string
                     token->integer = atoi(strGetStr(token->str));
@@ -289,7 +302,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c,source_file);
+                    ungetc(c,stdin);
                     token->decimal = strtod(strGetStr(token->str), NULL);
                     strClear(token->str);
                     return DECIMAL_LITERAL_TOKEN;
@@ -327,7 +340,7 @@ int get_token(token *token)
                 }
                 else
                 {
-                    ungetc(c, source_file);
+                    ungetc(c, stdin);
                     token->type = DECIMAL_LITERAL_TOKEN;
                     token->decimal = strtod(strGetStr(token->str), NULL);
                     strClear(token->str);
@@ -410,7 +423,7 @@ int get_token(token *token)
                 if(isxdigit(c))
                 {
                     //read second char to escape sequence
-                    int hexa2 = getc(source_file);
+                    int hexa2 = getc(stdin);
                     if(isxdigit(hexa2))
                     {
                         //init char array for int conversion by strtol 
@@ -435,3 +448,41 @@ int get_token(token *token)
     }
 }
 
+int main()
+{
+    token token;
+    string str;
+    strInit(&str);
+    token.str = &str;
+
+
+    int i=0;
+    token_type type;
+
+    do
+    {
+        if(get_token(&token) == LEX_ERR)
+        {
+            fprintf(stderr, "%d: chyba\n",i);
+        }
+        else
+        {
+                    
+            printf("token %d: %d\n", i, token.type);
+            
+        }
+        i++;
+
+    }while(token.type != EOF_TOKEN);
+
+
+
+   /* while((type = ()!=EOF)
+    {
+        printf("token %d: %d", i, type);
+        i++;
+    }*/
+    return 0;
+
+
+}

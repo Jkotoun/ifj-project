@@ -106,7 +106,5 @@ int get_token(token *token);
 //if str is keyword, passes it to *keyword parameter
 bool str_is_keyword(string *str, keyword *keyword);
 
-//sets source file of program to compile
-void setSourceFile(FILE* file);
 
 #endif
