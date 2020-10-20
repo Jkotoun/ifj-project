@@ -13,31 +13,31 @@
 //types of tokens
 typedef enum token_type
 {
-    ID_TOKEN,
-    KEYWORD_TOKEN,
-    STRING_TOKEN,
-    EOL_TOKEN,
-    EOF_TOKEN,
-    SHORT_VAR_DECLARATION_TOKEN,
-    LEFT_BRACKET_TOKEN,
-    RIGHT_BRACKET_TOKEN,
-    CURLY_BRACKET_LEFT_TOKEN,
-    CURLY_BRACKET_RIGHT_TOKEN,
-    PLUS_TOKEN,
-    MINUS_TOKEN,
-    MULTIPLICATION_TOKEN,
-    DIVISON_TOKEN,
-    COMMA_TOKEN,
-    ASSIGNMENT_TOKEN,
-    SEMICOLON_TOKEN,
-    LESS_TOKEN,
-    LESS_EQUAL_TOKEN,
-    GREATER_TOKEN,
-    GREATER_EQUAL_TOKEN,
-    EQUALS_TOKEN,
-    NOT_EQUALS_TOKEN,
-    DECIMAL_LITERAL_TOKEN,
-    INTEGER_LITERAL_TOKEN,
+    ID_TOKEN,   //identificator (var name, function name...)
+    KEYWORD_TOKEN,  //ifj20 keyword (if, package, for...)
+    EOL_TOKEN, //end of line (\n)                 
+    EOF_TOKEN, //end of file
+    SHORT_VAR_DECLARATION_TOKEN, // ':='
+    LEFT_BRACKET_TOKEN, // '(' 
+    RIGHT_BRACKET_TOKEN, //')'
+    CURLY_BRACKET_LEFT_TOKEN, // '{'
+    CURLY_BRACKET_RIGHT_TOKEN, // '}'
+    PLUS_TOKEN, // '+' 
+    MINUS_TOKEN, // '-'
+    MULTIPLICATION_TOKEN,// '*'
+    DIVISON_TOKEN, // '/'
+    COMMA_TOKEN, //','
+    ASSIGNMENT_TOKEN, // '='
+    SEMICOLON_TOKEN, // ';'
+    LESS_TOKEN, // '<'
+    LESS_EQUAL_TOKEN, //'<='
+    GREATER_TOKEN, // '>'
+    GREATER_EQUAL_TOKEN, //'>=') 
+    EQUALS_TOKEN, // '=='
+    NOT_EQUALS_TOKEN, // '!='
+    STRING_LITERAL_TOKEN, //string literal in format "asd\n" 
+    DECIMAL_LITERAL_TOKEN, //decimal num - in format 123.4, 123e2 or 123.5e2
+    INTEGER_LITERAL_TOKEN, //integer num - 123
 }token_type;
 
 //all keywords in IFJ20
@@ -84,7 +84,8 @@ typedef struct keyword_str_pair
     char* keyword_str;
 }keyword_str_pair;
 
-
+//token struct used for passing information about token from scanner to parser
+//anonymous structure contains token data based on token type
 typedef struct token
 {
     token_type type;
@@ -98,8 +99,8 @@ typedef struct token
     };
 }token;
 
-//*token - output token pointer - contains information about scanned lexem
-//returns TOKEN_OK value if token is valid, LEX_ERR if invalid 
+//returns value OK from error codes (0) if token is valid, LEX_ERR if invalid
+//stores information about token to token var passed by reference 
 int get_token(token *token);
 
 //returns whether the string is keyword

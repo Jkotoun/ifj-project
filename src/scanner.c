@@ -372,7 +372,8 @@ int get_token(token *token)
             case STRING_STATE:
                 if(c == '"')
                 {
-                    token->type = STRING_TOKEN;
+                    token->type = STRING_LITERAL_TOKEN;
+                    return OK;
                 }
                 else if(c == '\\')
                 {
