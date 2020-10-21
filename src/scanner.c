@@ -38,7 +38,6 @@ bool str_is_keyword(string *str, keyword *keyword)
     }
     return false;
 }
-
 int get_token(token *token)
 {
     int c;
@@ -305,7 +304,8 @@ int get_token(token *token)
                     ungetc(c,stdin);
                     token->decimal = strtod(strGetStr(token->str), NULL);
                     strClear(token->str);
-                    return DECIMAL_LITERAL_TOKEN;
+                    token->type = DECIMAL_LITERAL_TOKEN;
+                    return OK;
                 }
                 break;
             case EXP_DEC_STATE:
