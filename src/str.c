@@ -92,8 +92,45 @@ int strConcat(string *s1, string *s2, string *concat_str)
    concat_str->allocSize = s1->allocSize + s2->allocSize;
    concat_str->length = s1->length + s2->length;
    //copy first string to dest
-   strcpy(concat_str->str, s1->str);
+   strcpy(strGetStr(concat_str), strGetStr(s1));
    //copy second string, starting at position of \0 of str1
-   strcpy(concat_str->str + s1->length, s2->str);
+   strcpy(strGetStr(concat_str) + strGetLength(s1), strGetStr(s2));
    return STR_SUCCESS;
-}  
+} 
+
+int substr(string *str, int index, int count, string *output_str)
+{
+   if(index < 0 || index > strGetLength(str) || count < 0)
+   {
+      return STR_ERROR;
+   }
+   
+   int i = index;
+   char* source = strGetStr(str);
+   strInit(output_str);
+   //copy 'count' chars or to end (if count+index is out of range)
+   for(int i = index; i<(index + count) && source[i]!='\0'; i++)
+   {
+      strAddChar(output_str, source[i]);
+   }
+   return STR_SUCCESS;
+} 
+int str_ord(string *str, int index, int *output_ascii)
+{
+   if(index < 0 || index > (strGetLength(str) - 1))
+   {
+      return STR_ERROR;
+   }
+   *output_ascii = (int)strGetStr(str)[index];
+   return STR_SUCCESS;
+}
+int ascii_to_string(int ascii, string *output)
+{
+   if(ascii > 255 || ascii < 0)
+   {
+      return STR_ERROR;
+   }
+   strClear(output);
+   strAddChar(output, (char)ascii);
+   return STR_SUCCESS;
+}
