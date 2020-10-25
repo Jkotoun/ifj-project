@@ -83,3 +83,17 @@ int strGetLength(string *s)
 {
    return s->length;
 } 
+int strConcat(string *s1, string *s2, string *concat_str)
+{
+   if ((concat_str->str = (char*) malloc(s1->allocSize + s2->allocSize)) == NULL)
+   {
+      return STR_ERROR;
+   }
+   concat_str->allocSize = s1->allocSize + s2->allocSize;
+   concat_str->length = s1->length + s2->length;
+   //copy first string to dest
+   strcpy(concat_str->str, s1->str);
+   //copy second string, starting at position of \0 of str1
+   strcpy(concat_str->str + s1->length, s2->str);
+   return STR_SUCCESS;
+}  
