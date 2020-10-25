@@ -13,11 +13,6 @@
 
 //default allocation size in bytes
 //every realloc, allocated memory is increased by this contant
-#define STR_LEN_INC 8
-
-
-#define STR_ERROR   1
-#define STR_SUCCESS 0
 
 int strInit(string *s)
 {
@@ -87,5 +82,4 @@ char *strGetStr(string *s)
 int strGetLength(string *s)
 {
    return s->length;
-}
-
+} 

@@ -126,12 +126,14 @@ int get_token(token *token)
                 else if(isalpha(c) || c == '_')
                 {
                     scanner_state = ID_KEYWORD_STATE;
-                    strAddChar(token->str,c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(isdigit(c))
                 {
                     scanner_state = NUM_STATE;
-                    strAddChar(token->str,c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c == '/')
                 {
@@ -232,7 +234,8 @@ int get_token(token *token)
             case ID_KEYWORD_STATE:
                 if(isalnum(c))
                 {
-                    strAddChar(token->str,c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else
                 {
@@ -255,17 +258,20 @@ int get_token(token *token)
             case NUM_STATE:
                 if(isdigit(c))
                 {
-                    strAddChar(token->str,c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c=='e' || c == 'E')
                 {
                     scanner_state = EXP_DEC_STATE;
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c == '.')
                 {
                     scanner_state = DECIMAL_POINT_STATE;
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else
                 {
@@ -280,7 +286,8 @@ int get_token(token *token)
             case DECIMAL_POINT_STATE:
                 if(isdigit(c))
                 {
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = DECIMAL_NO_EXP_STATE;
                 }
                 else
@@ -292,11 +299,13 @@ int get_token(token *token)
             case DECIMAL_NO_EXP_STATE:
                 if(isdigit(c))
                 {
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c == 'E' || c == 'e')
                 {
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = EXP_DEC_STATE;
                 }
                 else
@@ -312,14 +321,16 @@ int get_token(token *token)
                 if(isdigit(c))
                 {
                     scanner_state = DECIMAL_WITH_EXP_STATE;
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c == '-' || c == '+')
                 {
                     int last_char =strGetStr(token->str)[token->str->length-1]; 
                     if(last_char != '-' && last_char != '+' )
                     {
-                        strAddChar(token->str, c);
+                        if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     }
                     else
                     {
@@ -386,7 +397,8 @@ int get_token(token *token)
                 }
                 else
                 {
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 break;
             case ESCAPE_STRING_STATE:
@@ -397,17 +409,20 @@ int get_token(token *token)
                 }
                 else if(c == '\\' || c == '"')
                 {
-                    strAddChar(token->str, c);
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = STRING_STATE;
                 }
                 else if(c == 'n')
                 {
-                    strAddChar(token->str, '\n');
+                    if(strAddChar(token->str,'\n') == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = STRING_STATE;
                 }
                 else if(c == 't')
                 {
-                    strAddChar(token->str, '\t');
+                    if(strAddChar(token->str,'\t') == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = STRING_STATE;
                 }
                 else if(c == 'x')
@@ -430,7 +445,8 @@ int get_token(token *token)
                         //init char array for int conversion by strtol 
                         char hexa_literal[] = {c, hexa2};
                         int hexa_char =(int)strtol(hexa_literal,NULL,16);
-                        strAddChar(token->str, hexa_char);
+                        if(strAddChar(token->str,hexa_char) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                         scanner_state = STRING_STATE;
                     }
                     else
