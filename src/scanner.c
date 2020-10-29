@@ -131,7 +131,14 @@ int get_token(token *token)
                 }
                 else if(isdigit(c))
                 {
-                    scanner_state = NUM_STATE;
+                    if(c == '0')
+                    {
+                        scanner_state = NUM_FIRST_ZERO_STATE;
+                    }
+                    else
+                    {
+                        scanner_state = NUM_STATE;
+                    }
                     if(strAddChar(token->str,c) == STR_ERROR)
                         return INTERNAL_COMPILER_ERR;
                 }
@@ -255,6 +262,36 @@ int get_token(token *token)
                 }
                 break;
             //decimal numbers automaton
+            case NUM_FIRST_ZERO_STATE:
+                if(isdigit(c))
+                {
+                    strClear(token->str);
+                        return LEX_ERR;
+                }
+                else
+                {            
+                    if(c == '.')
+                    {
+                        scanner_state = DECIMAL_POINT_STATE;
+                        if(strAddChar(token->str,c) == STR_ERROR)
+                            return INTERNAL_COMPILER_ERR;
+                    }
+                    else if(c == 'e' || c == 'E')
+                    {
+                        scanner_state = EXP_DEC_STATE;
+                        if(strAddChar(token->str,c) == STR_ERROR)
+                            return INTERNAL_COMPILER_ERR;
+                    }
+                    else
+                    {
+                        ungetc(c,stdin);
+                        token->type = INTEGER_LITERAL_TOKEN;
+                        token->integer = 0;
+                        strClear(token->str);
+                        return OK;
+                    }   
+                }
+                break;
             case NUM_STATE:
                 if(isdigit(c))
                 {

@@ -94,6 +94,30 @@ TEST_F(ScannerTests, NumbersLiteralsTest)
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //5. number
    EXPECT_EQ(get_token(&token_var), LEX_ERR);
+   //6. number
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_DOUBLE_EQ(token_var.decimal, 0.2313);
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.type, EOL_TOKEN);
+   //7.num
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_DOUBLE_EQ(token_var.decimal, 123.0004);
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.type, EOL_TOKEN);
+   //8. number
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.integer, 0);
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.type, EOL_TOKEN);
+   //9. number
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_DOUBLE_EQ(token_var.decimal, 0.0);
+   EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.type, EOL_TOKEN);
+
+
+   //last num with 0 at start
+   EXPECT_EQ(get_token(&token_var), LEX_ERR);
 }
 
 TEST_F(ScannerTests,StringTest)

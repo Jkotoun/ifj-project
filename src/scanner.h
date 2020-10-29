@@ -74,7 +74,8 @@ typedef enum state
     SLASH_STATE,
     ONE_LINE_COMMENT_STATE,
     BLOCK_COMMENT_STATE,
-    BLOCK_COMMENT_STAR_STATE
+    BLOCK_COMMENT_STAR_STATE,
+    NUM_FIRST_ZERO_STATE
 }state;
 
 //pairs of keyword and its string representation
