@@ -1,23 +1,58 @@
 #pragma once
 
-typedef struct node {
-	char name;	
-	node_type type;
-	void* ptr;
-	struct node *l_ptr;
-	struct node *r_ptr;
-} *node_ptr;
+#include "dl_list.h"
 
-enum node_type {
-	func;
-	var;
+enum varType
+{
+	INT,
+	STRING,
+	FLOAT
 };
 
-void init(node_ptr*);
-node_ptr search(node, char, int*);
-void insert_node(node_ptr*, char, int);
-void delete_node(node_ptr*, char);
-void dispose(node_ptr*);
+typedef struct node
+{
+	char *name;
+	node_type type;
+	struct node *l_ptr; //tree links
+	struct node *r_ptr;
+	void *data; //pointer to symbol_function or symbol_variable
+} node;
+
+typedef struct
+{
+	unsigned type_count; //Navratovy typ funkce.
+	varType *return_types;
+	unsigned par_count;	 //Pocet parametru.
+	varType *parameters; //Ukazatel na pole promennych.
+	bool defined;		 //Informuje, zda byla jiz funkce definovana.
+	tDLList list;		 //list of sym_tables for this function
+} symbol_function;
+
+/* Struktura symbolu promenne. */
+typedef struct
+{
+	unsigned type;	//Datovy typ promenne.
+	unsigned index; //Ciselny identifikator reprezentujici promennou na ramci.e.
+	varType var_type;
+} symbol_variable;
+
+node function_table;
+
+enum node_type
+{
+	func,
+	var
+};
+
+void init(node *);
+node search(node, char, int *);
+void insert_node(node *, char, int);
+void delete_node(node *, char);
+void dispose(node *);
+
+main()()
+{
+}
 
 /*		
 	a := 1;
