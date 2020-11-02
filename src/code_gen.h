@@ -1,5 +1,6 @@
 #pragma once
-enum instruction_type {
+enum instruction_type
+{
 
     // Func calls, frames
     MOVE,
@@ -33,7 +34,7 @@ enum instruction_type {
     EQ,
     LTS,
     GTS,
-    EQS
+    EQS,
 
     // Bool instructions
     AND,
@@ -41,7 +42,7 @@ enum instruction_type {
     NOT,
     ANDS,
     ORS,
-    NOTS
+    NOTS,
 
     // Conversion instructions
     INT2FLOAT,
@@ -51,7 +52,7 @@ enum instruction_type {
     INT2FLOATS,
     FLOAT2INTS,
     INT2CHARS,
-    STRI2INTS
+    STRI2INTS,
 
     // I/0 instructions
     READ,
@@ -61,7 +62,7 @@ enum instruction_type {
     CONCAT,
     STRLEN,
     GETCHAR,
-    SETCHAR
+    SETCHAR,
 
     // Types
     TYPE,
@@ -79,4 +80,3 @@ enum instruction_type {
     BREAK,
     DPRINT
 };
-
