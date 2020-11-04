@@ -4,7 +4,7 @@
  * Doubly linked list
 */
 
-#include "c206.h"
+#include "dl_list.h"
 
 void DLError() {
     printf ("*ERROR* The program has performed an illegal operation.\n");
