@@ -1,7 +1,13 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Josef Kotoun - xkotou06
+ * Header file of symtable
+ * 
+*/
 #ifndef symtable_h
 #define symtable_h
 #include "dl_list.h"
-
+#include <stdbool.h>
 typedef enum varType
 {
 	INT,
@@ -35,7 +41,7 @@ typedef struct node
 //function data in global symtable
 typedef struct
 {
-	unsigned type_count; //func return type
+	unsigned return_types_count; //func return type
 	varType *return_types;//pointer to array of return data types
 	unsigned par_count;	 //func params count
 	varType *parameters; //Pointer to array of params data types
@@ -51,13 +57,16 @@ typedef struct
 node function_table;
 tDLList list; //list of sym_tables for this function
 
-
-void init(node *);
-node search(node, char, int *);
-symbol_function *create_func_node();
-symbol_function *create_var_node();
-
-void insert_node(node *, char, int);
-void delete_node(node *, char);
-void dispose(node *);
+//inits rootptr to NULL
+int init(node *rootptr);
+//returns if node with name is in tree and if yes, stores pointer to  found_node
+bool search(node* rootptr, char *name, node* found_node);
+//insert node into global function table
+int insert_node_func(node *rootptr, char* name, unsigned return_type_count, varType return_types[],unsigned params_count, varType params_types[], bool defined);
+//insert node into local variable table
+int insert_node_var(node *rootpr, char* name, varType var_type);
+//free all memory for all types of nodes
+int free_node_memory(node *nodeptr);
+//dispose tree
+int dispose_tree(node* rootptr);
 #endif
