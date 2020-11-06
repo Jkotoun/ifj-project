@@ -15,58 +15,12 @@ int DLInitList (tDLList *list) {
     }
     list->First = NULL;
     list->Last = NULL;
+    return OK;
 }
 
-int DLDisposeList (tDLList *list) {
-    if(list == NULL)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
-	table* current = list->First;
-    //iterate over all items
-    while(current!=NULL)
-    {
-        table* next_element = current->next_table;
-        //delete tree linked with table
-        dispose_tree(current->root_ptr);
-        free(current);
-        current = next_element;
-    }
-    list->First = NULL;
-    list->Last = NULL;
-}
-
-
-int DLInsertLast(tDLList *list, node* rootptr) {
-	table* new = (table*)malloc(sizeof(table));
-    if(new == NULL)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
-    else
-    {
-        new->root_ptr = rootptr;
-        new->next_table= NULL;
-        new->prev_table = list->Last;
-        if(list->Last == NULL)
-        {
-            list->First = new;
-        }
-        else
-        {
-            list->Last->next_table = new;
-            
-        }
-        list->Last = new;
-    }
-}
 
 
 int DLDeleteLast (tDLList *list) {
-    if(list == NULL)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
     //list has any elements
 	if(list->First != NULL)
     {
@@ -84,9 +38,49 @@ int DLDeleteLast (tDLList *list) {
             //set prev element as last and free memory
             list->Last = tmp->prev_table;
         }
-        //delete tree linked to table
-        dispose_tree(tmp->root_ptr);
+        if(tmp->root_ptr != NULL)
+        {
+            //delete tree linked to table
+            dispose_tree(&(tmp->root_ptr));
+        }
         //free table
         free(tmp);
     }
+    return OK;
+}
+int DLDisposeList (tDLList *list) {
+    while(list->First != NULL)
+    {
+        DLDeleteLast(list);
+    }
+    return OK;
+}
+
+
+int DLInsertLast(tDLList *list, node* rootptr) {
+	table* new = (table*)malloc(sizeof(table));
+    if(new == NULL)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    else
+    {
+        new->root_ptr = rootptr;
+        new->next_table= NULL;
+        new->prev_table = list->Last;
+        if(list->Last == NULL)
+        {
+            new->scope_index = 0; //first var table for function
+            list->First = new;
+
+        }
+        else
+        {
+            new->scope_index = list->Last->scope_index + 1; //table for scope has index greater by 1
+            list->Last->next_table = new;
+            
+        }
+        list->Last = new;
+    }
+    return OK;
 }

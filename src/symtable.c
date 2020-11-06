@@ -10,15 +10,11 @@
 #include <string.h>
 int init(node **rootptr)
 {
-    if (*rootptr == NULL)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
     *rootptr = NULL;
     return OK;
 }
 
-bool search(node **rootptr, char *name, node *found_node)
+bool search(node **rootptr, char *name, node **found_node)
 {
     node *current = *rootptr;
     while (current != NULL)
@@ -34,7 +30,7 @@ bool search(node **rootptr, char *name, node *found_node)
         }
         else //found
         {
-            found_node = current;
+            *found_node = current;
             return true;
         }
     }

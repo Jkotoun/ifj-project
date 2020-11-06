@@ -34,7 +34,7 @@ typedef struct node
 typedef struct table
 {
 	node *root_ptr;
-	int scope_index;
+	int scope_index; //index of symtable scope indexed from 0
 	struct table *prev_table;
 	struct table *next_table;
 } table;
@@ -57,14 +57,10 @@ typedef struct
 	varType var_type; //data type of variable
 } symbol_variable;
 
-
-node function_table;
-struct tDLList list; //list of sym_tables for this function
-
 //inits rootptr to NULL
 int init(node **rootptr);
 //returns if node with name is in tree and if yes, stores pointer to  found_node
-bool search(node **rootptr, char *name, node* found_node);
+bool search(node **rootptr, char *name, node** found_node);
 //insert node into global function table
 int insert_node_func(node **rootptr, char* name, unsigned return_type_count, varType return_types[],unsigned params_count, varType params_types[], bool defined);
 //insert node into local variable table

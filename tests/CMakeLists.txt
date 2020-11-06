@@ -21,3 +21,10 @@ target_link_libraries(StrLibTest PUBLIC
     IFJ_compiler
 )
 add_test(NAME StrLibTest COMMAND StrLibTest)
+
+add_executable(ListTest ListTests.cpp)
+target_link_libraries(ListTest PUBLIC
+    gtest_main
+    IFJ_compiler
+)
+add_test(NAME ListTest COMMAND ListTest)
