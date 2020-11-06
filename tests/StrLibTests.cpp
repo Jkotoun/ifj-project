@@ -75,7 +75,9 @@ TEST_F(StrLibTests, SubstringTest)
 
     EXPECT_EQ(substr(&str3, 52,2,&output), STR_ERROR);
     EXPECT_EQ(substr(&str3, 5,-2,&output), STR_ERROR);
+    
     EXPECT_EQ(substr(&str3, -5,2,&output), STR_ERROR);
+    strFree(&output);
 }
 
 TEST_F(StrLibTests, StrOrdTest)
@@ -104,4 +106,6 @@ TEST_F(StrLibTests, AsciiToStrTest)
 
     EXPECT_EQ(ascii_to_string(270, &output), STR_ERROR);
     EXPECT_EQ(ascii_to_string(-2, &output), STR_ERROR);
+
+    strFree(&output);
 }

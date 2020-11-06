@@ -480,10 +480,10 @@ int get_token(token *token)
                     if(isxdigit(hexa2))
                     {
                         //init char array for int conversion by strtol 
-                        char hexa_literal[] = {c, hexa2};
+                        char hexa_literal[] = {c, hexa2, '\0'};
                         int hexa_char =(int)strtol(hexa_literal,NULL,16);
                         if(strAddChar(token->str,hexa_char) == STR_ERROR)
-                        return INTERNAL_COMPILER_ERR;
+                            return INTERNAL_COMPILER_ERR;
                         scanner_state = STRING_STATE;
                     }
                     else

@@ -8,6 +8,13 @@ target_link_libraries(ScannerTest PUBLIC
 add_test(NAME ScannerTest COMMAND ScannerTest)
 
 
+add_executable(BTreeTest BTreeTests.cpp)
+target_link_libraries(BTreeTest PUBLIC
+    gtest_main
+    IFJ_compiler
+)
+add_test(NAME BTreeTest COMMAND BTreeTest)
+
 add_executable(StrLibTest StrLibTests.cpp)
 target_link_libraries(StrLibTest PUBLIC
     gtest_main

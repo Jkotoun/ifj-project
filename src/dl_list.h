@@ -13,14 +13,15 @@
 
 
 //pointer to first and last element of dl_list
-typedef struct {  
-    table* First;  
-    table* Last;  
+typedef struct tDLList{  
+    struct table* First;  
+    struct table* Last;  
 } tDLList;
 
+typedef struct node node;
                                            
-int DLInitList (tDLList *);
-int DLDisposeList (tDLList *);
-int DLInsertLast(tDLList *, node* );
-int DLDeleteLast (tDLList *);
+int DLInitList (tDLList* list);
+int DLDisposeList (tDLList* list);
+int DLInsertLast(tDLList* list, node* rootptr );
+int DLDeleteLast (tDLList* list);
 #endif

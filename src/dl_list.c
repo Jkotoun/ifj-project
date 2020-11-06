@@ -28,7 +28,7 @@ int DLDisposeList (tDLList *list) {
     {
         table* next_element = current->next_table;
         //delete tree linked with table
-        dispose(current->root_ptr);
+        dispose_tree(current->root_ptr);
         free(current);
         current = next_element;
     }
@@ -85,7 +85,7 @@ int DLDeleteLast (tDLList *list) {
             list->Last = tmp->prev_table;
         }
         //delete tree linked to table
-        dispose(tmp->root_ptr);
+        dispose_tree(tmp->root_ptr);
         //free table
         free(tmp);
     }

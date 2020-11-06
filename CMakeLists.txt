@@ -14,10 +14,17 @@ set(Headers
     src/error_codes.h;
     src/scanner.h;
     src/str.h;
+    src/dl_list.h;
+    src/code_gen.h;
+    src/expression.h;
+    src/symtable.h;
+    src/parser.h;
 )
 set(Sources
     src/str.c 
     src/scanner.c
+    src/symtable.c
+    src/dl_list.c
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)

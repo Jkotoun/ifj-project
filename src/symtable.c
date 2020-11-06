@@ -8,19 +8,19 @@
 #include "symtable.h"
 #include "error_codes.h"
 #include <string.h>
-int init(node *rootptr)
+int init(node **rootptr)
 {
-    if (rootptr == NULL)
+    if (*rootptr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
-    rootptr = NULL;
+    *rootptr = NULL;
     return OK;
 }
 
-bool search(node *rootptr, char *name, node *found_node)
+bool search(node **rootptr, char *name, node *found_node)
 {
-    node *current = rootptr;
+    node *current = *rootptr;
     while (current != NULL)
     {
         int cmp_result = strcmp(name, current->name);
@@ -43,49 +43,46 @@ bool search(node *rootptr, char *name, node *found_node)
 node **getNodeToInsert(node *rootptr, char *name)
 {
 
-    if (rootptr == NULL)
+    node *current = rootptr;
+    do
     {
-        return &rootptr;
+        int cmp_result = strcmp(name, current->name);
+        if (cmp_result > 0)
+        {
+            //value is greater than node key and rptr is null => store new node into rptr
+            if (current->r_ptr == NULL)
+            {
+                return &(current->r_ptr);
+            }
+            current = current->r_ptr;
+        }
+        else if (cmp_result < 0)
+        {
+            //value is smaller than node key and lptr is null => store new node into lptr
+            if (current->l_ptr == NULL)
+            {
+                return &(current->l_ptr);
+            }
+            current = current->l_ptr;
+        }
+        else
+        {
+            //node is already in table - do nothing
+            return NULL;
+        }
+    } while (current != NULL);
+}
+int insert_node_func(node **rootptr, char *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
+{
+    node **ptrToNodePtr;
+    if (*rootptr == NULL)
+    {
+        ptrToNodePtr = rootptr;
     }
     else
     {
-        node *current = rootptr;
-        do
-        {
-            int cmp_result = strcmp(name, current->name);
-            if (cmp_result > 0)
-            {
-                //value is greater than node key and rptr is null => store new node into rptr
-                if (current->r_ptr == NULL)
-                {
-                    return &(current->r_ptr);
-                }
-                current = current->r_ptr;
-            }
-            else if (cmp_result < 0)
-            {
-                //value is smaller than node key and lptr is null => store new node into lptr
-                if (current->l_ptr == NULL)
-                {
-                    return &(current->l_ptr);
-                }
-                current = current->l_ptr;
-            }
-            else
-            {
-                //node is already in table - do nothing
-                return NULL;
-            }
-        } while (current != NULL);
+        ptrToNodePtr = getNodeToInsert(*rootptr, name);
     }
-}
-int insert_node_func(node *rootptr, char *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
-{
-    if (rootptr == NULL)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
-    node **ptrToNodePtr = getNodeToInsert(rootptr, name);
     //symbol with name is already in tree - do nothing
     if (ptrToNodePtr == NULL)
     {
@@ -97,7 +94,7 @@ int insert_node_func(node *rootptr, char *name, unsigned return_types_count, var
     {
         return INTERNAL_COMPILER_ERR;
     }
-    (*ptrToNodePtr)->l_ptr = rootptr->r_ptr = NULL;
+    (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
     (*ptrToNodePtr)->name = name;
     (*ptrToNodePtr)->type = func;
 
@@ -142,45 +139,49 @@ int insert_node_func(node *rootptr, char *name, unsigned return_types_count, var
     return OK;
 }
 
-int insert_node_var(node *rootptr, char *name, varType var_type)
+int insert_node_var(node **rootptr, char *name, varType var_type)
 {
-    if (rootptr == NULL)
+    node **ptrToNodePtr;
+    if (*rootptr == NULL)
     {
-        return INTERNAL_COMPILER_ERR;
+        ptrToNodePtr = rootptr;
     }
-    node **ptrToNodePtr = getNodeToInsert(rootptr, name);
+    else
+    {
+        ptrToNodePtr = getNodeToInsert((*rootptr), name);
+    }
     //symbol with name is already in tree - do nothing
     if (ptrToNodePtr == NULL)
     {
         return OK;
     }
-    (*ptrToNodePtr) = (node*)malloc(sizeof(node));
-    if(*ptrToNodePtr == NULL)
+    (*ptrToNodePtr) = (node *)malloc(sizeof(node));
+    if (*ptrToNodePtr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
     (*ptrToNodePtr)->name = name;
     (*ptrToNodePtr)->type = var;
-    (*ptrToNodePtr)->data = (symbol_variable*)malloc(sizeof(symbol_variable));
-    if((*ptrToNodePtr)->data == NULL)
+    (*ptrToNodePtr)->data = (symbol_variable *)malloc(sizeof(symbol_variable));
+    if ((*ptrToNodePtr)->data == NULL)
     {
         free(*ptrToNodePtr);
         return INTERNAL_COMPILER_ERR;
     }
-    ((symbol_variable*)(*ptrToNodePtr)->data)->var_type = var_type;
+    ((symbol_variable *)(*ptrToNodePtr)->data)->var_type = var_type;
     return OK;
 }
 
 int free_node_memory(node *nodeptr)
 {
-    if(nodeptr == NULL)
+    if (nodeptr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
-    if(nodeptr->type == func)
+    if (nodeptr->type == func)
     {
-        symbol_function* data = (symbol_function*)nodeptr->data;
+        symbol_function *data = (symbol_function *)nodeptr->data;
         //free params and return types arrays for function
         free(data->parameters);
         free(data->return_types);
@@ -190,24 +191,30 @@ int free_node_memory(node *nodeptr)
     return OK;
 }
 
-int dispose_tree(node* rootptr)
+int dispose_tree(node **rootptr)
 {
-	if(rootptr != NULL)
-	{
-		if(rootptr->l_ptr != NULL)
-		{
-			BSTDispose(rootptr->l_ptr);
-		}
-		if(rootptr->r_ptr!= NULL)
-		{
-			BSTDispose(rootptr->r_ptr);
-		}
-		free_node_memory(rootptr);
-		rootptr = NULL;
-	}
+    if (*rootptr != NULL)
+    {
+        if ((*rootptr)->l_ptr != NULL)
+        {
+            if(dispose_tree(&((*rootptr)->l_ptr)) != OK)
+            {
+                return INTERNAL_COMPILER_ERR;
+            }
+        }
+        if ((*rootptr)->r_ptr != NULL)
+        {
+            if(dispose_tree(&((*rootptr)->r_ptr)) != OK)
+            {
+                return INTERNAL_COMPILER_ERR;
+            }
+        }
+        free_node_memory(*rootptr);
+        *rootptr = NULL;
+        return OK;
+    }
     else
     {
         return INTERNAL_COMPILER_ERR;
     }
 }
-
