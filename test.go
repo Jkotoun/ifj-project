@@ -1,5 +1,0 @@
-package main
-func main() {
-s1 := "Toto je nejaky text"
-s2 := s1 + ", ktery jeste trochu obohatime"
-}
