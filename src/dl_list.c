@@ -57,7 +57,7 @@ int DLDisposeList (tDLList *list) {
 }
 
 
-int DLInsertLast(tDLList *list, node* rootptr) {
+int DLInsertLast(tDLList *list) {
 	table* new = (table*)malloc(sizeof(table));
     if(new == NULL)
     {
@@ -65,9 +65,10 @@ int DLInsertLast(tDLList *list, node* rootptr) {
     }
     else
     {
-        new->root_ptr = rootptr;
+       // new->root_ptr = rootptr;
         new->next_table= NULL;
         new->prev_table = list->Last;
+        init(&(new->root_ptr));
         if(list->Last == NULL)
         {
             new->scope_index = 0; //first var table for function

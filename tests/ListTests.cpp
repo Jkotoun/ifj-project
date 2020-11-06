@@ -11,19 +11,13 @@ class ListTests : public ::testing::Test
 {
 protected:
     tDLList list;
-    node *rootptr;
-    node *rootptr2;
-    node *rootptr3;
     void SetUp()
     {
-        init(&rootptr);
-        init(&rootptr2);
-        init(&rootptr3);
         DLInitList(&list);
     }
     void TearDown()
     {
-         DLDisposeList(&list);
+        DLDisposeList(&list);
     }
 };
 
@@ -31,14 +25,15 @@ TEST_F(ListTests, BasicTests)
 {
     //create trees for tables
     char name1[] = "b";
-    char name2[] = "b";
-    EXPECT_EQ(insert_node_var(&rootptr, name1, INT), OK);
-    EXPECT_EQ(insert_node_var(&rootptr2, name2, STRING), OK);
-    EXPECT_EQ(insert_node_var(&rootptr3, name1, INT), OK);
+    char name2[] = "a";
+
     //insert tables with trees to list
-    EXPECT_EQ(DLInsertLast(&list, rootptr), OK);
-    EXPECT_EQ(DLInsertLast(&list, rootptr2), OK);
-    EXPECT_EQ(DLInsertLast(&list, rootptr3), OK);
+    EXPECT_EQ(DLInsertLast(&list), OK);
+    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), name1, INT), OK);
+    EXPECT_EQ(DLInsertLast(&list), OK);
+    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), name2, STRING), OK);
+    EXPECT_EQ(DLInsertLast(&list), OK);
+    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), name1, INT), OK);
 
     //test of right pointers and scope indexing
     EXPECT_EQ(strcmp(list.First->root_ptr->name, name1), 0);
@@ -58,7 +53,7 @@ TEST_F(ListTests, BasicTests)
     EXPECT_EQ(list.Last->scope_index, 1);
     EXPECT_EQ(list.Last, list.First->next_table);
     //dispose list
-    
+
     EXPECT_EQ(DLDisposeList(&list), OK);
     EXPECT_EQ(list.First, nullptr);
     EXPECT_EQ(list.Last, nullptr);

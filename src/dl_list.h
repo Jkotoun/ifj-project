@@ -19,9 +19,14 @@ typedef struct tDLList{
 } tDLList;
 
 typedef struct node node;
-                                           
+
+//inits first and last pointer to NULL                              
 int DLInitList (tDLList* list);
-int DLDisposeList (tDLList* list);
-int DLInsertLast(tDLList* list, node* rootptr );
+//delete last table from list and free its memory
 int DLDeleteLast (tDLList* list);
+//delete all items and free memory
+int DLDisposeList (tDLList* list);
+//insert new table to end of list (new scope - scope index is calculated and tree ptr initialized to NULL)
+int DLInsertLast(tDLList* list);
+
 #endif
