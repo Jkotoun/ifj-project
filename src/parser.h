@@ -1,3 +1,3 @@
 #pragma once
 
-void start_parser();
+void parser_start();
