@@ -1,5 +1,6 @@
 
-extern "C" {
+extern "C"
+{
 #include "../src/headers/str.h"
 #include "../src/headers/scanner.h"
 #include "../src/headers/error_codes.h"
@@ -8,16 +9,16 @@ extern "C" {
 
 class ScannerTests : public ::testing::Test
 {
-   protected:
+protected:
    string str;
    token token_var;
-   void SetUp() 
+   void SetUp()
    {
-      
+
       strInit(&str);
       token_var.str = &str;
    }
-    void TearDown() 
+   void TearDown()
    {
       strFree(&str);
    }
@@ -25,20 +26,19 @@ class ScannerTests : public ::testing::Test
 TEST_F(ScannerTests, BasicLexemsTest)
 {
    stdin = fopen("../../tests/basicLexemsSource", "r");
-   token_type tokens [] = {MULTIPLICATION_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN,
-   LESS_TOKEN, LESS_EQUAL_TOKEN, NOT_EQUALS_TOKEN, ASSIGNMENT_TOKEN, EQUALS_TOKEN,
-   MINUS_TOKEN, SEMICOLON_TOKEN, COMMA_TOKEN, PLUS_TOKEN, SHORT_VAR_DECLARATION_TOKEN, 
-   RIGHT_BRACKET_TOKEN, LEFT_BRACKET_TOKEN, CURLY_BRACKET_LEFT_TOKEN, CURLY_BRACKET_RIGHT_TOKEN,
-   DIVISON_TOKEN, EOF_TOKEN};
+   token_type tokens[] = {MULTIPLICATION_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN,
+                          LESS_TOKEN, LESS_EQUAL_TOKEN, NOT_EQUALS_TOKEN, ASSIGNMENT_TOKEN, EQUALS_TOKEN,
+                          MINUS_TOKEN, SEMICOLON_TOKEN, COMMA_TOKEN, PLUS_TOKEN, SHORT_VAR_DECLARATION_TOKEN,
+                          RIGHT_BRACKET_TOKEN, LEFT_BRACKET_TOKEN, CURLY_BRACKET_LEFT_TOKEN, CURLY_BRACKET_RIGHT_TOKEN,
+                          DIVISON_TOKEN, EOF_TOKEN};
    int i = 0;
    do
    {
       get_token(&token_var);
       EXPECT_EQ(token_var.type, tokens[i]);
       i++;
-   }while(token_var.type != EOF_TOKEN);
+   } while (token_var.type != EOF_TOKEN);
    fclose(stdin);
-   
 }
 
 TEST_F(ScannerTests, CommentsRemoveTest)
@@ -66,7 +66,6 @@ TEST_F(ScannerTests, CommentsRemoveTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOF_TOKEN);
    fclose(stdin);
-
 }
 
 TEST_F(ScannerTests, NumbersLiteralsTest)
@@ -81,20 +80,20 @@ TEST_F(ScannerTests, NumbersLiteralsTest)
    //second num
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, DECIMAL_LITERAL_TOKEN);
-   EXPECT_EQ(token_var.decimal,123.45);
-   EXPECT_EQ(get_token(&token_var),OK);
+   EXPECT_EQ(token_var.decimal, 123.45);
+   EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //3. number
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, DECIMAL_LITERAL_TOKEN);
-   EXPECT_EQ(token_var.decimal,123e+2);
-   EXPECT_EQ(get_token(&token_var),OK);
+   EXPECT_EQ(token_var.decimal, 123e+2);
+   EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //4. number
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, DECIMAL_LITERAL_TOKEN);
-   EXPECT_DOUBLE_EQ(token_var.decimal,123.43e-1);
-   EXPECT_EQ(get_token(&token_var),OK);
+   EXPECT_DOUBLE_EQ(token_var.decimal, 123.43e-1);
+   EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //5. number
    EXPECT_EQ(get_token(&token_var), LEX_ERR);
@@ -119,30 +118,30 @@ TEST_F(ScannerTests, NumbersLiteralsTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
 
-
    //last num with 0 at start
    EXPECT_EQ(get_token(&token_var), LEX_ERR);
    fclose(stdin);
 }
 
-TEST_F(ScannerTests,StringTest)
+TEST_F(ScannerTests, StringTest)
 {
    stdin = fopen("../../tests/stringTestSource", "r");
-   
-  EXPECT_EQ(get_token(&token_var), OK);
 
-/*EXPECT_EQ(token_var.type, STRING_LITERAL_TOKEN);
-   char string_expected[]={"test hexaK newline\n tab\t quote\" slash\\\0"};
+   EXPECT_EQ(get_token(&token_var), OK);
+
+   EXPECT_EQ(token_var.type, STRING_LITERAL_TOKEN);
+   char string_expected[] = {"test hexaK newline\n tab\t quote\" slash\\\0"};
    int i = 0;
-   char *string_got = strGetStr(token_var.str);*/
-   /*while(string_expected[i]!='\0')
+   char *string_got = strGetStr(token_var.str);
+   
+   while(string_expected[i]!='\0')
    {
       EXPECT_EQ(string_expected[i], string_got[i]);
       i++;
-   }*/   
+   }
    fclose(stdin);
 }
-/*
+
 TEST_F(ScannerTests, KeywordsAndIdTest)
 {
    stdin = fopen("../../tests/keywordsIdsSource", "r");
@@ -152,7 +151,7 @@ TEST_F(ScannerTests, KeywordsAndIdTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(ID_TOKEN, token_var.type);
    char idcko[] = "_varname1";
-   EXPECT_TRUE(strCmpConstStr(token_var.str,idcko) == 0);
+   EXPECT_TRUE(strCmpConstStr(token_var.str, idcko) == 0);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(EOL_TOKEN, token_var.type);
    EXPECT_EQ(get_token(&token_var), OK);
@@ -160,8 +159,8 @@ TEST_F(ScannerTests, KeywordsAndIdTest)
    EXPECT_EQ(token_var.keyword, STRING_KEYWORD);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, ID_TOKEN);
-   char idcko2[]= "varname2";
-   EXPECT_TRUE(strCmpConstStr(token_var.str,idcko2) == 0);
+   char idcko2[] = "varname2";
+   EXPECT_TRUE(strCmpConstStr(token_var.str, idcko2) == 0);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(EOL_TOKEN, token_var.type);
    EXPECT_EQ(get_token(&token_var), OK);
@@ -169,8 +168,8 @@ TEST_F(ScannerTests, KeywordsAndIdTest)
    EXPECT_EQ(token_var.keyword, INT_KEYWORD);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, ID_TOKEN);
-   char idcko3[]= "Number";
-   EXPECT_TRUE(strCmpConstStr(token_var.str,idcko3) == 0);
+   char idcko3[] = "Number";
+   EXPECT_TRUE(strCmpConstStr(token_var.str, idcko3) == 0);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, ASSIGNMENT_TOKEN);
 
@@ -188,7 +187,7 @@ TEST_F(ScannerTests, KeywordsAndIdTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, ELSE_KEYWORD);
-   
+
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, FOR_KEYWORD);
@@ -205,7 +204,7 @@ TEST_F(ScannerTests, KeywordsAndIdTest)
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, RETURN_KEYWORD);
 
-   EXPECT_EQ(get_token(&token_var),OK);
+   EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOF_TOKEN);
    fclose(stdin);
-}*/
+}

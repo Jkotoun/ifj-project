@@ -114,11 +114,4 @@ TEST_F(BTreeTests, FuncTreeTest)
     }
     EXPECT_EQ(dispose_tree(&rootptr), OK);
     EXPECT_EQ(rootptr, nullptr);
-    
-
-
-    
-    
-
-    
 }
