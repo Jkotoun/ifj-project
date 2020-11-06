@@ -1,9 +1,9 @@
-#include "parser.h"
-#include "parser_rules.h"
-#include "scanner.h"
-#include "symtable.h"
-#include "error_codes.h"
-#include "stdio.h"
+#include "headers/parser.h"
+#include "headers/parser_rules.h"
+#include "headers/scanner.h"
+#include "headers/symtable.h"
+#include "headers/error_codes.h"
+#include <stdio.h>
 
 token current_token;
 

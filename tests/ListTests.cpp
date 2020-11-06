@@ -1,9 +1,9 @@
 
 extern "C"
 {
-#include "../src/dl_list.h"
-#include "../src/symtable.h"
-#include "../src/error_codes.h"
+#include "../src/headers/dl_list.h"
+#include "../src/headers/symtable.h"
+#include "../src/headers/error_codes.h"
 }
 #include <gtest/gtest.h>
 

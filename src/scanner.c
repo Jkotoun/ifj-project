@@ -5,9 +5,9 @@
 */
 #include <stdio.h>
 #include <ctype.h>
-#include "str.h"
-#include "scanner.h"
-#include "error_codes.h"
+#include "headers/str.h"
+#include "headers/scanner.h"
+#include "headers/error_codes.h"
 #include <stdlib.h>
 //#include "error_codes.h"
 

@@ -9,7 +9,7 @@
 
 #include <string.h>
 #include <malloc.h>
-#include "str.h"
+#include "headers/str.h"
 
 //default allocation size in bytes
 //every realloc, allocated memory is increased by this contant
@@ -105,7 +105,6 @@ int substr(string *str, int index, int count, string *output_str)
       return STR_ERROR;
    }
    
-   int i = index;
    char* source = strGetStr(str);
    strInit(output_str);
    //copy 'count' chars or to end (if count+index is out of range)

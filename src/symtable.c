@@ -5,8 +5,8 @@
  * Some functions for tree data type are used from my implementation of IAL 2. project 
  * 
 */
-#include "symtable.h"
-#include "error_codes.h"
+#include "headers/symtable.h"
+#include "headers/error_codes.h"
 #include <string.h>
 int init(node **rootptr)
 {
@@ -67,6 +67,7 @@ node **getNodeToInsert(node *rootptr, char *name)
             return NULL;
         }
     } while (current != NULL);
+    return NULL;
 }
 int insert_node_func(node **rootptr, char *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
 {

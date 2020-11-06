@@ -1,8 +1,8 @@
 
 extern "C" {
-#include "../src/str.h"
-#include "../src/scanner.h"
-#include "../src/error_codes.h"
+#include "../src/headers/str.h"
+#include "../src/headers/scanner.h"
+#include "../src/headers/error_codes.h"
 }
 #include <gtest/gtest.h>
 
