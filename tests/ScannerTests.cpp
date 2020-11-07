@@ -25,7 +25,7 @@ protected:
 };
 TEST_F(ScannerTests, BasicLexemsTest)
 {
-   stdin = fopen("../../tests/basicLexemsSource", "r");
+   stdin = fopen("../../tests/scannerTestSources/basicLexemsSource", "r");
    token_type tokens[] = {MULTIPLICATION_TOKEN, GREATER_TOKEN, GREATER_EQUAL_TOKEN,
                           LESS_TOKEN, LESS_EQUAL_TOKEN, NOT_EQUALS_TOKEN, ASSIGNMENT_TOKEN, EQUALS_TOKEN,
                           MINUS_TOKEN, SEMICOLON_TOKEN, COMMA_TOKEN, PLUS_TOKEN, SHORT_VAR_DECLARATION_TOKEN,
@@ -43,7 +43,7 @@ TEST_F(ScannerTests, BasicLexemsTest)
 
 TEST_F(ScannerTests, CommentsRemoveTest)
 {
-   stdin = fopen("../../tests/commentsRemoveSource", "r");
+   stdin = fopen("../../tests/scannerTestSources/commentsRemoveSource", "r");
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, INTEGER_LITERAL_TOKEN);
    EXPECT_EQ(token_var.integer, 123);
@@ -76,7 +76,7 @@ TEST_F(ScannerTests, CommentsRemoveTest)
 
 TEST_F(ScannerTests, NumbersLiteralsTest)
 {
-   stdin = fopen("../../tests/numbersTestSource", "r");
+   stdin = fopen("../../tests/scannerTestSources/numbersTestSource", "r");
    //first num
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(INTEGER_LITERAL_TOKEN, token_var.type);
@@ -134,7 +134,7 @@ TEST_F(ScannerTests, NumbersLiteralsTest)
 
 TEST_F(ScannerTests, StringTest)
 {
-   stdin = fopen("../../tests/stringTestSource", "r");
+   stdin = fopen("../../tests/scannerTestSources/stringTestSource", "r");
 
    EXPECT_EQ(get_token(&token_var), OK);
 
@@ -153,7 +153,7 @@ TEST_F(ScannerTests, StringTest)
 
 TEST_F(ScannerTests, KeywordsAndIdTest)
 {
-   stdin = fopen("../../tests/keywordsIdsSource", "r");
+   stdin = fopen("../../tests/scannerTestSources/keywordsIdsSource", "r");
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(KEYWORD_TOKEN, token_var.type);
    EXPECT_EQ(FLOAT64_KEYWORD, token_var.keyword);
