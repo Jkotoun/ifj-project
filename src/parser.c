@@ -16,6 +16,7 @@ void parser_start()
     current_token.str = &str;
 
     rule_prog();
+    exit(0);
 }
 
 void rule_prog()
@@ -35,6 +36,13 @@ void rule_prog()
 
 
     rule_func_decl();
+
+    get_next_token();
+    rule_eols();
+
+    rule_func_list();
+
+    assert_token_is(EOF_TOKEN);
 }
 
 void rule_prolog()
@@ -50,6 +58,19 @@ void rule_eols()
     while (current_token.type == EOL_TOKEN)
     {
         get_next_token();
+    }
+}
+
+void rule_func_list()
+{
+    if (keyword_is(FUNC_KEYWORD))
+    {
+        rule_func_decl();
+
+        get_next_token();
+        rule_eols();
+
+        rule_func_list();
     }
 }
 
@@ -77,7 +98,8 @@ void rule_func_decl()
     }
     get_next_token();
     rule_return_list();
-    get_next_token();
+
+
     rule_body();
 }
 
@@ -132,12 +154,12 @@ void rule_return_list()
         get_next_token();
         rule_type_first();
         assert_token_is(RIGHT_BRACKET_TOKEN);
+        get_next_token();
     }
 }
 
 void rule_type_first()
 {
-    get_next_token();
     if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
         return;
@@ -200,14 +222,15 @@ void rule_body()
 void rule_statement_list()
 {
     if (current_token.type == EOL_TOKEN ||
-        current_token.type == RIGHT_BRACKET_TOKEN)
+        current_token.type == CURLY_BRACKET_RIGHT_TOKEN)
     {
         return;
     }
     else
     {
         rule_statement();
-
+        assert_token_is(EOL_TOKEN);
+        rule_eols();
         rule_statement_list();
     }
 }
@@ -289,6 +312,7 @@ void rule_statement_action()
         get_next_token();
         rule_first_arg();
         assert_token_is(RIGHT_BRACKET_TOKEN);
+        get_next_token();
     }
     else if (current_token.type == ASSIGNMENT_TOKEN)
     {
@@ -309,7 +333,7 @@ void rule_statement_value()
         get_next_token();
         rule_arg_expr();
     }
-    else if (current_token.type == ID_TOKEN ||
+    else if (
         current_token.type == DECIMAL_LITERAL_TOKEN ||
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN)
@@ -326,6 +350,8 @@ void rule_arg_expr()
         get_next_token();
         rule_first_arg();
         assert_token_is(RIGHT_BRACKET_TOKEN);
+        get_next_token();
+
     }
     else
     {
@@ -346,11 +372,14 @@ void rule_expr_n()
 
 void rule_first_arg()
 {
-    if (current_token.type == ID_TOKEN)
+    if (token_is(RIGHT_BRACKET_TOKEN))
     {
-        get_next_token();
-        rule_arg_n();
+        return;
     }
+    rule_term();
+
+    get_next_token();
+    rule_arg_n();
 }
 
 void rule_arg_n()
@@ -358,7 +387,9 @@ void rule_arg_n()
     if (current_token.type == COMMA_TOKEN)
     {
         get_next_token();
-        assert_token_is(ID_TOKEN);
+        rule_term();
+
+        get_next_token();
         rule_arg_n();
     }
 }
@@ -489,7 +520,7 @@ void handle_error(int errType)
     switch (errType)
     {
         case SYNTAX_ERR:
-            fprintf(stderr, "Syntax error.\n");
+            fprintf(stderr, "Syntax error. Unexpected token %d\n", current_token.type);
             exit(SYNTAX_ERR);
             break;
 

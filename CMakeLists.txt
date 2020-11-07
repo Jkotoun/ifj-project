@@ -19,12 +19,15 @@ set(Headers
     src/headers/expression.h;
     src/headers/symtable.h;
     src/headers/parser.h;
+    src/headers/parser_rules.h;
+    src/headers/parser_helpers.h;
 )
 set(Sources
     src/str.c 
     src/scanner.c
     src/symtable.c
     src/dl_list.c
+    src/parser.c
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)
