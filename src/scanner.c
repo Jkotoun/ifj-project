@@ -9,8 +9,9 @@
 #include "headers/scanner.h"
 #include "headers/error_codes.h"
 #include <stdlib.h>
-//#include "error_codes.h"
 
+
+unsigned  g_source_file_line = 1; //global variable for current line of source file
 
 static keyword_str_pair all_keywords_pairs[] = 
 {
@@ -46,6 +47,7 @@ int get_token(token *token)
     {
         return INTERNAL_COMPILER_ERR;
     }
+    token->source_line = g_source_file_line;
     state scanner_state = INITIAL_STATE;
     while(1)
     {   
@@ -55,6 +57,7 @@ int get_token(token *token)
             case INITIAL_STATE:
                 if(c == '\n')
                 {
+                    g_source_file_line++;
                     token->type = EOL_TOKEN;
                     return OK;
                 }
@@ -153,6 +156,7 @@ int get_token(token *token)
                 else if(c == EOF)
                 {
                     token->type = EOF_TOKEN;
+                    g_source_file_line = 1;
                     return OK;  
                 }
                 else if(isspace(c))
@@ -363,7 +367,7 @@ int get_token(token *token)
                 }
                 else if(c == '-' || c == '+')
                 {
-                    int last_char =strGetStr(token->str)[token->str->length-1]; 
+                    int last_char =strGetStr(token->str)[token->str->length-1];
                     if(last_char != '-' && last_char != '+' )
                     {
                         if(strAddChar(token->str,c) == STR_ERROR)
@@ -399,12 +403,20 @@ int get_token(token *token)
                 if(c == '\n')
                 {
                     scanner_state = INITIAL_STATE;
+                    token->type = EOL_TOKEN;
+                    g_source_file_line++;
+                    return OK;
                 }
                 break;
             case BLOCK_COMMENT_STATE:
                 if (c == '*')
                 {
                     scanner_state = BLOCK_COMMENT_STAR_STATE;
+                }
+                else if(c == '\n')
+                {
+                    g_source_file_line++;
+                    token->source_line = g_source_file_line;
                 }
                 break;
             case BLOCK_COMMENT_STAR_STATE:
@@ -414,6 +426,11 @@ int get_token(token *token)
                 }
                 else if (c != '*')
                 {
+                    if(c == '\n')
+                    {
+                        g_source_file_line++;
+                        token->source_line = g_source_file_line;
+                    }
                     scanner_state = BLOCK_COMMENT_STATE;
                 }
                 break;

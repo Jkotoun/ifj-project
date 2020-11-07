@@ -48,11 +48,16 @@ TEST_F(ScannerTests, CommentsRemoveTest)
    EXPECT_EQ(token_var.type, INTEGER_LITERAL_TOKEN);
    EXPECT_EQ(token_var.integer, 123);
    EXPECT_EQ(get_token(&token_var), OK);
+   EXPECT_EQ(token_var.type, EOL_TOKEN);
+   EXPECT_EQ(token_var.source_line, 1);
+   EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, IF_KEYWORD);
+   EXPECT_EQ(token_var.source_line, 2);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, ELSE_KEYWORD);
+   EXPECT_EQ(token_var.source_line, 6);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    EXPECT_EQ(get_token(&token_var), OK);
@@ -63,6 +68,7 @@ TEST_F(ScannerTests, CommentsRemoveTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, INTEGER_LITERAL_TOKEN);
    EXPECT_EQ(token_var.integer, 1234);
+   EXPECT_EQ(token_var.source_line, 9);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOF_TOKEN);
    fclose(stdin);
@@ -93,13 +99,16 @@ TEST_F(ScannerTests, NumbersLiteralsTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, DECIMAL_LITERAL_TOKEN);
    EXPECT_DOUBLE_EQ(token_var.decimal, 123.43e-1);
+   EXPECT_EQ(token_var.source_line, 4);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //5. number
    EXPECT_EQ(get_token(&token_var), LEX_ERR);
+   EXPECT_EQ(token_var.source_line, 5);
    //6. number
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_DOUBLE_EQ(token_var.decimal, 0.2313);
+   
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    //7.num
