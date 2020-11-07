@@ -1,7 +1,5 @@
 
 
-void handle_error(int errType);
-
 void rule_prog();
 
 void rule_prolog();

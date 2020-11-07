@@ -1,5 +1,6 @@
 #include "headers/parser.h"
 #include "headers/parser_rules.h"
+#include "headers/parser_helpers.h"
 #include "headers/scanner.h"
 #include "headers/symtable.h"
 #include "headers/error_codes.h"
@@ -19,15 +20,16 @@ void parser_start()
 
 void rule_prog()
 {
-    get_token(&current_token);
+    get_next_token();
+    rule_eols();
 
     rule_prolog();
-    get_token(&current_token);
+    get_next_token();
     if (current_token.type != EOL_TOKEN)
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
 
     rule_eols();
 
@@ -37,81 +39,18 @@ void rule_prog()
 
 void rule_prolog()
 {
+    assert_keyword_is(PACKAGE_KEYWORD);
 
-    switch (current_token.type)
-    {
-        case KEYWORD_TOKEN:
-            switch (current_token.keyword)
-            {
-                case PACKAGE_KEYWORD:
-                    /* code */
-                    break;
-
-                default:
-                    handle_error(SYNTAX_ERR);
-                    break;
-            }
-            break;
-
-        default:
-
-            handle_error(SYNTAX_ERR);
-            break;
-    }
-
-    get_token(&current_token);
-
-    switch (current_token.type)
-    {
-        case ID_TOKEN:
-            break;
-
-        default:
-
-            handle_error(SYNTAX_ERR);
-            break;
-    }
-
+    get_next_token();
+    assert_token_is(ID_TOKEN);
 }
 
 void rule_eols()
 {
     while (current_token.type == EOL_TOKEN)
     {
-        get_token(&current_token);
+        get_next_token();
     }
-    switch (current_token.type)
-    {
-        case EOF_TOKEN:
-        case ID_TOKEN:
-        case LEFT_BRACKET_TOKEN:
-        case CURLY_BRACKET_LEFT_TOKEN:
-        case CURLY_BRACKET_RIGHT_TOKEN:
-        case DECIMAL_LITERAL_TOKEN:
-        case STRING_LITERAL_TOKEN:
-        case INTEGER_LITERAL_TOKEN:
-            break;
-
-        case KEYWORD_TOKEN:
-            switch (current_token.keyword)
-            {
-                case FUNC_KEYWORD:
-                case IF_KEYWORD:
-                case FOR_KEYWORD:
-                case RETURN_KEYWORD:
-                    break;
-
-                default:
-                    handle_error(SYNTAX_ERR);
-                    break;
-            }
-            break;
-
-        default:
-            handle_error(SYNTAX_ERR);
-            break;
-    }
-
 }
 
 void rule_func_decl()
@@ -120,23 +59,23 @@ void rule_func_decl()
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
     if (current_token.type != ID_TOKEN)
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
     if (current_token.type != LEFT_BRACKET_TOKEN)
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
     rule_param_first();
     if (current_token.type != RIGHT_BRACKET_TOKEN)
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
     rule_return_list();
     get_next_token();
     rule_body();
@@ -151,7 +90,7 @@ void rule_param_first()
     else if (current_token.type == ID_TOKEN)
     {
         rule_param();
-        get_token(&current_token);
+        get_next_token();
         rule_param_n();
 
     }
@@ -167,7 +106,7 @@ void rule_param()
     {
         handle_error(SYNTAX_ERR);
     }
-    get_token(&current_token);
+    get_next_token();
     rule_type();
 }
 
@@ -175,9 +114,9 @@ void rule_param_n()
 {
     if (current_token.type == COMMA_TOKEN)
     {
-        get_token(&current_token);
+        get_next_token();
         rule_param();
-        get_token(&current_token);
+        get_next_token();
         rule_param_n();
     }
     else if (current_token.type == RIGHT_BRACKET_TOKEN)
@@ -190,7 +129,7 @@ void rule_return_list()
 {
     if (current_token.type == LEFT_BRACKET_TOKEN)
     {
-        get_token(&current_token);
+        get_next_token();
         rule_type_first();
         assert_token_is(RIGHT_BRACKET_TOKEN);
     }
@@ -204,9 +143,9 @@ void rule_type_first()
         return;
     }
     else if (current_token.type == KEYWORD_TOKEN &&
-        current_token.keyword == INT_KEYWORD ||
-        current_token.keyword == FLOAT64_KEYWORD ||
-        current_token.keyword == STRING_KEYWORD)
+        (current_token.keyword == INT_KEYWORD ||
+            current_token.keyword == FLOAT64_KEYWORD ||
+            current_token.keyword == STRING_KEYWORD))
     {
         rule_type();
         get_next_token();
@@ -288,7 +227,7 @@ void rule_statement()
     {
         rule_literal_expr();
     }
-    else if (keyword_equals(IF_KEYWORD))
+    else if (keyword_is(IF_KEYWORD))
     {
         get_next_token();
         rule_expr();
@@ -302,12 +241,11 @@ void rule_statement()
 
         rule_body();
     }
-    else if (keyword_equals(FOR_KEYWORD))
+    else if (keyword_is(FOR_KEYWORD))
     {
         get_next_token();
         rule_definition();
 
-        get_next_token();
         assert_token_is(SEMICOLON_TOKEN);
 
         get_next_token();
@@ -321,7 +259,7 @@ void rule_statement()
 
         rule_body();
     }
-    else if (keyword_equals(RETURN_KEYWORD))
+    else if (keyword_is(RETURN_KEYWORD))
     {
         get_next_token();
         rule_statement_value();
@@ -364,6 +302,184 @@ void rule_statement_action()
     }
 }
 
+void rule_statement_value()
+{
+    if (current_token.type == ID_TOKEN)
+    {
+        get_next_token();
+        rule_arg_expr();
+    }
+    else if (current_token.type == ID_TOKEN ||
+        current_token.type == DECIMAL_LITERAL_TOKEN ||
+        current_token.type == INTEGER_LITERAL_TOKEN ||
+        current_token.type == STRING_LITERAL_TOKEN)
+    {
+        rule_literal_expr();
+        rule_expr_n();
+    }
+}
+
+void rule_arg_expr()
+{
+    if (current_token.type == LEFT_BRACKET_TOKEN)
+    {
+        get_next_token();
+        rule_first_arg();
+        assert_token_is(RIGHT_BRACKET_TOKEN);
+    }
+    else
+    {
+        rule_expr_end();
+        rule_expr_n();
+    }
+}
+
+void rule_expr_n()
+{
+    if (current_token.type == COMMA_TOKEN)
+    {
+        get_next_token();
+        rule_expr();
+    }
+    assert_token_is(EOL_TOKEN);
+}
+
+void rule_first_arg()
+{
+    if (current_token.type == ID_TOKEN)
+    {
+        get_next_token();
+        rule_arg_n();
+    }
+}
+
+void rule_arg_n()
+{
+    if (current_token.type == COMMA_TOKEN)
+    {
+        get_next_token();
+        assert_token_is(ID_TOKEN);
+        rule_arg_n();
+    }
+}
+
+void rule_definition()
+{
+    if (current_token.type == ID_TOKEN)
+    {
+        get_next_token();
+        assert_token_is(SHORT_VAR_DECLARATION_TOKEN);
+
+        get_next_token();
+        rule_expr();
+    }
+}
+
+void rule_assignment()
+{
+    if (current_token.type == ID_TOKEN)
+    {
+        get_next_token();
+        assert_token_is(ASSIGNMENT_TOKEN);
+
+        get_next_token();
+        rule_expr();
+    }
+}
+
+void rule_literal_expr()
+{
+    if (current_token.type == LEFT_BRACKET_TOKEN)
+    {
+        get_next_token();
+        rule_expr();
+        assert_token_is(RIGHT_BRACKET_TOKEN);
+
+        get_next_token();
+        rule_expr_end();
+    }
+    else
+    {
+        rule_literal();
+
+        get_next_token();
+        rule_expr_end();
+    }
+}
+
+void rule_expr()
+{
+    if (current_token.type == ID_TOKEN ||
+        current_token.type == DECIMAL_LITERAL_TOKEN ||
+        current_token.type == INTEGER_LITERAL_TOKEN ||
+        current_token.type == STRING_LITERAL_TOKEN)
+    {
+        //TODO CALL EXPRESSION module
+        rule_term();
+
+        get_next_token();
+        rule_expr_end();
+    }
+    else if (current_token.type == LEFT_BRACKET_TOKEN)
+    {
+        get_next_token();
+        rule_expr();
+
+        get_next_token();
+        assert_token_is(RIGHT_BRACKET_TOKEN);
+
+        get_next_token();
+        rule_expr_end();
+    }
+    else
+    {
+        handle_error(SYNTAX_ERR);
+    }
+}
+
+void rule_term()
+{
+    if (current_token.type == ID_TOKEN)
+    {
+        return;
+    }
+    else
+    {
+        rule_literal();
+    }
+}
+
+void rule_literal()
+{
+    if (current_token.type == STRING_LITERAL_TOKEN ||
+        current_token.type == DECIMAL_LITERAL_TOKEN ||
+        current_token.type == INTEGER_LITERAL_TOKEN)
+    {
+        return;
+    }
+    else
+    {
+        handle_error(SYNTAX_ERR);
+    }
+}
+
+void rule_expr_end()
+{
+    if (current_token.type == PLUS_TOKEN ||
+        current_token.type == MINUS_TOKEN ||
+        current_token.type == MULTIPLICATION_TOKEN ||
+        current_token.type == DIVISON_TOKEN ||
+        current_token.type == LESS_TOKEN ||
+        current_token.type == GREATER_TOKEN ||
+        current_token.type == LESS_EQUAL_TOKEN ||
+        current_token.type == GREATER_EQUAL_TOKEN ||
+        current_token.type == EQUALS_TOKEN ||
+        current_token.type == NOT_EQUALS_TOKEN)
+    {
+        get_next_token();
+        rule_expr();
+    }
+}
 
 
 //----------HELPERS----------
@@ -382,6 +498,20 @@ void handle_error(int errType)
     }
 }
 
+
+void get_next_token()
+{
+    if (get_token(&current_token) == LEX_ERR)
+    {
+        handle_error(LEX_ERR);
+    }
+}
+
+bool token_is(token_type token)
+{
+    return current_token.type == token;
+}
+
 void assert_token_is(token_type token)
 {
     if (current_token.type != token)
@@ -390,19 +520,14 @@ void assert_token_is(token_type token)
     }
 }
 
-void get_next_token()
-{
-    get_token(&current_token);
-}
-
-bool keyword_equals(keyword keyword)
+bool keyword_is(keyword keyword)
 {
     return current_token.type == KEYWORD_TOKEN && current_token.keyword == keyword;
 }
 
 void assert_keyword_is(keyword keyword)
 {
-    if (!keyword_equals(keyword))
+    if (!keyword_is(keyword))
     {
         handle_error(SYNTAX_ERR);
     }
