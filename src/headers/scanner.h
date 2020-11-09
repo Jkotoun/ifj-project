@@ -98,6 +98,7 @@ typedef struct token
         keyword keyword;
         
     };
+    unsigned source_line; 
 }token;
 
 //returns value OK from error codes (0) if token is valid, LEX_ERR if invalid
