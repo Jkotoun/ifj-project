@@ -8,12 +8,14 @@
 #define symtable_h
 #include "dl_list.h"
 #include <stdbool.h>
+
 typedef enum varType
 {
 	INT,
 	STRING,
 	FLOAT
 }varType;
+
 typedef enum node_type
 {
 	func,
@@ -38,8 +40,6 @@ typedef struct table
 	struct table *prev_table;
 	struct table *next_table;
 } table;
-
-
 
 //function data in global symtable
 typedef struct
