@@ -1,3 +1,12 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Jiří Vlasák (xvlasa15)
+ * Parser
+ * CONVENTIONS:
+ * 1: every rule expects its first token to be already loaded in current_token variable.
+ * 2: rules that read 1 token into next rule end with suffix "_next".
+*/
+
 #include "headers/parser.h"
 #include "headers/parser_rules.h"
 #include "headers/parser_helpers.h"
@@ -22,25 +31,22 @@ void parser_start()
 void rule_prog()
 {
     get_next_token();
-    rule_eols();
+    rule_eols_next();
 
     rule_prolog();
     get_next_token();
-    if (current_token.type != EOL_TOKEN)
-    {
-        handle_error(SYNTAX_ERR);
-    }
+    assert_token_is(EOL_TOKEN);
+
     get_next_token();
-
-    rule_eols();
-
+    rule_eols_next();
 
     rule_func_decl();
 
     get_next_token();
-    rule_eols();
+    rule_eols_next();
 
-    rule_func_list();
+    rule_func_list_next();
+    rule_eols_next();
 
     assert_token_is(EOF_TOKEN);
 }
@@ -53,7 +59,7 @@ void rule_prolog()
     assert_token_is(ID_TOKEN);
 }
 
-void rule_eols()
+void rule_eols_next()
 {
     while (current_token.type == EOL_TOKEN)
     {
@@ -61,49 +67,40 @@ void rule_eols()
     }
 }
 
-void rule_func_list()
+void rule_func_list_next()
 {
     if (keyword_is(FUNC_KEYWORD))
     {
         rule_func_decl();
 
         get_next_token();
-        rule_eols();
+        rule_eols_next();
 
-        rule_func_list();
+        rule_func_list_next();
     }
 }
 
 void rule_func_decl()
 {
-    if (current_token.type != KEYWORD_TOKEN || current_token.keyword != FUNC_KEYWORD)
-    {
-        handle_error(SYNTAX_ERR);
-    }
-    get_next_token();
-    if (current_token.type != ID_TOKEN)
-    {
-        handle_error(SYNTAX_ERR);
-    }
-    get_next_token();
-    if (current_token.type != LEFT_BRACKET_TOKEN)
-    {
-        handle_error(SYNTAX_ERR);
-    }
-    get_next_token();
-    rule_param_first();
-    if (current_token.type != RIGHT_BRACKET_TOKEN)
-    {
-        handle_error(SYNTAX_ERR);
-    }
-    get_next_token();
-    rule_return_list();
+    assert_keyword_is(FUNC_KEYWORD);
 
+    get_next_token();
+    assert_token_is(ID_TOKEN);
+
+    get_next_token();
+    assert_token_is(LEFT_BRACKET_TOKEN);
+
+    get_next_token();
+    rule_param_first_next();
+    assert_token_is(RIGHT_BRACKET_TOKEN);
+
+    get_next_token();
+    rule_return_list_next();
 
     rule_body();
 }
 
-void rule_param_first()
+void rule_param_first_next()
 {
     if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
@@ -113,7 +110,7 @@ void rule_param_first()
     {
         rule_param();
         get_next_token();
-        rule_param_n();
+        rule_param_n_next();
 
     }
     else
@@ -132,14 +129,14 @@ void rule_param()
     rule_type();
 }
 
-void rule_param_n()
+void rule_param_n_next()
 {
     if (current_token.type == COMMA_TOKEN)
     {
         get_next_token();
         rule_param();
         get_next_token();
-        rule_param_n();
+        rule_param_n_next();
     }
     else if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
@@ -147,18 +144,18 @@ void rule_param_n()
     }
 }
 
-void rule_return_list()
+void rule_return_list_next()
 {
     if (current_token.type == LEFT_BRACKET_TOKEN)
     {
         get_next_token();
-        rule_type_first();
+        rule_type_first_next();
         assert_token_is(RIGHT_BRACKET_TOKEN);
         get_next_token();
     }
 }
 
-void rule_type_first()
+void rule_type_first_next()
 {
     if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
@@ -171,11 +168,11 @@ void rule_type_first()
     {
         rule_type();
         get_next_token();
-        rule_type_n();
+        rule_type_n_next();
     }
 }
 
-void rule_type_n()
+void rule_type_n_next()
 {
     if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
@@ -186,7 +183,7 @@ void rule_type_n()
         get_next_token();
         rule_type();
         get_next_token();
-        rule_type_n();
+        rule_type_n_next();
     }
     else
     {
@@ -213,13 +210,13 @@ void rule_body()
 {
     assert_token_is(CURLY_BRACKET_LEFT_TOKEN);
     get_next_token();
-    rule_eols();
-    rule_statement_list();
-    rule_eols();
+    rule_eols_next();
+    rule_statement_list_next();
+    rule_eols_next();
     assert_token_is(CURLY_BRACKET_RIGHT_TOKEN);
 }
 
-void rule_statement_list()
+void rule_statement_list_next()
 {
     if (current_token.type == EOL_TOKEN ||
         current_token.type == CURLY_BRACKET_RIGHT_TOKEN)
@@ -228,64 +225,65 @@ void rule_statement_list()
     }
     else
     {
-        rule_statement();
+        rule_statement_next();
         assert_token_is(EOL_TOKEN);
-        rule_eols();
-        rule_statement_list();
+        rule_eols_next();
+        rule_statement_list_next();
     }
 }
 
-void rule_statement()
+void rule_statement_next()
 {
     if (current_token.type == ID_TOKEN)
     {
         get_next_token();
-        rule_id_list();
-        rule_statement_action();
+        rule_id_list_next();
+        rule_statement_action_next();
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN ||
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN ||
         current_token.type == DECIMAL_LITERAL_TOKEN)
     {
-        rule_literal_expr();
+        rule_literal_expr_next();
     }
     else if (keyword_is(IF_KEYWORD))
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
         rule_body();
 
         get_next_token();
         assert_keyword_is(ELSE_KEYWORD);
 
         get_next_token();
-        rule_eols();
+        rule_eols_next();
 
         rule_body();
+        get_next_token();
+
     }
     else if (keyword_is(FOR_KEYWORD))
     {
         get_next_token();
-        rule_definition();
-
+        rule_definition_next();
         assert_token_is(SEMICOLON_TOKEN);
 
         get_next_token();
-        rule_expr();
-
-        get_next_token();
+        rule_expr_next();
         assert_token_is(SEMICOLON_TOKEN);
 
         get_next_token();
-        rule_assignment();
+        rule_assignment_next();
 
         rule_body();
+        get_next_token();
+
     }
     else if (keyword_is(RETURN_KEYWORD))
     {
         get_next_token();
-        rule_statement_value();
+        rule_statement_value_next();
     }
     else
     {
@@ -294,83 +292,83 @@ void rule_statement()
 }
 
 
-void rule_id_list()
+void rule_id_list_next()
 {
     if (current_token.type == COMMA_TOKEN)
     {
         get_next_token();
         assert_token_is(ID_TOKEN);
         get_next_token();
-        rule_id_list();
+        rule_id_list_next();
     }
 }
 
-void rule_statement_action()
+void rule_statement_action_next()
 {
     if (current_token.type == LEFT_BRACKET_TOKEN)
     {
         get_next_token();
-        rule_first_arg();
+        rule_first_arg_next();
         assert_token_is(RIGHT_BRACKET_TOKEN);
         get_next_token();
     }
     else if (current_token.type == ASSIGNMENT_TOKEN)
     {
         get_next_token();
-        rule_statement_value();
+        rule_statement_value_next();
     }
     else if (current_token.type == SHORT_VAR_DECLARATION_TOKEN)
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
     }
 }
 
-void rule_statement_value()
+void rule_statement_value_next()
 {
     if (current_token.type == ID_TOKEN)
     {
         get_next_token();
-        rule_arg_expr();
+        rule_arg_expr_next();
     }
     else if (
         current_token.type == DECIMAL_LITERAL_TOKEN ||
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN)
     {
-        rule_literal_expr();
-        rule_expr_n();
+        rule_literal_expr_next();
+        rule_expr_n_next();
     }
 }
 
-void rule_arg_expr()
+void rule_arg_expr_next()
 {
     if (current_token.type == LEFT_BRACKET_TOKEN)
     {
         get_next_token();
-        rule_first_arg();
+        rule_first_arg_next();
         assert_token_is(RIGHT_BRACKET_TOKEN);
         get_next_token();
 
     }
     else
     {
-        rule_expr_end();
-        rule_expr_n();
+        rule_expr_end_next();
+        rule_expr_n_next();
     }
 }
 
-void rule_expr_n()
+void rule_expr_n_next()
 {
     if (current_token.type == COMMA_TOKEN)
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
     }
     assert_token_is(EOL_TOKEN);
 }
 
-void rule_first_arg()
+void rule_first_arg_next()
 {
     if (token_is(RIGHT_BRACKET_TOKEN))
     {
@@ -379,10 +377,10 @@ void rule_first_arg()
     rule_term();
 
     get_next_token();
-    rule_arg_n();
+    rule_arg_n_next();
 }
 
-void rule_arg_n()
+void rule_arg_n_next()
 {
     if (current_token.type == COMMA_TOKEN)
     {
@@ -390,11 +388,11 @@ void rule_arg_n()
         rule_term();
 
         get_next_token();
-        rule_arg_n();
+        rule_arg_n_next();
     }
 }
 
-void rule_definition()
+void rule_definition_next()
 {
     if (current_token.type == ID_TOKEN)
     {
@@ -402,11 +400,11 @@ void rule_definition()
         assert_token_is(SHORT_VAR_DECLARATION_TOKEN);
 
         get_next_token();
-        rule_expr();
+        rule_expr_next();
     }
 }
 
-void rule_assignment()
+void rule_assignment_next()
 {
     if (current_token.type == ID_TOKEN)
     {
@@ -414,31 +412,31 @@ void rule_assignment()
         assert_token_is(ASSIGNMENT_TOKEN);
 
         get_next_token();
-        rule_expr();
+        rule_expr_next();
     }
 }
 
-void rule_literal_expr()
+void rule_literal_expr_next()
 {
     if (current_token.type == LEFT_BRACKET_TOKEN)
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
         assert_token_is(RIGHT_BRACKET_TOKEN);
 
         get_next_token();
-        rule_expr_end();
+        rule_expr_end_next();
     }
     else
     {
         rule_literal();
 
         get_next_token();
-        rule_expr_end();
+        rule_expr_end_next();
     }
 }
 
-void rule_expr()
+void rule_expr_next()
 {
     if (current_token.type == ID_TOKEN ||
         current_token.type == DECIMAL_LITERAL_TOKEN ||
@@ -449,18 +447,18 @@ void rule_expr()
         rule_term();
 
         get_next_token();
-        rule_expr_end();
+        rule_expr_end_next();
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN)
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
 
         get_next_token();
         assert_token_is(RIGHT_BRACKET_TOKEN);
 
         get_next_token();
-        rule_expr_end();
+        rule_expr_end_next();
     }
     else
     {
@@ -494,7 +492,7 @@ void rule_literal()
     }
 }
 
-void rule_expr_end()
+void rule_expr_end_next()
 {
     if (current_token.type == PLUS_TOKEN ||
         current_token.type == MINUS_TOKEN ||
@@ -508,7 +506,7 @@ void rule_expr_end()
         current_token.type == NOT_EQUALS_TOKEN)
     {
         get_next_token();
-        rule_expr();
+        rule_expr_next();
     }
 }
 

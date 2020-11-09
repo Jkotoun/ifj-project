@@ -7,39 +7,56 @@ extern "C"
 }
 #include <gtest/gtest.h>
 
-class ParserTests : public ::testing::Test
-{
-protected:
-    void SetUp()
-    {
-        // DLInitList(&list);
-    }
-    void TearDown()
-    {
-        // DLDisposeList(&list);
-    }
-};
+typedef std::pair<std::string, int> TestParam;
 
-TEST_F(ParserTests, BasicFunctions)
+class ParserTests : public ::testing::TestWithParam<TestParam> {};
+
+
+TEST_P(ParserTests, Basic)
 {
-    stdin = fopen("../../tests/parserTestSources/basic functions.go", "r");
-    ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
+    std::string path = GetParam().first;
+    int n = path.length();
+    // declaring character array
+    char char_array[n + 1];
+
+    // copying the contents of the
+    // string to char array
+    strcpy(char_array, path.c_str());
+
+    stdin = fopen(char_array, "r");
+    ASSERT_EXIT(parser_start(), testing::ExitedWithCode(GetParam().second), "");
 }
 
-TEST_F(ParserTests, BasicTest1)
-{
-    stdin = fopen("../../tests/parserTestSources/basic1.go", "r");
-    ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
-}
 
-TEST_F(ParserTests, BasicTest2)
-{
-    stdin = fopen("../../tests/parserTestSources/basic2.go", "r");
-    ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
-}
+INSTANTIATE_TEST_CASE_P(
+    GeneralAndSpecial,
+    ParserTests,
+    testing::Values(
+        TestParam("../../tests/parserTestSources/basic/basic1.go", OK),
+        TestParam("../../tests/parserTestSources/basic/basic2.go", OK),
+        TestParam("../../tests/parserTestSources/basic/basic3.go", OK)
+    ));
 
-TEST_F(ParserTests, BasicTest3)
-{
-    stdin = fopen("../../tests/parserTestSources/basic3.go", "r");
-    ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
-}
+// TEST_F(ParserTests, BasicFunctions)
+// {
+//     stdin = fopen("../../tests/parserTestSources/basic functions.go", "r");
+//     ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
+// }
+
+// TEST_F(ParserTests, BasicTest1)
+// {
+//     stdin = fopen("../../tests/parserTestSources/basic1.go", "r");
+//     ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
+// }
+
+// TEST_F(ParserTests, BasicTest2)
+// {
+//     stdin = fopen("../../tests/parserTestSources/basic2.go", "r");
+//     ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
+// }
+
+// TEST_F(ParserTests, BasicTest3)
+// {
+//     stdin = fopen("../../tests/parserTestSources/basic3.go", "r");
+//     ASSERT_EXIT(parser_start(), testing::ExitedWithCode(OK), "");
+// }
