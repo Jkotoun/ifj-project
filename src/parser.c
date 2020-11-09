@@ -111,7 +111,6 @@ void rule_param_first_next()
         rule_param();
         get_next_token();
         rule_param_n_next();
-
     }
     else
     {
@@ -162,9 +161,9 @@ void rule_type_first_next()
         return;
     }
     else if (current_token.type == KEYWORD_TOKEN &&
-        (current_token.keyword == INT_KEYWORD ||
-            current_token.keyword == FLOAT64_KEYWORD ||
-            current_token.keyword == STRING_KEYWORD))
+             (current_token.keyword == INT_KEYWORD ||
+              current_token.keyword == FLOAT64_KEYWORD ||
+              current_token.keyword == STRING_KEYWORD))
     {
         rule_type();
         get_next_token();
@@ -203,7 +202,6 @@ void rule_type()
         }
     }
     handle_error(SYNTAX_ERR);
-
 }
 
 void rule_body()
@@ -241,9 +239,9 @@ void rule_statement_next()
         rule_statement_action_next();
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN ||
-        current_token.type == INTEGER_LITERAL_TOKEN ||
-        current_token.type == STRING_LITERAL_TOKEN ||
-        current_token.type == DECIMAL_LITERAL_TOKEN)
+             current_token.type == INTEGER_LITERAL_TOKEN ||
+             current_token.type == STRING_LITERAL_TOKEN ||
+             current_token.type == DECIMAL_LITERAL_TOKEN)
     {
         rule_literal_expr_next();
     }
@@ -261,7 +259,6 @@ void rule_statement_next()
 
         rule_body();
         get_next_token();
-
     }
     else if (keyword_is(FOR_KEYWORD))
     {
@@ -278,7 +275,6 @@ void rule_statement_next()
 
         rule_body();
         get_next_token();
-
     }
     else if (keyword_is(RETURN_KEYWORD))
     {
@@ -290,7 +286,6 @@ void rule_statement_next()
         handle_error(SYNTAX_ERR);
     }
 }
-
 
 void rule_id_list_next()
 {
@@ -349,7 +344,6 @@ void rule_arg_expr_next()
         rule_first_arg_next();
         assert_token_is(RIGHT_BRACKET_TOKEN);
         get_next_token();
-
     }
     else
     {
@@ -510,23 +504,26 @@ void rule_expr_end_next()
     }
 }
 
-
 //----------HELPERS----------
 
 void handle_error(int errType)
 {
     switch (errType)
     {
-        case SYNTAX_ERR:
-            fprintf(stderr, "Syntax error. Unexpected token %d\n", current_token.type);
-            exit(SYNTAX_ERR);
-            break;
+    case SYNTAX_ERR:
+        fprintf(stderr, "Syntax error. Unexpected token %d on line %d\n",
+                current_token.type, current_token.source_line);
+        exit(SYNTAX_ERR);
+        break;
+    case LEX_ERR:
+        fprintf(stderr, "Lexical error on line %d\n",
+                current_token.source_line);
+        exit(LEX_ERR);
 
-        default:
-            break;
+    default:
+        break;
     }
 }
-
 
 void get_next_token()
 {
@@ -561,6 +558,3 @@ void assert_keyword_is(keyword keyword)
         handle_error(SYNTAX_ERR);
     }
 }
-
-
-
