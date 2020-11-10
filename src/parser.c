@@ -366,6 +366,7 @@ void rule_expr_n_next()
     {
         get_next_token();
         rule_expr_next();
+        rule_expr_n_next();
     }
     assert_token_is(EOL_TOKEN);
 }
@@ -456,7 +457,6 @@ void rule_expr_next()
         get_next_token();
         rule_expr_next();
 
-        get_next_token();
         assert_token_is(RIGHT_BRACKET_TOKEN);
 
         get_next_token();

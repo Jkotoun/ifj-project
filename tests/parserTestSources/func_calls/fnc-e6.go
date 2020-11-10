@@ -8,8 +8,7 @@ func main() {
 	c:=0
 	d:=0
 	e:=0
-
-	a,b,c,d,e = five 	
+	a, = five()
 }
 
 
