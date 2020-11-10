@@ -18,6 +18,7 @@
 
 #define assert_token_is(token) func_assert_token_is(token, __func__)
 #define assert_keyword_is(keyword) func_assert_keyword_is(keyword, __func__)
+#define assert_true(expression) func_assert_true(expression, __func__)
 
 #define handle_error(errno) func_handle_error(errno, __func__)
 
@@ -303,6 +304,7 @@ void rule_id_list_next()
         assert_token_is(ID_TOKEN);
         get_next_token();
         rule_id_list_next();
+        assert_true(token_is(SHORT_VAR_DECLARATION_TOKEN) || token_is(ASSIGNMENT_TOKEN));
     }
 }
 
@@ -551,6 +553,14 @@ bool token_is(token_type token)
 void func_assert_token_is(token_type token, char const *func)
 {
     if (current_token.type != token)
+    {
+        func_handle_error(SYNTAX_ERR, func);
+    }
+}
+
+void func_assert_true(bool expression, char const *func)
+{
+    if (!expression)
     {
         func_handle_error(SYNTAX_ERR, func);
     }
