@@ -16,6 +16,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#define assert_token_is(token) func_assert_token_is(token, __func__)
+#define assert_keyword_is(keyword) func_assert_keyword_is(keyword, __func__)
+
+#define handle_error(errno) func_handle_error(errno, __func__)
+
 token current_token;
 
 void parser_start()
@@ -509,15 +514,15 @@ void rule_expr_end_next()
 
 //----------HELPERS----------
 
-void handle_error(int errType)
+void func_handle_error(int errType, char const *func)
 {
     char *token = strGetStr(current_token.token_str_raw);
 
     switch (errType)
     {
     case SYNTAX_ERR:
-        fprintf(stderr, "Syntax error. Unexpected token '%s' on line %d\n",
-                token, current_token.source_line);
+        fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' on line %d\n",
+                func, token, current_token.source_line);
         exit(SYNTAX_ERR);
         break;
     case LEX_ERR:
@@ -543,11 +548,11 @@ bool token_is(token_type token)
     return current_token.type == token;
 }
 
-void assert_token_is(token_type token)
+void func_assert_token_is(token_type token, char const *func)
 {
     if (current_token.type != token)
     {
-        handle_error(SYNTAX_ERR);
+        func_handle_error(SYNTAX_ERR, func);
     }
 }
 
@@ -556,10 +561,10 @@ bool keyword_is(keyword keyword)
     return current_token.type == KEYWORD_TOKEN && current_token.keyword == keyword;
 }
 
-void assert_keyword_is(keyword keyword)
+void func_assert_keyword_is(keyword keyword, char const *func)
 {
     if (!keyword_is(keyword))
     {
-        handle_error(SYNTAX_ERR);
+        func_handle_error(SYNTAX_ERR, func);
     }
 }
