@@ -28,3 +28,10 @@ target_link_libraries(ListTest PUBLIC
     IFJ_compiler
 )
 add_test(NAME ListTest COMMAND ListTest)
+
+add_executable(ParserTest ParserTests.cpp)
+target_link_libraries(ParserTest PUBLIC
+    gtest_main
+    IFJ_compiler
+)
+add_test(NAME ParserTest COMMAND ParserTest)
