@@ -99,6 +99,7 @@ typedef struct token
         
     };
     unsigned source_line; 
+    string *token_str_raw;
 }token;
 
 //returns value OK from error codes (0) if token is valid, LEX_ERR if invalid

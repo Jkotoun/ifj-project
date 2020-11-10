@@ -43,6 +43,7 @@ int get_token(token *token)
 {
     int c;
     strClear(token->str);
+    strClear(token->token_str_raw);
     if(token == NULL)
     {
         return INTERNAL_COMPILER_ERR;
@@ -52,6 +53,13 @@ int get_token(token *token)
     while(1)
     {   
         c = getc(stdin);
+        if(!isspace(c) && c != EOF)
+        {
+            if(strAddChar(token->token_str_raw,c) == STR_ERROR)
+            {
+                return INTERNAL_COMPILER_ERR;
+            }
+        }
         switch(scanner_state)
         {
             case INITIAL_STATE:
@@ -254,6 +262,7 @@ int get_token(token *token)
                     keyword keyword_from_str;
                     if(str_is_keyword(token->str,&keyword_from_str))
                     {
+                        strClear(token->str);
                         token->type = KEYWORD_TOKEN;
                         token->keyword = keyword_from_str;
                     }
@@ -268,6 +277,7 @@ int get_token(token *token)
             case NUM_FIRST_ZERO_STATE:
                 if(isdigit(c))
                 {
+                    strClear(token->str);
                         return LEX_ERR;
                 }
                 else
@@ -289,6 +299,7 @@ int get_token(token *token)
                         ungetc(c,stdin);
                         token->type = INTEGER_LITERAL_TOKEN;
                         token->integer = 0;
+                        strClear(token->str);
                         return OK;
                     }   
                 }
@@ -317,6 +328,7 @@ int get_token(token *token)
                     token->type = INTEGER_LITERAL_TOKEN;
                     //convert string to int and clear string
                     token->integer = atoi(strGetStr(token->str));
+                    strClear(token->str);
                     return OK;
                 }
                 break;
@@ -329,6 +341,7 @@ int get_token(token *token)
                 }
                 else
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 break;
@@ -348,6 +361,7 @@ int get_token(token *token)
                 {
                     ungetc(c,stdin);
                     token->decimal = strtod(strGetStr(token->str), NULL);
+                    strClear(token->str);
                     token->type = DECIMAL_LITERAL_TOKEN;
                     return OK;
                 }
@@ -369,11 +383,13 @@ int get_token(token *token)
                     }
                     else
                     {
+                        strClear(token->str);
                         return LEX_ERR;
                     }
                 }
                 else
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 break;
@@ -387,6 +403,7 @@ int get_token(token *token)
                     ungetc(c, stdin);
                     token->type = DECIMAL_LITERAL_TOKEN;
                     token->decimal = strtod(strGetStr(token->str), NULL);
+                    strClear(token->str);
                     return OK;
                 }
                 break;
@@ -437,6 +454,7 @@ int get_token(token *token)
                 }
                 else if(c<=31)
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 else
@@ -448,6 +466,7 @@ int get_token(token *token)
             case ESCAPE_STRING_STATE:
                 if(c<=31)
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 else if(c == '\\' || c == '"')
@@ -474,6 +493,7 @@ int get_token(token *token)
                 }
                 else
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 break;
@@ -493,11 +513,13 @@ int get_token(token *token)
                     }
                     else
                     {
+                        strClear(token->str);
                         return LEX_ERR;
                     }
                 }
                 else
                 {
+                    strClear(token->str);
                     return LEX_ERR;
                 }
                 break;  
