@@ -20,9 +20,12 @@ token current_token;
 
 void parser_start()
 {
-    string str;
+    string str, rawStr;
     strInit(&str);
+    strInit(&rawStr);
+
     current_token.str = &str;
+    current_token.token_str_raw = &rawStr;
 
     rule_prog();
     exit(0);
@@ -508,11 +511,13 @@ void rule_expr_end_next()
 
 void handle_error(int errType)
 {
+    char *token = strGetStr(current_token.token_str_raw);
+
     switch (errType)
     {
     case SYNTAX_ERR:
-        fprintf(stderr, "Syntax error. Unexpected token %d on line %d\n",
-                current_token.type, current_token.source_line);
+        fprintf(stderr, "Syntax error. Unexpected token '%s' on line %d\n",
+                token, current_token.source_line);
         exit(SYNTAX_ERR);
         break;
     case LEX_ERR:
