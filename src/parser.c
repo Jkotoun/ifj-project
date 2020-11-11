@@ -12,6 +12,7 @@
 #include "headers/parser_helpers.h"
 #include "headers/scanner.h"
 #include "headers/symtable.h"
+#include "headers/dl_list.h"
 #include "headers/error_codes.h"
 #include <stdio.h>
 #include <stdbool.h>
@@ -24,6 +25,12 @@
 
 token current_token;
 
+node *functions_symtable;
+tDLList *scoped_symtables;
+
+node rootNode;
+tDLList list;
+
 void parser_start()
 {
     string str, rawStr;
@@ -32,6 +39,9 @@ void parser_start()
 
     current_token.str = &str;
     current_token.token_str_raw = &rawStr;
+
+    functions_symtable = &rootNode;
+    scoped_symtables = &list;
 
     rule_prog();
     exit(0);

@@ -59,7 +59,8 @@
 			"cinttypes": "cpp",
 			"typeinfo": "cpp",
 			"variant": "cpp",
-			"cerrno": "c"
+			"cerrno": "c",
+			"dl_list.h": "c"
 		}
 	
 	}
