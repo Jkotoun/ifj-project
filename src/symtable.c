@@ -14,12 +14,12 @@ int init(node **rootptr)
     return OK;
 }
 
-bool search(node **rootptr, char *name, node **found_node)
+bool search(node **rootptr, string *name, node **found_node)
 {
     node *current = *rootptr;
     while (current != NULL)
     {
-        int cmp_result = strcmp(name, current->name);
+        int cmp_result = strCmpString(name, current->name);
         if (cmp_result > 0) //right subtree
         {
             current = current->r_ptr;
@@ -36,13 +36,13 @@ bool search(node **rootptr, char *name, node **found_node)
     }
     return false;
 }
-node **getNodeToInsert(node *rootptr, char *name)
+node **getNodeToInsert(node *rootptr, string *name)
 {
 
     node *current = rootptr;
     do
     {
-        int cmp_result = strcmp(name, current->name);
+        int cmp_result = strCmpString(name, current->name);
         if (cmp_result > 0)
         {
             //value is greater than node key and rptr is null => store new node into rptr
@@ -69,7 +69,7 @@ node **getNodeToInsert(node *rootptr, char *name)
     } while (current != NULL);
     return NULL;
 }
-int insert_node_func(node **rootptr, char *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
+int insert_node_func(node **rootptr, string *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
 {
     node **ptrToNodePtr;
     if (*rootptr == NULL)
@@ -92,7 +92,16 @@ int insert_node_func(node **rootptr, char *name, unsigned return_types_count, va
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
-    (*ptrToNodePtr)->name = name;
+    string *new_name = (string *)malloc(sizeof(string));
+    if (strInit(new_name) == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    if (strCopyString(new_name, name) == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    (*ptrToNodePtr)->name = new_name;
     (*ptrToNodePtr)->type = func;
 
     //allocation of structure with function data
@@ -136,7 +145,7 @@ int insert_node_func(node **rootptr, char *name, unsigned return_types_count, va
     return OK;
 }
 
-int insert_node_var(node **rootptr, char *name, varType var_type)
+int insert_node_var(node **rootptr, string *name, varType var_type)
 {
     node **ptrToNodePtr;
     if (*rootptr == NULL)
@@ -158,7 +167,17 @@ int insert_node_var(node **rootptr, char *name, varType var_type)
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
-    (*ptrToNodePtr)->name = name;
+
+    string *new_name = (string *)malloc(sizeof(string));
+    if (strInit(new_name) == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    if (strCopyString(new_name, name) == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    (*ptrToNodePtr)->name = new_name;
     (*ptrToNodePtr)->type = var;
     (*ptrToNodePtr)->data = (symbol_variable *)malloc(sizeof(symbol_variable));
     if ((*ptrToNodePtr)->data == NULL)
@@ -172,19 +191,28 @@ int insert_node_var(node **rootptr, char *name, varType var_type)
 
 int free_node_memory(node *nodeptr)
 {
-    if (nodeptr == NULL)
+    if (nodeptr != NULL)
     {
-        return INTERNAL_COMPILER_ERR;
+        if (nodeptr->type == func)
+        {
+            symbol_function *data = (symbol_function *)nodeptr->data;
+            //free params and return types arrays for function
+            free(data->parameters);
+            free(data->return_types);
+        }
+        if (nodeptr->data != NULL)
+        {
+            free(nodeptr->data);
+        }
+        if (nodeptr->name != NULL)
+        {
+            //free string->char*
+            strFree(nodeptr->name);
+            //free allocated string struct
+            free(nodeptr->name);
+        }
+        free(nodeptr);
     }
-    if (nodeptr->type == func)
-    {
-        symbol_function *data = (symbol_function *)nodeptr->data;
-        //free params and return types arrays for function
-        free(data->parameters);
-        free(data->return_types);
-    }
-    free(nodeptr->data);
-    free(nodeptr);
     return OK;
 }
 
@@ -194,14 +222,14 @@ int dispose_tree(node **rootptr)
     {
         if ((*rootptr)->l_ptr != NULL)
         {
-            if(dispose_tree(&((*rootptr)->l_ptr)) != OK)
+            if (dispose_tree(&((*rootptr)->l_ptr)) != OK)
             {
                 return INTERNAL_COMPILER_ERR;
             }
         }
         if ((*rootptr)->r_ptr != NULL)
         {
-            if(dispose_tree(&((*rootptr)->r_ptr)) != OK)
+            if (dispose_tree(&((*rootptr)->r_ptr)) != OK)
             {
                 return INTERNAL_COMPILER_ERR;
             }
