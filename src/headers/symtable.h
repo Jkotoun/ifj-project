@@ -13,7 +13,8 @@ typedef enum varType
 {
 	INT,
 	STRING,
-	FLOAT
+	FLOAT,
+	UNDEFINED
 }varType;
 
 typedef enum node_type

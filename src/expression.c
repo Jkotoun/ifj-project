@@ -125,15 +125,17 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
     stack_push(&stack, dollar, NULL);
 
     for(int i = 0; i < token_count; i++){
-        // Converts token to symbol
+
+        // Converts input token to the symbol
+        token *input_token = (token_arr + i);
         expression_symbol input_symbol;
-        convert_token_to_expression_symbol(token_arr + i, &input_symbol);
+        convert_token_to_expression_symbol(input_token, &input_symbol);
 
         // Gets top terminal from the stack
         expression_stack_node *top_stack_terminal;
         stack_top_terminal(&stack, top_stack_terminal);
 
-        // Converts symbols to terminal groups
+        // Converts symbols to the terminal groups
         terminal_group input_terminal_group;
         terminal_group top_stack_terminal_group;
         convert_expression_symbol_to_terminal_group(input_symbol, &input_terminal_group);
@@ -142,8 +144,50 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
         // Gets the precedence from the table and perform suitable operation
         precedence precedence_evaluation = (precedence)precedence_table[top_stack_terminal_group][input_terminal_group];
         switch(precedence_evaluation){
+            case Eq:
+                // ---------------------------------- EQUAL - = --------------------------------- //
+                stack_push(&stack, input_symbol, UNDEFINED);
+                
+            case S:
+                // ---------------------------------- SHIFT - < --------------------------------- //
+                // PUSHES the reduce_br
+                stack_push_after_top_terminal(&stack, reduce_br, UNDEFINED);
+
+                // PUSHES the input_symbol
+                if(input_symbol == id){
+                    // variable node
+                    node* sym_node = NULL;
+                    if(search(sym_table->root_ptr, input_token->str, sym_node)){
+                        stack_push(&stack, input_symbol, ((symbol_variable)sym_node->data)->var_type);
+                        // TO DO: GENERATE_CODE(PUSHS(sym_node)) - pushes to the stack variable defined in sym_node
+                    }
+                    else{
+                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                    }
+                }
+                else if(input_symbol == int_lit){
+                    // literal node
+                    stack_push(&stack, input_symbol, INT);
+                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes int literal to the stack
+                }
+                else if(input_symbol == string_lit){
+                     // literal node
+                    stack_push(&stack, input_symbol, STRING);
+                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes string literal to the stack
+                }
+                else if(input_symbol == float64_lit){
+                     // literal node
+                    stack_push(&stack, input_symbol, FLOAT);
+                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes float literal to the stack
+                }
+                else{
+                    // other possible input (e.g. +, -, ...)
+                    stack_push(&stack, input_symbol, UNDEFINED);
+                }
+
             case R:
-                // REDUCTION - >
+                // ---------------------------------- REDUCE - > --------------------------------- //
+
                 // Gets the rule to use and its elements 
                 reduce_rule reduce_rule;
                 expression_stack_node *reduce_element_0;
@@ -152,19 +196,45 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
                 stack_reduce_rule(&stack, &reduce_rule, reduce_element_0, 
                     reduce_element_1, reduce_element_2);
                 
-                // Does reduction and code generation
-                if(reduce_rule != unknown){
-                    // TO DO: SEMANTICS CONTROL AND EXPLICIT CAST
-                    // TO DO: GENERATE CODE
+                // SEMANTIC CHECK AND CODE_GENERATION
+                if(reduce_rule == operand){
+                    // NO_CODE_GENERATION - value has already been pushed to the stack
+                    if(reduce_element_0->type == UNDEFINED){
+                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                    }
+                }
+                else if(reduce_rule == lbrack_nt_rbrack){
+                    // NO_CODE_GENERATION - value has already been pushed to the stack
+                    if(reduce_element_1->type == UNDEFINED){
+                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                    }
+                }
 
-                    // Updates the stack 
+                // TO DO: SEMANTICS CONTROL AND EXPLICIT CAST
+                // TO DO: GENERATE CODE
+                else if(reduce_rule == nt_plus_nt || reduce_rule == nt_minus_nt
+                    || reduce_rule == nt_mul_nt || reduce_rule == nt_div_nt){
+                        if(reduce_element_0->type == UNDEFINED
+                            || reduce_element_0->type == UNDEFINED){
+                            // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                        }
+                    }
+                    else{
+                        // If reduce_rule == operand -> NO_CODE_GENERATION
+                        // NO_CODE_GENERATION - value has already been pushed during the stack shift
+                        if(reduce_element_0->type == UNDEFINED){
+                            // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                        }
+                    }
+
+                    // STACK UPDATE
                     // Pop - if rule had 3 elements (e.g. E -> E ... E) pops 4x (<E+E) else E -> i pops 2x (<i)
                     stack_pop(&stack, reduce_element_2 != NULL ? 4 : 2);
-                    // Pushes non-terminal to symtable and pushes reduced non-terminal to the stack (E -> ...)
-                    // stack_push(&stack, nt, );
+                    // Pushes reduced non-terminal to the stack
+                    stack_push(&stack, nt, UNDEFINED); // !!!!!!!!!! not accurete !!!!!!!!!!!!!!!!!
                 }
                 else{
-                    // TO DO: ERROR!!!!
+                    // TO DO: SEMANTIC_ERROR - UNKNOWN_REDUCTION_RULE
                 }
                 break;
         }

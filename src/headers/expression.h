@@ -104,8 +104,8 @@ typedef enum{
     neq,            /// !=
     less,           /// <
     less_eq,        /// <=
-    greater,           /// >
-    greater_eq         /// >=
+    greater,        /// >
+    greater_eq      /// >=
     id,             /// id
     int_lit,        /// int literal
     string_lit,     /// string literal

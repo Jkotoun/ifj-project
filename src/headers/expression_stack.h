@@ -12,16 +12,16 @@
 /**
  * @brief Represents stack node type
  */
-typedef struct {
+typedef struct expression_stack_node{
     expression_symbol symbol; // expression symbol type, e.g. id, $, ....
-    node **id_node; /// tree node of the variable in case of symbol type = id
+    varType type; /// represents type of the symbol (for type conversions and semantics check)
     struct expression_stack_node *next; /// ptr to next expression_stack_node
 } expression_stack_node;
 
 /**
  * @brief Represents stack that is used when analysing expressions
  */
-typedef struct {
+typedef struct expression_stack{
     expression_stack_node *top;
 } expression_stack;
 
@@ -31,11 +31,19 @@ typedef struct {
 void stack_init(expression_stack *stack);
 
 /**
- * @brief Pushes to the stack
+ * @brief Pushes symbol to the stack
  * @param symbol_type represents the actual "symbol"
- * @param id_node id_node from symtable if symbol = id
+ * @param type represents type of the symbol (for type conversions and semantics check)
  */
-void stack_push(expression_stack *stack, expression_symbol symbol, node **id_node);
+void stack_push(expression_stack *stack, expression_symbol symbol, varType type);
+
+/**
+ * @brief Pushes symbol to the stack after the top terminal
+ * Should be used when inserting < to the stack
+ * @param symbol_type represents the actual "symbol"
+ * @param type represents type of the symbol (for type conversions and semantics check)
+ */
+void stack_push_after_top_terminal(expression_stack *stack, expression_symbol symbol, varType type);
 
 /**
  * @brief Pops the stack

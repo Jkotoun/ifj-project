@@ -14,13 +14,27 @@ void stack_init(expression_stack *stack){
     stack->top = NULL;
 }
 
-void stack_push(expression_stack *stack, expression_symbol_type symbol, node **id_node){
+void stack_push(expression_stack *stack, expression_symbol_type symbol, varType type){
     expression_stack_node* push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
     if(push_node != NULL){
         push_node->symbol = symbol;
-        push_node->id_node = id_node;
+        push_node->type = type;
         push_node->next = stack->top;
         stack->top = push_node;
+    }
+}
+
+void stack_push_after_top_terminal(expression_stack *stack, expression_symbol symbol, varType type){
+    // Gets the top terminal
+    expression_stack_node *top_terminal;
+    stack_top_terminal(stack, top_terminal);
+    // Pushes new node
+    expression_stack_node* push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
+    if(push_node != NULL){
+        push_node->symbol = symbol;
+        push_node->type = type;
+        push_node->next = top_terminal->next;
+        top_terminal->next = push_node;
     }
 }
 
