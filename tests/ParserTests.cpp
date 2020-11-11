@@ -14,12 +14,12 @@ class ParserTests : public ::testing::TestWithParam<TestParam>
 {
 };
 
-std::vector<TestParam> ReadTestCasesFromDisk(std::string testFolder)
+std::vector<TestParam> ReadTestCasesFromDisk(std::string testFolder, int errcode)
 {
     std::vector<TestParam> params;
     testFolder = "../../tests/parserTestSources/" + testFolder;
-    DIR *d;
-    struct dirent *dir;
+    DIR* d;
+    struct dirent* dir;
     int n = testFolder.length();
     // declaring character array
     char char_array[n + 1];
@@ -40,7 +40,7 @@ std::vector<TestParam> ReadTestCasesFromDisk(std::string testFolder)
                 }
                 else
                 {
-                    params.push_back(TestParam(testFolder + "/" + dir->d_name, SYNTAX_ERR));
+                    params.push_back(TestParam(testFolder + "/" + dir->d_name, errcode));
                 }
             }
         }
@@ -67,22 +67,48 @@ TEST_P(ParserTests, ExitCodeMatches)
 INSTANTIATE_TEST_CASE_P(
     Basic,
     ParserTests,
-    testing::ValuesIn(ReadTestCasesFromDisk("basic")));
+    testing::ValuesIn(ReadTestCasesFromDisk("basic", SYNTAX_ERR)));
 
 INSTANTIATE_TEST_CASE_P(
     Expressions,
     ParserTests,
-    testing::ValuesIn(ReadTestCasesFromDisk("expressions")));
+    testing::ValuesIn(ReadTestCasesFromDisk("expressions", SYNTAX_ERR)));
 
 INSTANTIATE_TEST_CASE_P(
     Constructs,
     ParserTests,
-    testing::ValuesIn(ReadTestCasesFromDisk("constructs")));
+    testing::ValuesIn(ReadTestCasesFromDisk("constructs", SYNTAX_ERR)));
 
 INSTANTIATE_TEST_CASE_P(
     FuncCalls,
     ParserTests,
-    testing::ValuesIn(ReadTestCasesFromDisk("func_calls")));
+    testing::ValuesIn(ReadTestCasesFromDisk("func_calls", SYNTAX_ERR)));
+
+INSTANTIATE_TEST_CASE_P(
+    ARGS_RETURNS_COUNT,
+    ParserTests,
+    testing::ValuesIn(ReadTestCasesFromDisk("semantic/args_returns_count", ARGS_RETURNS_COUNT_ERR)));
+
+INSTANTIATE_TEST_CASE_P(
+    DivideByZero,
+    ParserTests,
+    testing::ValuesIn(ReadTestCasesFromDisk("semantic/divide_zero", DIVIDE_ZERO_ERR)));
+
+INSTANTIATE_TEST_CASE_P(
+    ExpressionCompatibility,
+    ParserTests,
+    testing::ValuesIn(ReadTestCasesFromDisk("semantic/expr_compat", DATATYPE_COMPATIBILITY_ERR)));
+
+INSTANTIATE_TEST_CASE_P(
+    OtherSemantics,
+    ParserTests,
+    testing::ValuesIn(ReadTestCasesFromDisk("semantic/others", OTHER_SEMANTIC_ERR)));
+
+INSTANTIATE_TEST_CASE_P(
+    Definitions,
+    ParserTests,
+    testing::ValuesIn(ReadTestCasesFromDisk("semantic/var_def_err", VAR_DEFINITION_ERR))
+);
 
 // TEST_F(ParserTests, BasicFunctions)
 // {
