@@ -21,7 +21,7 @@ set(Headers
     src/headers/parser.h;
     src/headers/parser_rules.h;
     src/headers/parser_helpers.h;
-    src/headers/varType_queue.h;
+    src/headers/queue.h;
 )
 set(Sources
     src/str.c 
@@ -29,7 +29,7 @@ set(Sources
     src/symtable.c
     src/dl_list.c
     src/parser.c
-    src/varType_queue.c
+    src/queue.c
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)

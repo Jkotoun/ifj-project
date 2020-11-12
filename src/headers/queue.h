@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "symtable.h"
+#include "scanner.h"
 
 #define MAX_QUEUE 50
 // int QUEUE_SIZE = MAX_QUEUE;
@@ -32,18 +33,36 @@ typedef struct
     varType arr[MAX_QUEUE];                           /* pole pro uložení hodnot */
     int f_index;                                       /* index prvního prvku */
     int b_index;                                  /* index první volné pozice */
-} tQueue;
+} typeQueue;
+
+typedef struct
+{
+    token arr[MAX_QUEUE];                           /* pole pro uložení hodnot */
+    int f_index;                                       /* index prvního prvku */
+    int b_index;                                  /* index první volné pozice */
+} tokenQueue;
+
+
 /* Hlavičky funkcí pro práci s frontou. */
 void queueError(int error_code);
-void queueInit(tQueue* q);
-int queueEmpty(const tQueue* q);
-int queueFull(const tQueue* q);
-void queueFront(const tQueue* q, varType* c);
-void queueRemove(tQueue* q);
-void queueGet(tQueue* q, varType* c);
-void queueUp(tQueue* q, varType c);
-varType* queueToArray(tQueue* q);
-int queueLength(tQueue* q);
+void typeQueueInit(typeQueue* q);
+int typeQueueEmpty(const typeQueue* q);
+int typeQueueFull(const typeQueue* q);
+void typeQueueFront(const typeQueue* q, varType* c);
+void typeQueueRemove(typeQueue* q);
+void typeQueueGet(typeQueue* q, varType* c);
+void typeQueueUp(typeQueue* q, varType c);
+varType* typeQueueToArray(typeQueue* q);
+int typeQueueLength(typeQueue* q);
 
+void tokenQueueInit(tokenQueue* q);
+int tokenQueueEmpty(const tokenQueue* q);
+int tokenQueueFull(const tokenQueue* q);
+void tokenQueueFront(const tokenQueue* q, token* token);
+void tokenQueueRemove(tokenQueue* q);
+void tokenQueueGet(tokenQueue* q, token* token);
+void tokenQueueUp(tokenQueue* q, token token);
+token* tokenQueueToArray(tokenQueue* q);
+int tokenQueueLength(tokenQueue* q);
 
 #endif

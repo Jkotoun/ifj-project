@@ -4,7 +4,7 @@
 int main(int argc, char const* argv[])
 {
     //TESTING ONLY
-    stdin = fopen("../tests/parserTestSources/semantic/args_returns_count/func_wrong_return_number-e.go", "r");
+    stdin = fopen("../tests/parserTestSources/semantic/others/func_multiple_return_vars.go", "r");
     parser_start();
     fprintf(stderr, "SUCC\n");
     return 0;
