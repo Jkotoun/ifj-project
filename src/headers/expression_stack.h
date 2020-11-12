@@ -34,41 +34,51 @@ void stack_init(expression_stack *stack);
  * @brief Pushes symbol to the stack
  * @param symbol_type represents the actual "symbol"
  * @param type represents type of the symbol (for type conversions and semantics check)
+ * @return EXIT_CODE see error_codes.h
  */
-void stack_push(expression_stack *stack, expression_symbol symbol, varType type);
+int stack_push(expression_stack *stack,
+    expression_symbol symbol,
+    varType type);
 
 /**
  * @brief Pushes symbol to the stack after the top terminal
  * Should be used when inserting < to the stack
  * @param symbol_type represents the actual "symbol"
  * @param type represents type of the symbol (for type conversions and semantics check)
+ * @return EXIT_CODE see error_codes.h
  */
-void stack_push_after_top_terminal(expression_stack *stack, expression_symbol symbol, varType type);
+int stack_push_after_top_terminal(expression_stack *stack, 
+    expression_symbol symbol,
+    varType type);
 
 /**
  * @brief Pops the stack
  * @param symbol_type represents the actual "symbol"
  * @param amount amount of pops, default = 1 more if multiple is required
+ * @return EXIT_CODE see error_codes.h
  */
-void stack_pop(expression_stack *stack, int amount = 1);
+int stack_pop(expression_stack *stack, int amount = 1);
 
 /**
  * @brief Gets the top terminal from stack
  * @param stack represents the expression_stack
  * @param out_top_terminal represents the output top terminal
+ * @return EXIT_CODE see error_codes.h
  */
-void stack_top_terminal(expression_stack *stack, expression_stack_node *out_top_terminal);
+int stack_top_terminal(expression_stack *stack, 
+    expression_stack_node *out_top_terminal);
 
 /**
- * @brief Detects wich rule should be used for reduction and return element(s) appearing in the rule
- * @param out_reduce_rule returns rule that should be used for reduction
+ * @brief Detects all reduction element(s) appearing in some rule
  * @param out_reduce_element_0 returns the last or an only element appearing in the rule if only one element in the rule
  * @param out_reduce_element_1 returns the seccond element appearing in the rule if any
  * @param out_reduce_element_2 returns the first element appearing in the rule if any
+ * @return EXIT_CODE see error_codes.h
  */
-void stack_reduce_rule(expression_stack *stack, reduce_rule *out_reduce_rule, 
-    expression_stack_node *out_reduce_element_0, expression_stack_node *out_reduce_element_1,
-    expression_stack_node *out_reduce_element_2)
+int stack_reduction_elements(expression_stack *stack,
+    expression_stack_node *out_reduce_element_0, 
+    expression_stack_node *out_reduce_element_1,
+    expression_stack_node *out_reduce_element_2);
 
 /**
  * @brief Frees all alocated resources
