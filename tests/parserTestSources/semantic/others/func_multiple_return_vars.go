@@ -1,6 +1,7 @@
 package main
 
-func zadar(a int)(int,int) {
+func zadar(a float64)(string,float64) {
+	a=6
 	return 5,6
 }
 

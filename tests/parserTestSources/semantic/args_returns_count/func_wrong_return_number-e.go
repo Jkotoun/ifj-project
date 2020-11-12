@@ -7,7 +7,7 @@ func zadar(a int)(int,int) {
 
 func main()() {
 	s1:=5
-	s1:=zadar(5)
+	s1=zadar(5)
 }
 
 
