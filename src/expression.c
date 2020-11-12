@@ -143,10 +143,14 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
 
         // Gets the precedence from the table and perform suitable operation
         precedence precedence_evaluation = (precedence)precedence_table[top_stack_terminal_group][input_terminal_group];
-        switch(precedence_evaluation){
+        switch(precedence_evaluation)
+        {
             case Eq:
                 // ---------------------------------- EQUAL - = --------------------------------- //
+                // May happen only if top_stack_terminal_group = '(' and input_terminal_group = ')'
+                // NO_CODE_GENERATION and NO_SEMANTIC_CHECK needed = (nt)
                 stack_push(&stack, input_symbol, UNDEFINED);
+                break;
                 
             case S:
                 // ---------------------------------- SHIFT - < --------------------------------- //
@@ -154,41 +158,41 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
                 stack_push_after_top_terminal(&stack, reduce_br, UNDEFINED);
 
                 // PUSHES the input_symbol
-                if(input_symbol == id){
-                    // variable node
-                    node* sym_node = NULL;
-                    if(search(sym_table->root_ptr, input_token->str, sym_node)){
-                        stack_push(&stack, input_symbol, ((symbol_variable)sym_node->data)->var_type);
-                        // TO DO: GENERATE_CODE(PUSHS(sym_node)) - pushes to the stack variable defined in sym_node
-                    }
-                    else{
-                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
-                    }
+                switch(input_symbol){
+                    case id:
+                        // variable node
+                        node* sym_node = NULL;
+                        if(search(sym_table->root_ptr, input_token->str, sym_node)){
+                            stack_push(&stack, input_symbol, ((symbol_variable)sym_node->data)->var_type);
+                            // TO DO: GENERATE_CODE(PUSHS(sym_node)) - pushes to the stack variable defined in sym_node
+                        }
+                        else{
+                            // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                        }
+                        break;
+                    case int_lit:
+                        stack_push(&stack, input_symbol, INT);
+                        // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes to the stack
+                        break;
+                    case float64_lit:
+                        stack_push(&stack, input_symbol, FLOAT);
+                        // TO DO: GENERATE_CODE(PUSHS(input_token->decimal)) - pushes to the stack
+                        break;
+                    case string_lit:
+                        stack_push(&stack, input_symbol, STRING);
+                        // TO DO: GENERATE_CODE(PUSHS(input_token->str)) - pushes to the stack
+                        break;
+                    default:
+                        // other possible input (e.g. +, -, ...)
+                        stack_push(&stack, input_symbol, UNDEFINED);
+                        break;
                 }
-                else if(input_symbol == int_lit){
-                    // literal node
-                    stack_push(&stack, input_symbol, INT);
-                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes int literal to the stack
-                }
-                else if(input_symbol == string_lit){
-                     // literal node
-                    stack_push(&stack, input_symbol, STRING);
-                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes string literal to the stack
-                }
-                else if(input_symbol == float64_lit){
-                     // literal node
-                    stack_push(&stack, input_symbol, FLOAT);
-                    // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes float literal to the stack
-                }
-                else{
-                    // other possible input (e.g. +, -, ...)
-                    stack_push(&stack, input_symbol, UNDEFINED);
-                }
+                break;               
 
             case R:
                 // ---------------------------------- REDUCE - > --------------------------------- //
 
-                // Gets the rule to use and its elements 
+                // RULE IDENTIFICATION AND REDUCTION ELEMENTS
                 reduce_rule reduce_rule;
                 expression_stack_node *reduce_element_0;
                 expression_stack_node *reduce_element_1;
@@ -196,48 +200,109 @@ int parse_expression(table sym_table, token *token_arr, int token_count)
                 stack_reduce_rule(&stack, &reduce_rule, reduce_element_0, 
                     reduce_element_1, reduce_element_2);
                 
-                // SEMANTIC CHECK AND CODE_GENERATION
-                if(reduce_rule == operand){
-                    // NO_CODE_GENERATION - value has already been pushed to the stack
-                    if(reduce_element_0->type == UNDEFINED){
-                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
-                    }
-                }
-                else if(reduce_rule == lbrack_nt_rbrack){
-                    // NO_CODE_GENERATION - value has already been pushed to the stack
-                    if(reduce_element_1->type == UNDEFINED){
-                        // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
-                    }
-                }
-
-                // TO DO: SEMANTICS CONTROL AND EXPLICIT CAST
-                // TO DO: GENERATE CODE
-                else if(reduce_rule == nt_plus_nt || reduce_rule == nt_minus_nt
-                    || reduce_rule == nt_mul_nt || reduce_rule == nt_div_nt){
-                        if(reduce_element_0->type == UNDEFINED
-                            || reduce_element_0->type == UNDEFINED){
-                            // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
-                        }
-                    }
-                    else{
-                        // If reduce_rule == operand -> NO_CODE_GENERATION
-                        // NO_CODE_GENERATION - value has already been pushed during the stack shift
+                // CODE GENERATION AND SEMANTIC CHECK
+                varType reduced_type = UNDEFINED;
+                switch(reduce_rule){
+                    case operand:
+                        // NO_CODE_GENERATION - value has already been pushed to the stack
                         if(reduce_element_0->type == UNDEFINED){
                             // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
                         }
-                    }
+                        reduced_type = reduce_element_0->type;
+                        break;
+                    case lbrack_nt_rbrack:
+                        // NO_CODE_GENERATION - value has already been pushed to the stack
+                        if(reduce_element_1->type == UNDEFINED){
+                            // TO DO: SEMANTIC_ERROR - UNDEFINED_VAR
+                        }
+                        reduced_type = reduce_element_1->type;
+                        break;
+                    case nt_plus_nt:
+                        if(reduce_element_0->type == STRING && reduce_element_2->type == STRING){
+                            // TO DO: GENERATE_CODE(CONCAT) and GENERATE_CODE(PUSHS(result of concat)) 
+                            // concates strings (symbols on stack) and pushes output to the stack
+                            reduced_type = STRING;
+                        }
+                        else if(reduce_element_0->type == reduce_element_2->type
+                            && reduce_element_0->type != BOOL
+                            && reduce_element_0->type != UNDEFINED){
+                            // TO DO: GENERATE_CODE(reduce_rule) - performs ADDS on the stack
+                            reduced_type = reduce_element_0->type;
+                        }
+                        else{
+                            // TO DO: SEMANTIC_ERROR - INCORRECT_TYPE_COMBINATION
+                        }
+                        break;
+                    case nt_minus_nt:
+                    case nt_mul_nt:
+                        if(reduce_element_0->type == reduce_element_2->type
+                            && reduce_element_0->type != BOOL 
+                            && reduce_element_0->type != STRING
+                            && reduce_element_0->type != UNDEFINED){
+                            // TO DO: GENERATE_CODE(reduce_rule) - performs SUBS/MULS on the stack
+                            reduced_type = reduce_element_0->type;
+                        }
+                        else{
+                            // TO DO: SEMANTIC_ERROR - INCORRECT_TYPE_COMBINATION
+                        }
+                        break;
+                    case nt_div_nt:
+                        if(reduce_element_0->type == reduce_element_2->type
+                            && reduce_element_0->type == INT){
+                            // TO DO: GENERATE_CODE(reduce_rule) - performs IDIVS - integer division on the stack
+                            reduced_type = INT;
+                        }
+                        else if(reduce_element_0->type == reduce_element_2->type
+                            && reduce_element_0->type == FLOAT){
+                            // TO DO: GENERATE_CODE(reduce_rule) - performs DIVS - floating point division on the stack
+                            reduced_type = FLOAT;
+                        }
+                        else{
+                            // TO DO: SEMANTIC_ERROR - INCORRECT_TYPE_COMBINATION
+                        }
+                        break;
+                    case nt_eq_nt:
+                    case nt_neq_nt:
+                    case nt_less_nt:
+                    case nt_less_eq_nt:
+                    case nt_more_nt:
+                    case nt_more_eq_nt:
+                        if(reduce_element_0->type == reduce_element_2->type
+                            && reduce_element_0->type != BOOL
+                            && reduce_element_0->type != UNDEFINED){
+                            // TO DO: GENERATE_CODE(reduce_rule) - performs comparision on the stack
+                            // uses LTS/GTS/EQS determined by the reduce_rule
+                            // uses NOTS if negation needed nt_neq_nt (!=) -> EQS + NOTS 
+                            reduced_type = BOOL;
+                        }
+                        else{
+                            // TO DO: SEMANTIC_ERROR - INCORRECT_TYPE_COMBINATION
+                        }
+                        break;
+                    default:
+                        // TO DO: SEMANTIC_ERROR - UNKNOWN_REDUCTION_RULE
+                        break;
+                }             
 
-                    // STACK UPDATE
-                    // Pop - if rule had 3 elements (e.g. E -> E ... E) pops 4x (<E+E) else E -> i pops 2x (<i)
-                    stack_pop(&stack, reduce_element_2 != NULL ? 4 : 2);
-                    // Pushes reduced non-terminal to the stack
-                    stack_push(&stack, nt, UNDEFINED); // !!!!!!!!!! not accurete !!!!!!!!!!!!!!!!!
+                // STACK UPDATE
+                // Pop - if rule had 3 elements (e.g. E -> E ... E) pops 4x (<E+E) else E -> i pops 2x (<i)
+                stack_pop(&stack, reduce_element_2 != NULL ? 4 : 2);
+                // Pushes reduced non-terminal to the stack
+                stack_push(&stack, nt, reduced_type);
+                break;
+
+            case Er:
+                // ---------------------------------- REDUCE - {}  --------------------------------- //
+                // May happen only if the input is invalid or when the end of the expression is reached
+                
+                if (input_symbol == dollar && top_stack_terminal->symbol == dollar){
+                    // Expression has been successfuly parsed
+                    // TO DO: OUT - PARSING_AND_CODE_GENERATION_OK
                 }
                 else{
-                    // TO DO: SEMANTIC_ERROR - UNKNOWN_REDUCTION_RULE
+                    // TO DO: SYNTAX_ERROR
                 }
                 break;
         }
     }
-
 }
