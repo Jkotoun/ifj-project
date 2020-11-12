@@ -49,6 +49,16 @@ int strAddChar(string *s1, char c)
    s1->str[s1->length] = '\0';
    return STR_SUCCESS;
 }
+int strAddConstStr(string *str, char* source)
+{
+   int i = 0;
+   while(source[i] != '\0')
+   {
+      strAddChar(str, source[i]);
+      i++;
+   }
+   return STR_SUCCESS;
+}
 
 int strCopyString(string *s1, string *s2)
 {

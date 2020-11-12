@@ -42,4 +42,6 @@ int str_ord(string *str, int index, int *output_ascii);
 //stores given ascii value of char as 1 char string (to output string)
 //return 0 on success, 1 if ASCII value is out of <0,255>
 int ascii_to_string(int ascii, string *output);
+//add char* to string (char* has to end with \0)
+int strAddConstStr(string *str, char* source);
 #endif
