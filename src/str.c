@@ -54,7 +54,9 @@ int strAddConstStr(string *str, char* source)
    int i = 0;
    while(source[i] != '\0')
    {
-      strAddChar(str, source[i]);
+      if(strAddChar(str, source[i])==STR_ERROR){
+         return STR_ERROR;
+      }
       i++;
    }
    return STR_SUCCESS;
