@@ -1,4 +1,4 @@
-#include "headers/parser.h"
+#include "parser.h"
 #include <stdio.h>
 
 int main(int argc, char const *argv[])

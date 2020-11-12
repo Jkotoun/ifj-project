@@ -1,8 +1,8 @@
 
 extern "C"
 {
-#include "../src/headers/parser.h"
-#include "../src/headers/error_codes.h"
+#include "../src/parser.h"
+#include "../src/error_codes.h"
 #include <dirent.h>
 #include <stdio.h>
 }

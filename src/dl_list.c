@@ -4,8 +4,8 @@
  * Double linked list for local symtables of function (1 for each scope)
  * Interface and implementation of some functions are used from my implementation of IAL first project
 */
-#include "headers/dl_list.h"
-#include "headers/error_codes.h"
+#include "dl_list.h"
+#include "error_codes.h"
 
 
 int DLInitList (tDLList *list) {

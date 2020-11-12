@@ -1,8 +1,8 @@
 
 extern "C" {
-#include "../src/headers/symtable.h"
-#include "../src/headers/error_codes.h"
-#include "../src/headers/str.h"
+#include "../src/symtable.h"
+#include "../src/error_codes.h"
+#include "../src/str.h"
 }
 #include <gtest/gtest.h>
 

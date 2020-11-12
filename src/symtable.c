@@ -5,8 +5,8 @@
  * Some functions for tree data type are used from my implementation of IAL 2. project 
  * 
 */
-#include "headers/symtable.h"
-#include "headers/error_codes.h"
+#include "symtable.h"
+#include "error_codes.h"
 #include <string.h>
 int init(node **rootptr)
 {
