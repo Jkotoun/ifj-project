@@ -21,6 +21,7 @@ set(Headers
     src/parser.h;
     src/parser_rules.h;
     src/parser_helpers.h;
+    src/queue.h;
 )
 set(Sources
     src/str.c 
@@ -28,6 +29,7 @@ set(Sources
     src/symtable.c
     src/dl_list.c
     src/parser.c
+    src/queue.c
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)

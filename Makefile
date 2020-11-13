@@ -3,9 +3,9 @@
 
 all: main
 
-main: 
+main:
 	cd src; make
-	
+
 test: build 
 	cd build && cmake .. && make
 	cd build/tests ; ./ScannerTest ; ./ListTest ; ./BTreeTest; ./ParserTest
