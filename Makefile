@@ -3,7 +3,7 @@
 
 all: main
 
-main:
+main: FORCE
 	cd src; make
 
 test: build 

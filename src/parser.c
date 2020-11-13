@@ -49,7 +49,6 @@ void parser_start()
 
     init(&functions_symtable);
     typeQueueInit(&typeQ);
-    //TODO: check if package MAIN is defined
     //TODO: after program ends check for undefined functions
 
     DLInitList(&scoped_symtables);
@@ -64,9 +63,15 @@ void parser_start()
     strAddChar(&main_str, 'i');
     strAddChar(&main_str, 'n');
 
-    if (!search(&functions_symtable, &main_str, &main_node))
+    if (!search(&functions_symtable, &main_str, &main_node)) //main not defined
     {
         handle_error(OTHER_SEMANTIC_ERR);
+    }
+
+    if (contains_undef_func(&functions_symtable))
+    {
+        handle_error(OTHER_SEMANTIC_ERR);
+
     }
     exit(0);
 }
