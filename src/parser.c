@@ -47,16 +47,27 @@ void parser_start()
     current_token.str = &str;
     current_token.token_str_raw = &rawStr;
 
-    // functions_symtable = &rootNode;
-    // scoped_symtables = &list;
-
     init(&functions_symtable);
     typeQueueInit(&typeQ);
-    // insert_node_func(&functions_symtable, "test", 0, 0, 0, 0, true);
+    //TODO: check if package MAIN is defined
+    //TODO: after program ends check for undefined functions
 
     DLInitList(&scoped_symtables);
 
     rule_prog();
+
+    node* main_node;
+    string main_str;
+    strInit(&main_str);
+    strAddChar(&main_str, 'm');
+    strAddChar(&main_str, 'a');
+    strAddChar(&main_str, 'i');
+    strAddChar(&main_str, 'n');
+
+    if (!search(&functions_symtable, &main_str, &main_node))
+    {
+        handle_error(OTHER_SEMANTIC_ERR);
+    }
     exit(0);
 }
 
@@ -86,9 +97,10 @@ void rule_prog()
 void rule_prolog()
 {
     assert_keyword_is(PACKAGE_KEYWORD);
-
     get_next_token();
+
     assert_token_is(ID_TOKEN);
+    assert_true(strCmpConstStr(current_token.str, "main") == 0, OTHER_SEMANTIC_ERR);
 }
 
 void rule_eols_next()
@@ -534,7 +546,7 @@ void rule_expr_next()
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN)
     {
-        //TODO CALL EXPRESSION module
+        //TODO: CALL EXPRESSION module
         rule_term();
 
         get_next_token();
@@ -609,8 +621,8 @@ void func_handle_error(int errType, char const* func)
     switch (errType)
     {
         case SYNTAX_ERR:
-            fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' on line %d\n",
-                func, token, current_token.source_line);
+            fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
+                func, token, current_token.type, current_token.source_line);
             exit(SYNTAX_ERR);
             break;
         case LEX_ERR:
@@ -619,6 +631,8 @@ void func_handle_error(int errType, char const* func)
             exit(LEX_ERR);
 
         default:
+            fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
+                func, errType, current_token.source_line);
             exit(errType);
     }
 }
@@ -648,7 +662,7 @@ void func_assert_true(bool expression, int errno, char const* func)
 {
     if (!expression)
     {
-        func_handle_error(SYNTAX_ERR, func);
+        func_handle_error(errno, func);
     }
 }
 
@@ -738,17 +752,16 @@ varType* tokenArr_to_varTypeArr(token* tokenArr, int count)
 bool get_varType_from_symtable(string* varName, varType* type)
 {
     table* symtable = scoped_symtables.Last;
-    node* rootNode = scoped_symtables.Last->root_ptr;
     node* foundNode;
     while (symtable != NULL)
     {
+        node* rootNode = symtable->root_ptr;
         if (rootNode != NULL && search(&rootNode, varName, &foundNode))
         {
             *type = ((symbol_variable*)foundNode->data)->var_type;
             return true;
         }
         symtable = symtable->prev_table;
-        rootNode = symtable->root_ptr;
     }
     return false;
 }

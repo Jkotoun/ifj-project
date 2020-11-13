@@ -60,7 +60,8 @@
 			"typeinfo": "cpp",
 			"variant": "cpp",
 			"cerrno": "c",
-			"dl_list.h": "c"
+			"dl_list.h": "c",
+			"numeric": "cpp"
 		}
 	
 	}
