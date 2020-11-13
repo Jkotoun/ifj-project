@@ -189,6 +189,24 @@ int insert_node_var(node **rootptr, string *name, varType var_type)
     return OK;
 }
 
+bool contains_undef_func(node **rootptr)
+{
+
+    if (*rootptr != NULL)
+    {
+        symbol_function *func_data = (symbol_function *)((*rootptr)->data);
+        if (!func_data->defined)
+        {
+            return true;
+        }
+        if (contains_undef_func(&((*rootptr)->l_ptr)) || contains_undef_func(&((*rootptr)->r_ptr)))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 int free_node_memory(node *nodeptr)
 {
     if (nodeptr != NULL)
