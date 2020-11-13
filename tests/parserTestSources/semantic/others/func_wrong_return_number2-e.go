@@ -6,7 +6,7 @@ func zadar(a int)(int,int,int) {
 
 func main()() {
 	s2:=0
-	s1 = zadar(0)
+	s2 = zadar(0)
 }
 
 

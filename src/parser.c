@@ -417,6 +417,12 @@ void rule_statement_action_next()
     {
         leftTokenArr = tokenQueueToArray(&tokenQ);
         leftSideLength = tokenQueueLength(&tokenQ);
+        for (size_t i = 0; i < leftSideLength; i++)
+        {
+            assert_true(check_var_defined(leftTokenArr[i].str), VAR_DEFINITION_ERR);
+        }
+
+
         get_next_token();
         rule_statement_value_next();
     }
@@ -471,6 +477,9 @@ void rule_arg_expr_next(string* prevTokenName)
     }
     else
     {
+        //TODO: add define check
+        assert_true(check_var_defined(prevTokenName), VAR_DEFINITION_ERR);
+
         rule_expr_end_next();
         rule_expr_n_next();
     }
@@ -519,6 +528,8 @@ void rule_definition_next()
 {
     if (current_token.type == ID_TOKEN)
     {
+        //TODO: add define check
+
         get_next_token();
         assert_token_is(SHORT_VAR_DECLARATION_TOKEN);
 
@@ -531,6 +542,9 @@ void rule_assignment_next()
 {
     if (current_token.type == ID_TOKEN)
     {
+        //TODO: add define check
+        assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
+
         get_next_token();
         assert_token_is(ASSIGNMENT_TOKEN);
 
@@ -566,6 +580,11 @@ void rule_expr_next()
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN)
     {
+        if (current_token.type == ID_TOKEN)
+        {
+            assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
+        }
+
         //TODO: CALL EXPRESSION module
         rule_term();
 
@@ -592,6 +611,7 @@ void rule_term()
 {
     if (current_token.type == ID_TOKEN)
     {
+        assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
         return;
     }
     else
@@ -772,7 +792,7 @@ varType* tokenArr_to_varTypeArr(token* tokenArr, int count)
     {
         if (tokenArr[i].type == ID_TOKEN)
         {
-            if (!get_varType_from_symtable(tokenArr[i].str, &typeArr[i]))
+            if (get_varType_from_symtable(tokenArr[i].str, &typeArr[i]) == -1)
             {
                 handle_error(VAR_DEFINITION_ERR);
             }
@@ -822,6 +842,16 @@ varType get_varType_from_literal(token_type type)
             handle_error(SYNTAX_ERR);
             break;
     }
+}
+
+bool check_var_defined(string* varName)
+{
+    varType _;
+    int res = get_varType_from_symtable(varName, &_);
+    if (res == -1)
+        return false;
+    else
+        return true;
 }
 
 string* get_token_str(token* token)
