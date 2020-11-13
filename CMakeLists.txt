@@ -11,17 +11,17 @@ enable_testing()
 add_subdirectory(tests/googletest)
 
 set(Headers
-    src/headers/error_codes.h;
-    src/headers/scanner.h;
-    src/headers/str.h;
-    src/headers/dl_list.h;
-    src/headers/code_gen.h;
-    src/headers/expression.h;
-    src/headers/symtable.h;
-    src/headers/parser.h;
-    src/headers/parser_rules.h;
-    src/headers/parser_helpers.h;
-    src/headers/queue.h;
+    src/error_codes.h;
+    src/scanner.h;
+    src/str.h;
+    src/dl_list.h;
+    src/code_gen.h;
+    src/expression.h;
+    src/symtable.h;
+    src/parser.h;
+    src/parser_rules.h;
+    src/parser_helpers.h;
+    src/queue.h;
 )
 set(Sources
     src/str.c 

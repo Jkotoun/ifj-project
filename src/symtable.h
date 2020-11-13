@@ -66,6 +66,8 @@ bool search(node **rootptr, string *name, node** found_node);
 int insert_node_func(node **rootptr, string *name, unsigned return_type_count, varType return_types[],unsigned params_count, varType params_types[], bool defined);
 //insert node into local variable table
 int insert_node_var(node **rootpr, string *name, varType var_type);
+//checks if any function from global functions symtable is undefined 
+bool contains_undef_func(node **rootptr);
 //free all memory for all types of nodes
 int free_node_memory(node *nodeptr);
 //dispose tree

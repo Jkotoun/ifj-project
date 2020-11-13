@@ -5,8 +5,8 @@
  * Some functions for tree data type are used from my implementation of IAL 2. project
  *
 */
-#include "headers/symtable.h"
-#include "headers/error_codes.h"
+#include "symtable.h"
+#include "error_codes.h"
 #include <string.h>
 int init(node** rootptr)
 {
@@ -187,6 +187,24 @@ int insert_node_var(node** rootptr, string* name, varType var_type)
     }
     ((symbol_variable*)(*ptrToNodePtr)->data)->var_type = var_type;
     return OK;
+}
+
+bool contains_undef_func(node** rootptr)
+{
+
+    if (*rootptr != NULL)
+    {
+        symbol_function* func_data = (symbol_function*)((*rootptr)->data);
+        if (!func_data->defined)
+        {
+            return true;
+        }
+        if (contains_undef_func(&((*rootptr)->l_ptr)) || contains_undef_func(&((*rootptr)->r_ptr)))
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 int free_node_memory(node* nodeptr)

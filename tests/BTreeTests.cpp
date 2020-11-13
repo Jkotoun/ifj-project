@@ -1,8 +1,8 @@
 
 extern "C" {
-#include "../src/headers/symtable.h"
-#include "../src/headers/error_codes.h"
-#include "../src/headers/str.h"
+#include "../src/symtable.h"
+#include "../src/error_codes.h"
+#include "../src/str.h"
 }
 #include <gtest/gtest.h>
 
@@ -110,8 +110,9 @@ TEST_F(BTreeTests, FuncTreeTest)
     EXPECT_EQ(insert_node_func(&rootptr,&right,0,NULL,0,NULL,true), OK);
 
     EXPECT_EQ(insert_node_func(&rootptr,&left_right,1,returns2,3,params,true), OK);
-
+    EXPECT_FALSE(contains_undef_func(&rootptr));
     EXPECT_EQ(insert_node_func(&rootptr,&left_left,0,NULL,1,params2,false), OK);
+    EXPECT_TRUE(contains_undef_func(&rootptr));
     EXPECT_EQ(insert_node_func(&rootptr,&right_right,1,returns2,1,params2,true), OK);
     EXPECT_EQ(insert_node_func(&rootptr,&right_left,2,returns,1,params2,true), OK);
     string non_existing;

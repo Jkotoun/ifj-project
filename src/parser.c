@@ -7,15 +7,15 @@
  * 2: rules that read 1 token into next rule end with suffix "_next".
 */
 
-#include "headers/parser.h"
-#include "headers/parser_rules.h"
-#include "headers/parser_helpers.h"
-#include "headers/scanner.h"
-#include "headers/symtable.h"
-#include "headers/dl_list.h"
-#include "headers/error_codes.h"
-#include "headers/queue.h"
+#include "parser.h"
+#include "parser_rules.h"
+#include "parser_helpers.h"
+#include "scanner.h"
+#include "symtable.h"
+#include "error_codes.h"
+#include "queue.h"
 #include <string.h>
+#include "dl_list.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
