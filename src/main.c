@@ -1,10 +1,11 @@
-#include "headers/parser.h"
+#include "parser.h"
 #include <stdio.h>
 
 int main(int argc, char const* argv[])
 {
-    stdin = fopen("../test.go", "r");
+    //TESTING ONLY
+    // stdin = fopen("../tests/parserTestSources/semantic/others/undef_main_pckg-e.go", "r");
     parser_start();
-    fprintf(stderr, "SUCC\n");
+    // fprintf(stderr, "SUCC\n");
     return 0;
 }

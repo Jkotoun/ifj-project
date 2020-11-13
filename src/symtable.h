@@ -7,6 +7,7 @@
 #ifndef symtable_h
 #define symtable_h
 #include "dl_list.h"
+#include "str.h"
 #include <stdbool.h>
 
 typedef enum varType
@@ -26,7 +27,7 @@ typedef enum node_type
 //tree node - function (global table) or variable (local table)
 typedef struct node
 {
-	char *name; 
+	string *name; 
 	node_type type; //func or var
 	struct node *l_ptr; //tree links
 	struct node *r_ptr;
@@ -61,11 +62,13 @@ typedef struct
 //inits rootptr to NULL
 int init(node **rootptr);
 //returns if node with name is in tree and if yes, stores pointer to  found_node
-bool search(node **rootptr, char *name, node** found_node);
+bool search(node **rootptr, string *name, node** found_node);
 //insert node into global function table
-int insert_node_func(node **rootptr, char* name, unsigned return_type_count, varType return_types[],unsigned params_count, varType params_types[], bool defined);
+int insert_node_func(node **rootptr, string *name, unsigned return_type_count, varType return_types[],unsigned params_count, varType params_types[], bool defined);
 //insert node into local variable table
-int insert_node_var(node **rootpr, char* name, varType var_type);
+int insert_node_var(node **rootpr, string *name, varType var_type);
+//checks if any function from global functions symtable is undefined 
+bool contains_undef_func(node **rootptr);
 //free all memory for all types of nodes
 int free_node_memory(node *nodeptr);
 //dispose tree

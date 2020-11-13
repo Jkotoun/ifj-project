@@ -1,9 +1,9 @@
 
 extern "C"
 {
-#include "../src/headers/str.h"
-#include "../src/headers/scanner.h"
-#include "../src/headers/error_codes.h"
+#include "../src/str.h"
+#include "../src/scanner.h"
+#include "../src/error_codes.h"
 }
 #include <gtest/gtest.h>
 
@@ -12,11 +12,13 @@ class ScannerTests : public ::testing::Test
 protected:
    string str;
    token token_var;
+   string raw_str;
    void SetUp()
    {
-
+      strInit(&raw_str);
       strInit(&str);
       token_var.str = &str;
+      token_var.token_str_raw = &raw_str;
    }
    void TearDown()
    {
@@ -53,6 +55,8 @@ TEST_F(ScannerTests, CommentsRemoveTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, IF_KEYWORD);
+   char expected[] = "if/";
+   EXPECT_EQ(strcmp(strGetStr(token_var.token_str_raw),expected), 0);
    EXPECT_EQ(token_var.source_line, 2);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
@@ -63,6 +67,8 @@ TEST_F(ScannerTests, CommentsRemoveTest)
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, KEYWORD_TOKEN);
    EXPECT_EQ(token_var.keyword, FOR_KEYWORD);
+   char expected2[] = "for/";
+   EXPECT_EQ(strcmp(strGetStr(token_var.token_str_raw),expected2), 0);
    EXPECT_EQ(get_token(&token_var), OK);
    EXPECT_EQ(token_var.type, EOL_TOKEN);
    EXPECT_EQ(get_token(&token_var), OK);

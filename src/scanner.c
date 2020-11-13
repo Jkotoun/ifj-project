@@ -5,9 +5,9 @@
 */
 #include <stdio.h>
 #include <ctype.h>
-#include "headers/str.h"
-#include "headers/scanner.h"
-#include "headers/error_codes.h"
+#include "str.h"
+#include "scanner.h"
+#include "error_codes.h"
 #include <stdlib.h>
 
 
@@ -43,6 +43,7 @@ int get_token(token *token)
 {
     int c;
     strClear(token->str);
+    strClear(token->token_str_raw);
     if(token == NULL)
     {
         return INTERNAL_COMPILER_ERR;
@@ -52,6 +53,13 @@ int get_token(token *token)
     while(1)
     {   
         c = getc(stdin);
+        if(!isspace(c) && c != EOF)
+        {
+            if(strAddChar(token->token_str_raw,c) == STR_ERROR)
+            {
+                return INTERNAL_COMPILER_ERR;
+            }
+        }
         switch(scanner_state)
         {
             case INITIAL_STATE:
