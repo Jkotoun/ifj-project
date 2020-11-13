@@ -1,9 +1,9 @@
-#include "headers/queue.h"
+#include "queue.h"
 
 void queueError(int error_code)
 {
     /*
-** Vytiskne upozornění na to, že došlo k chybě.
+** Vytiskne upozornění na to, že do.-šlo k chybě.
 ** Tato funkce bude volána z některých dále implementovaných operací.
 **
 ** TUTO FUNKCI, PROSÍME, NEUPRAVUJTE!
