@@ -70,8 +70,7 @@ void parser_start()
 
     if (contains_undef_func(&functions_symtable))
     {
-        handle_error(OTHER_SEMANTIC_ERR);
-
+        handle_error(VAR_DEFINITION_ERR);
     }
     exit(0);
 }
