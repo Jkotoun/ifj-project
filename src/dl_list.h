@@ -7,26 +7,26 @@
 */
 #ifndef dl_list_h
 #define dl_list_h
-#include<stdio.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include "symtable.h"
 
-
 //pointer to first and last element of dl_list
-typedef struct tDLList{  
-    struct table* First;  
-    struct table* Last;  
+typedef struct tDLList
+{
+    struct table *First;
+    struct table *Last;
 } tDLList;
 
-typedef struct node node;
+typedef struct symbol_node symbol_node;
 
-//inits first and last pointer to NULL                              
-int DLInitList (tDLList* list);
+//inits first and last pointer to NULL
+int DLInitList(tDLList *list);
 //delete last table from list and free its memory
-int DLDeleteLast (tDLList* list);
+int DLDeleteLast(tDLList *list);
 //delete all items and free memory
-int DLDisposeList (tDLList* list);
+int DLDisposeList(tDLList *list);
 //insert new table to end of list (new scope - scope index is calculated and tree ptr initialized to NULL)
-int DLInsertLast(tDLList* list);
+int DLInsertLast(tDLList *list);
 
 #endif
