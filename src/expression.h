@@ -10,6 +10,7 @@
 
 #include "scanner.h"
 #include "symtable.h"
+#include "expression_stack.h"
 
 /* ------------------------------- PUBLIC LOGIC ---------------------------------------*/
 
@@ -32,6 +33,49 @@ int parse_expression(table *sym_table,
     varType *out_type);
 
 /* ------------------------------- INNER LOGIC ---------------------------------------*/
+
+/**
+ * @enum Represents the precedence of rules 
+ * in relation with current the stack state and the input token
+ */
+typedef enum {
+    R,  /// > reduce
+    S,  /// < shift
+    Eq, /// = equal
+    Er  /// error
+} precedence;
+
+/**
+ * @enum Represents a terminal group
+ * that input may contain
+ */
+typedef enum{
+    plus_minus_gr = 0, /// +, -
+    mul_div_gr = 1,    /// *, /
+    lbrack_gr = 2,     /// (
+    rbrack_gr = 3,     /// )
+    rel_op_gr = 4,     /// ==, !=, < , <=, >, >=
+    id_lit_gr = 5,     /// id, int, string, float64
+    dollar_gr = 6,     /// $
+} terminal_group;
+
+/**
+ * @enum Represents a reduction rule
+ */
+typedef enum{
+    nt_plus_nt,         /// E -> E + E
+    nt_minus_nt,        /// E -> E - E
+    nt_mul_nt,          /// E -> E * E
+    nt_div_nt,          /// E -> E / E
+    nt_eq_nt,           /// E -> E == E
+    nt_neq_nt,          /// E -> E != E
+    nt_less_nt,         /// E -> E < E
+    nt_less_eq_nt,      /// E -> E <= E
+    nt_more_nt,         /// E -> E > E
+    nt_more_eq_nt,      /// E -> E >= E
+    lbrack_nt_rbrack,   /// E -> (E)
+    operand             /// E -> i
+} reduction_rule;
 
 /**
  * @brief Gets expression symbol from the token
@@ -67,86 +111,3 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     expression_stack_node *reduce_element_1,
     expression_stack_node *reduce_element_2,
     reduction_rule *out_reduction_rule);
-
-/**
- * @enum Represents the precedence of rules 
- * in relation with current the stack state and the input token
- */
-typedef enum {
-    R,  /// > reduce
-    S,  /// < shift
-    Eq, /// = equal
-    Er  /// error
-} precedence;
-
-/**
- * @enum Represents a terminal group
- * that input may contain
- */
-typedef enum{
-    plus_minus = 0, /// +, -
-    mul_div = 1,    /// *, /
-    lbrack = 2,     /// (
-    rbrack = 3,     /// )
-    rel_op = 4,     /// ==, !=, < , <=, >, >=
-    id_lit = 5,     /// id, int, string, float64
-    dollar = 6,     /// $
-} terminal_group;
-
-/**
- * @brief Represents the precedence table
- * rows represent stack terminals, colums represent input terminals
- */
-int precedence_table[7][7] = {
-//  plus_minus | mul_div | lbrack | rbrack | rel_op | id_lit | dollar
-    { R, S, S, R, R, S, R },    // plus_minus
-    { R, R, S, R, R, S, R },    // mul_div
-    { S, S, S, Eq, S, S, Er },  // lbrack
-    { R, R, Er, R, R, Er, R },  // rbrack
-    { S, S, S, R, Er, S, R },   // rel_op
-    { R, R, Er, R, R, Er, R },  // id_lit
-    { S, S, S, Er, S, S, Er}    // dollar
-};
-
-/**
- * @enum Represents a reduction rule
- */
-typedef enum{
-    nt_plus_nt,         /// E -> E + E
-    nt_minus_nt,        /// E -> E - E
-    nt_mul_nt,          /// E -> E * E
-    nt_div_nt,          /// E -> E / E
-    nt_eq_nt,           /// E -> E == E
-    nt_neq_nt,          /// E -> E != E
-    nt_less_nt,         /// E -> E < E
-    nt_less_eq_nt,      /// E -> E <= E
-    nt_more_nt,         /// E -> E > E
-    nt_more_eq_nt,      /// E -> E >= E
-    lbrack_nt_rbrack,   /// E -> (E)
-    operand             /// E -> i
-} reduction_rule;
-
-/**
- * @enum Represents an expression symbol type
- */
-typedef enum{
-    plus,           /// +
-    minus,          /// -
-    mul,            /// *    
-    div,            /// /
-    lbrack,         /// (
-    rbrack,         /// )
-    eq,             /// =
-    neq,            /// !=
-    less,           /// <
-    less_eq,        /// <=
-    greater,        /// >
-    greater_eq,     /// >=
-    id,             /// id
-    int_lit,        /// int literal
-    string_lit,     /// string literal
-    float64_lit,    /// float64 literal
-    nt,             /// non-terminal
-    reduce_br,      /// symbol that determinest stop of the reduction (<)
-    dollar          /// $
-} expression_symbol;

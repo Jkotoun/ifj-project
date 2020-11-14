@@ -11,6 +11,31 @@
 #include "symtable.h"
 
 /**
+ * @enum Represents an expression symbol type
+ */
+typedef enum{
+    plus,           /// +
+    minus,          /// -
+    multiply,       /// *    
+    devide,         /// /
+    lbrack,         /// (
+    rbrack,         /// )
+    eq,             /// =
+    neq,            /// !=
+    less,           /// <
+    less_eq,        /// <=
+    greater,        /// >
+    greater_eq,     /// >=
+    id,             /// id
+    int_lit,        /// int literal
+    string_lit,     /// string literal
+    float64_lit,    /// float64 literal
+    nt,             /// non-terminal
+    reduce_br,      /// symbol that determinest stop of the reduction (<)
+    dollar          /// $
+} expression_symbol;
+
+/**
  * @brief Represents stack node type
  */
 typedef struct expression_stack_node{

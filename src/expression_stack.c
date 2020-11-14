@@ -9,7 +9,7 @@
 #include "expression.h"
 #include "symtable.h"
 #include "expression_stack.h"
-#include "error_codes.h";
+#include "error_codes.h"
 
 void stack_init(expression_stack *stack){
     stack->top = NULL;
@@ -35,8 +35,8 @@ int stack_push_after_top_terminal(expression_stack *stack,
     varType type)
 {
     // Gets the top terminal
-    expression_stack_node *top_terminal;
-    stack_top_terminal(stack, top_terminal);
+    expression_stack_node *top_terminal = NULL;
+    stack_top_terminal(stack, &top_terminal);
 
     // Pushes new node
     expression_stack_node* push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
