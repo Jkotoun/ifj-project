@@ -29,12 +29,18 @@
 token current_token;
 
 symbol_node *functions_symtable;
+symbol_node *current_function;
+
+bool functionHasReturn;
+
 tDLList scoped_symtables;
 typeQueue typeQ;
 tokenQueue tokenQ;
 
 token *leftTokenArr;
 int leftSideLength;
+
+int rightSideExprLength;
 // node rootNode;
 // tDLList list;
 
@@ -160,9 +166,12 @@ void rule_func_decl()
 
     def_func(&func_name, paramArr, paramArrLength, returnArr, returnArrLength, true);
     strClear(&func_name);
-
-    // insert_node_var(&(scoped_symtables.Last->root_ptr), "zadar", INT);
+    functionHasReturn = false;
     rule_body();
+    if (!functionHasReturn && ((symbol_function *)current_function->data)->return_types_count > 0)
+    {
+        handle_error(ARGS_RETURNS_COUNT_ERR);
+    }
     DLDeleteLast(&scoped_symtables);
 }
 
@@ -368,8 +377,10 @@ void rule_statement_next()
     }
     else if (keyword_is(RETURN_KEYWORD))
     {
+        functionHasReturn = true;
         get_next_token();
         rule_statement_value_next();
+        assert_true(rightSideExprLength == ((symbol_function *)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
     }
     else
     {
@@ -440,8 +451,10 @@ void rule_statement_action_next()
 
 void rule_statement_value_next()
 {
+    rightSideExprLength = 0;
     if (current_token.type == ID_TOKEN)
     {
+        rightSideExprLength++;
         string *tokenName = get_token_str(&current_token);
         get_next_token();
         rule_arg_expr_next(tokenName);
@@ -451,6 +464,7 @@ void rule_statement_value_next()
         current_token.type == INTEGER_LITERAL_TOKEN ||
         current_token.type == STRING_LITERAL_TOKEN)
     {
+        rightSideExprLength++;
         rule_literal_expr_next();
         rule_expr_n_next();
     }
@@ -487,11 +501,13 @@ void rule_expr_n_next()
 {
     if (current_token.type == COMMA_TOKEN)
     {
+        rightSideExprLength++;
         get_next_token();
         rule_expr_next();
         rule_expr_n_next();
     }
     assert_token_is(EOL_TOKEN);
+    assert_true(rightSideExprLength == leftSideLength, OTHER_SEMANTIC_ERR);
 }
 
 void rule_first_arg_next()
@@ -757,6 +773,10 @@ void def_func(string *func_name, varType *paramArr, int paramArrLength, varType 
     else //insert function into symtable
     {
         symtable_insert_node_func(&functions_symtable, func_name, returnArrLength, returnArr, paramArrLength, paramArr, definition);
+        if (definition)
+        {
+            assert_true(symtable_search(&functions_symtable, func_name, &current_function), INTERNAL_COMPILER_ERR);
+        }
     }
 }
 
