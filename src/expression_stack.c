@@ -9,6 +9,7 @@
 #include "expression.h"
 #include "symtable.h"
 #include "expression_stack.h"
+#include "error_codes.h";
 
 void stack_init(expression_stack *stack){
     stack->top = NULL;
@@ -50,7 +51,7 @@ int stack_push_after_top_terminal(expression_stack *stack,
 }
 
 int stack_pop(expression_stack *stack, 
-    int amount = 1)
+    int amount)
 {
     while(amount != 0){
         if(stack->top != NULL){
@@ -68,7 +69,7 @@ int stack_pop(expression_stack *stack,
 }
 
 int stack_top_terminal(expression_stack *stack, 
-    expression_stack_node *out_top_terminal)
+    expression_stack_node **out_top_terminal)
 {
     // Find the top terminal
     expression_stack_node *top_terminal = stack->top;
@@ -90,38 +91,43 @@ int stack_top_terminal(expression_stack *stack,
 }
 
 int stack_reduction_elements(expression_stack *stack,
-    expression_stack_node *out_reduce_element_0, 
-    expression_stack_node *out_reduce_element_1,
-    expression_stack_node *out_reduce_element_2)
+    expression_stack_node **out_reduce_element_0, 
+    expression_stack_node **out_reduce_element_1,
+    expression_stack_node **out_reduce_element_2)
 {
     // Gets elements that should be reduced
     *out_reduce_element_0 = stack->top;
-    *out_reduce_element_1 = (out_reduce_element_0->next != NULL 
-        && out_reduce_element_0->next->symbol != reduce_br) 
-            ?  out_reduce_element_0->next 
-            : NULL;
-    *out_reduce_element_2 = (out_reduce_element_1 != NULL 
-        && out_reduce_element_1->next != NULL 
-        && out_reduce_element_1->next->symbol != reduce_br) 
-            ? out_reduce_element_1->next 
-            : NULL;
-    
+    if(*out_reduce_element_0 != NULL 
+        && (*out_reduce_element_0)->next != NULL
+        && (*out_reduce_element_0)->next->symbol != reduce_br)
+    {
+        *out_reduce_element_1 = (*out_reduce_element_0)->next;
+    }
+    if(*out_reduce_element_1 != NULL 
+        && (*out_reduce_element_1)->next != NULL
+        && (*out_reduce_element_1)->next->symbol != reduce_br)
+    {
+        *out_reduce_element_2 = (*out_reduce_element_0)->next;
+    }
+
     if(
-        // !resul - if error -> true, calls handler
+        // !result - if error -> true, calls handler
         !(
             // check if stack state format is <|*|*|*
-            (out_reduce_element_0 != NULL 
-                && out_reduce_element_1 != NULL
-                && out_reduce_element_2 != NULL 
-                && out_reduce_element_2->next != NULL 
-                && out_reduce_element_2->next->symbol == reduce_br)
+            (*out_reduce_element_0 != NULL 
+                && *out_reduce_element_1 != NULL
+                && *out_reduce_element_2 != NULL 
+                && (*out_reduce_element_2)->next != NULL 
+                && (*out_reduce_element_2)->next->symbol == reduce_br)
             ||
             // check if stack state format is <|*
-            (out_reduce_element_0 != NULL && out_reduce_element_0->next != NULL 
-                    && out_reduce_element_0->next->symbol == reduce_br) 
+            (*out_reduce_element_0 != NULL 
+                && (*out_reduce_element_0)->next != NULL 
+                && (*out_reduce_element_0)->next->symbol == reduce_br) 
         )
+    )
     {  
-        // Invalid stack state - no suitable rule
+        // Invalid stack state - not a suitable rule
         return SYNTAX_ERR;
     }
     return OK;

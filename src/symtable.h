@@ -15,6 +15,7 @@ typedef enum varType
 	INT,
 	STRING,
 	FLOAT,
+	BOOL,
 	UNDEFINED
 }varType;
 

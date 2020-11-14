@@ -26,9 +26,10 @@
  * @return EXIT_CODE
  * @see error_codes.h for EXIT_CODE details
  */
-int parse_expression(table sym_table, 
+int parse_expression(table *sym_table, 
     token *token_arr, 
-    int token_count);
+    int token_count,
+    varType *out_type);
 
 /* ------------------------------- INNER LOGIC ---------------------------------------*/
 
@@ -39,7 +40,7 @@ int parse_expression(table sym_table,
  * @param out_expression_symbol represents the expression symbol
  * @return EXIT_CODE see error_codes.h
  */
-int convert_token_to_expression_symbol(token token, 
+int convert_token_to_expression_symbol(token *token, 
     expression_symbol *out_expression_symbol);
 
 /**
@@ -105,7 +106,7 @@ int precedence_table[7][7] = {
     { S, S, S, R, Er, S, R },   // rel_op
     { R, R, Er, R, R, Er, R },  // id_lit
     { S, S, S, Er, S, S, Er}    // dollar
-}
+};
 
 /**
  * @enum Represents a reduction rule
@@ -140,12 +141,12 @@ typedef enum{
     less,           /// <
     less_eq,        /// <=
     greater,        /// >
-    greater_eq      /// >=
+    greater_eq,     /// >=
     id,             /// id
     int_lit,        /// int literal
     string_lit,     /// string literal
     float64_lit,    /// float64 literal
     nt,             /// non-terminal
     reduce_br,      /// symbol that determinest stop of the reduction (<)
-    dollar         /// $
+    dollar          /// $
 } expression_symbol;

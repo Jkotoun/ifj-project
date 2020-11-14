@@ -5,6 +5,7 @@
  *
  * Represents expression stack for precedence analysis
  */
+#pragma once
 
 #include "expression.h"
 #include "symtable.h"
@@ -57,7 +58,7 @@ int stack_push_after_top_terminal(expression_stack *stack,
  * @param amount amount of pops, default = 1 more if multiple is required
  * @return EXIT_CODE see error_codes.h
  */
-int stack_pop(expression_stack *stack, int amount = 1);
+int stack_pop(expression_stack *stack, int amount);
 
 /**
  * @brief Gets the top terminal from stack
@@ -66,7 +67,7 @@ int stack_pop(expression_stack *stack, int amount = 1);
  * @return EXIT_CODE see error_codes.h
  */
 int stack_top_terminal(expression_stack *stack, 
-    expression_stack_node *out_top_terminal);
+    expression_stack_node **out_top_terminal);
 
 /**
  * @brief Detects all reduction element(s) appearing in some rule
@@ -76,9 +77,9 @@ int stack_top_terminal(expression_stack *stack,
  * @return EXIT_CODE see error_codes.h
  */
 int stack_reduction_elements(expression_stack *stack,
-    expression_stack_node *out_reduce_element_0, 
-    expression_stack_node *out_reduce_element_1,
-    expression_stack_node *out_reduce_element_2);
+    expression_stack_node **out_reduce_element_0, 
+    expression_stack_node **out_reduce_element_1,
+    expression_stack_node **out_reduce_element_2);
 
 /**
  * @brief Frees all alocated resources

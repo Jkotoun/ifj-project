@@ -10,8 +10,10 @@
 #include "scanner.h"
 #include "expression_stack.h"
 #include "symtable.h"
+#include "error_codes.h"
+#include "parser_helpers.h"
 
-int convert_token_to_expression_symbol(token token, 
+int convert_token_to_expression_symbol(token *token, 
     expression_symbol *out_expression_symbol)
 {
     switch(token->type){
@@ -176,11 +178,11 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
                     // E -> E <= E
                     *out_reduction_rule = nt_less_eq_nt;
                     break;
-                case more:
+                case greater:
                     // E -> E > E
                     *out_reduction_rule = nt_more_nt;
                     break;
-                case more_eq:
+                case greater_eq:
                     // E -> E >= E
                     *out_reduction_rule = nt_more_eq_nt;
                     break;              
@@ -216,14 +218,18 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     return SYNTAX_ERR;
 }
 
-int parse_expression(table sym_table, 
+int parse_expression(table *sym_table, 
     token *token_arr, 
-    int token_count)
+    int token_count,
+    varType *out_type)
 {    
+    // Out var type default
+    *out_type = UNDEFINED;
+
     // Initializes the stack and pushes stop element ($) to the stack
     expression_stack stack;
     stack_init(&stack);
-    int push_code_0 = stack_push(&stack, dollar, UNDEFINED, &error_handler);
+    int push_code_0 = stack_push(&stack, dollar, UNDEFINED);
     if(push_code_0 != OK){
         stack_dispose(&stack);
         return push_code_0;
@@ -291,16 +297,15 @@ int parse_expression(table sym_table,
                 // PUSHES the input_symbol
                 switch(input_symbol){
                     case id:
-                        // variable node
-                        node* sym_node = NULL;
-                        if(search(sym_table->root_ptr, input_token->str, sym_node)){
-                            int push_code_2 = stack_push(&stack, input_symbol, 
-                                ((symbol_variable)sym_node->data)->var_type);
+                        varType var_type;
+                        if(get_varType_from_symtable(input_token->str, var_type)){
+                            int push_code_2 = stack_push(&stack, input_symbol, var_type);
                             if(push_code_2 != OK){
                                 stack_dispose(&stack);
                                 return push_code_2;
                             }
-                            // TO DO: GENERATE_CODE(PUSHS(sym_node)) - pushes to the stack variable defined in sym_node
+                            // TO DO: GENERATE_CODE(PUSHS(sym_node))
+                            // pushes to the stack variable defined in sym_node
                         }
                         else{
                             stack_dispose(&stack);
@@ -308,28 +313,16 @@ int parse_expression(table sym_table,
                         }
                         break;
                     case int_lit:
-                        int push_code_2 = stack_push(&stack, input_symbol, INT);
-                        if(push_code_2 != OK){
-                            stack_dispose(&stack);
-                            return push_code_2;
-                        }
-                        // TO DO: GENERATE_CODE(PUSHS(input_token->integer)) - pushes to the stack
-                        break;
                     case float64_lit:
-                        int push_code_2 = stack_push(&stack, input_symbol, FLOAT);
-                        if(push_code_2 != OK){
-                            stack_dispose(&stack);
-                            return push_code_2;
-                        }
-                        // TO DO: GENERATE_CODE(PUSHS(input_token->decimal)) - pushes to the stack
-                        break;
                     case string_lit:
-                        int push_code_2 = stack_push(&stack, input_symbol, STRING);
+                        varType literal_type = get_varType_from_literal(input_token->type);
+                        int push_code_2 = stack_push(&stack, input_symbol, literal_type);
                         if(push_code_2 != OK){
                             stack_dispose(&stack);
                             return push_code_2;
                         }
-                        // TO DO: GENERATE_CODE(PUSHS(input_token->str)) - pushes to the stack
+                        // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
+                        // pushes const value of a type to the stack
                         break;
                     default:
                         // other possible input (e.g. +, -, ...)
@@ -356,7 +349,8 @@ int parse_expression(table sym_table,
                     stack_dispose(&stack);
                     return reduction_elements_code;
                 }
-                int reduction_rule_code = get_reduction_rule(&reduction_rule);
+                int reduction_rule_code = get_reduction_rule(&reduction_rule, 
+                    reduce_element_0, reduce_element_1, reduce_element_2);
                 if(reduction_rule_code != OK){
                     stack_dispose(&stack);
                     return reduction_rule_code;
@@ -479,6 +473,7 @@ int parse_expression(table sym_table,
                     // needs to save the value that is at the top of the stack to the output var (a := expr)
                     // use POPS frame@var
                     
+                    *out_type = top_stack_terminal->type;
                     stack_dispose(&stack);
                     return OK;
                 }
