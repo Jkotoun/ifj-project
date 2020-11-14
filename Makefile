@@ -1,12 +1,10 @@
-#
-DEPENDENCIES= src/main.c src/dl_list.c src/parser.c src/scanner.c src/str.c src/symtable.c
-CC=gcc
-CFLAGS=-Wall -std=c11 -pedantic -lm -g
-INCLUDES=-Isrc/headers
+
+.PHONY: clean
+
 all: main
 
 main: FORCE
-	$(CC) $(INCLUDES) $(CFLAGS) -o $@ $(DEPENDENCIES)
+	cd src; make
 
 test: build 
 	cd build && cmake .. && make
@@ -16,6 +14,6 @@ build:
 	mkdir $@ 
 
 clean:
-	rm -f main
+	cd src; rm -f main
 
 FORCE:	;

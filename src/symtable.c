@@ -2,21 +2,21 @@
  * Implementace překladače imperativního jazyka IFJ20.
  * Josef Kotoun - xkotou06
  * Implementation of symtable
- * Some functions for tree data type are used from my implementation of IAL 2. project 
- * 
+ * Some functions for tree data type are used from my implementation of IAL 2. project
+ *
 */
-#include "headers/symtable.h"
-#include "headers/error_codes.h"
+#include "symtable.h"
+#include "error_codes.h"
 #include <string.h>
-int init(node **rootptr)
+int init(node** rootptr)
 {
     *rootptr = NULL;
     return OK;
 }
 
-bool search(node **rootptr, string *name, node **found_node)
+bool search(node** rootptr, string* name, node** found_node)
 {
-    node *current = *rootptr;
+    node* current = *rootptr;
     while (current != NULL)
     {
         int cmp_result = strCmpString(name, current->name);
@@ -36,10 +36,10 @@ bool search(node **rootptr, string *name, node **found_node)
     }
     return false;
 }
-node **getNodeToInsert(node *rootptr, string *name)
+node** getNodeToInsert(node* rootptr, string* name)
 {
 
-    node *current = rootptr;
+    node* current = rootptr;
     do
     {
         int cmp_result = strCmpString(name, current->name);
@@ -69,9 +69,9 @@ node **getNodeToInsert(node *rootptr, string *name)
     } while (current != NULL);
     return NULL;
 }
-int insert_node_func(node **rootptr, string *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
+int insert_node_func(node** rootptr, string* name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
 {
-    node **ptrToNodePtr;
+    node** ptrToNodePtr;
     if (*rootptr == NULL)
     {
         ptrToNodePtr = rootptr;
@@ -86,13 +86,13 @@ int insert_node_func(node **rootptr, string *name, unsigned return_types_count, 
         return OK;
     }
     //allocation of  node
-    (*ptrToNodePtr) = (node *)malloc(sizeof(node));
+    (*ptrToNodePtr) = (node*)malloc(sizeof(node));
     if (*ptrToNodePtr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
-    string *new_name = (string *)malloc(sizeof(string));
+    string* new_name = (string*)malloc(sizeof(string));
     if (strInit(new_name) == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
@@ -111,12 +111,12 @@ int insert_node_func(node **rootptr, string *name, unsigned return_types_count, 
         free(*ptrToNodePtr);
         return INTERNAL_COMPILER_ERR;
     }
-    symbol_function *data_ptr = (symbol_function *)(*ptrToNodePtr)->data;
+    symbol_function* data_ptr = (symbol_function*)(*ptrToNodePtr)->data;
     data_ptr->defined = defined;
     data_ptr->par_count = params_count;
 
     //allocation of array of param types
-    data_ptr->parameters = (varType *)malloc(sizeof(varType) * params_count);
+    data_ptr->parameters = (varType*)malloc(sizeof(varType) * params_count);
     if (data_ptr->parameters == NULL)
     {
         free(*ptrToNodePtr);
@@ -130,7 +130,7 @@ int insert_node_func(node **rootptr, string *name, unsigned return_types_count, 
     data_ptr->return_types_count = return_types_count;
 
     //allocation of array of return types
-    data_ptr->return_types = (varType *)malloc(sizeof(varType) * return_types_count);
+    data_ptr->return_types = (varType*)malloc(sizeof(varType) * return_types_count);
     if (data_ptr->return_types == NULL)
     {
         free(*ptrToNodePtr);
@@ -145,9 +145,9 @@ int insert_node_func(node **rootptr, string *name, unsigned return_types_count, 
     return OK;
 }
 
-int insert_node_var(node **rootptr, string *name, varType var_type)
+int insert_node_var(node** rootptr, string* name, varType var_type)
 {
-    node **ptrToNodePtr;
+    node** ptrToNodePtr;
     if (*rootptr == NULL)
     {
         ptrToNodePtr = rootptr;
@@ -161,14 +161,14 @@ int insert_node_var(node **rootptr, string *name, varType var_type)
     {
         return OK;
     }
-    (*ptrToNodePtr) = (node *)malloc(sizeof(node));
+    (*ptrToNodePtr) = (node*)malloc(sizeof(node));
     if (*ptrToNodePtr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
 
-    string *new_name = (string *)malloc(sizeof(string));
+    string* new_name = (string*)malloc(sizeof(string));
     if (strInit(new_name) == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
@@ -179,23 +179,41 @@ int insert_node_var(node **rootptr, string *name, varType var_type)
     }
     (*ptrToNodePtr)->name = new_name;
     (*ptrToNodePtr)->type = var;
-    (*ptrToNodePtr)->data = (symbol_variable *)malloc(sizeof(symbol_variable));
+    (*ptrToNodePtr)->data = (symbol_variable*)malloc(sizeof(symbol_variable));
     if ((*ptrToNodePtr)->data == NULL)
     {
         free(*ptrToNodePtr);
         return INTERNAL_COMPILER_ERR;
     }
-    ((symbol_variable *)(*ptrToNodePtr)->data)->var_type = var_type;
+    ((symbol_variable*)(*ptrToNodePtr)->data)->var_type = var_type;
     return OK;
 }
 
-int free_node_memory(node *nodeptr)
+bool contains_undef_func(node** rootptr)
+{
+
+    if (*rootptr != NULL)
+    {
+        symbol_function* func_data = (symbol_function*)((*rootptr)->data);
+        if (!func_data->defined)
+        {
+            return true;
+        }
+        if (contains_undef_func(&((*rootptr)->l_ptr)) || contains_undef_func(&((*rootptr)->r_ptr)))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+int free_node_memory(node* nodeptr)
 {
     if (nodeptr != NULL)
     {
         if (nodeptr->type == func)
         {
-            symbol_function *data = (symbol_function *)nodeptr->data;
+            symbol_function* data = (symbol_function*)nodeptr->data;
             //free params and return types arrays for function
             free(data->parameters);
             free(data->return_types);
@@ -216,7 +234,7 @@ int free_node_memory(node *nodeptr)
     return OK;
 }
 
-int dispose_tree(node **rootptr)
+int dispose_tree(node** rootptr)
 {
     if (*rootptr != NULL)
     {

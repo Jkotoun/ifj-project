@@ -1,3 +1,4 @@
+#include "symtable.h"
 
 
 void rule_prog();
@@ -20,7 +21,7 @@ void rule_type_first_next();
 
 void rule_type_n_next();
 
-void rule_type();
+varType rule_type();
 
 void rule_return_list_next();
 

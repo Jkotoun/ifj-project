@@ -9,7 +9,7 @@
 
 #include <string.h>
 #include <malloc.h>
-#include "headers/str.h"
+#include "str.h"
 
 //default allocation size in bytes
 //every realloc, allocated memory is increased by this contant
