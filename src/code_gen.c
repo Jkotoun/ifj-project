@@ -9,6 +9,32 @@
 #include "headers/error_codes.h"
 #include "headers/symtable.h"
 
+// Implementation of dynemic array ----------------------------------------------------------
+int dArray_init(dArray* array){
+    if((array->count_in_scope=malloc(ALLOCATE_CHUNK*sizeof(int)))==NULL)
+        return 1;                                                   // ERROR
+    array->size_of_array=ALLOCATE_CHUNK;
+    return 0;                                                       // SUCCES
+}
+
+int dArray_add_to_scope(dArray* array, int index){
+    if(index>=array->size_of_array){                                // The array at index is not allocated
+        int* tmp_count_in_scope;
+        if((tmp_count_in_scope=realloc(array->count_in_scope,(ALLOCATE_CHUNK+array->size_of_array)*sizeof(int)))==NULL){
+            free(array->count_in_scope);
+            array->count_in_scope=NULL;
+            return 1;                                               // ERROR
+        }else{
+            array->count_in_scope=tmp_count_in_scope;
+            array->size_of_array+=8;
+        }
+    }
+    array->count_in_scope[index]++;
+    return 0;                                                       // SUCCES
+}
+// -------------------------------------------------------------------------------------------
+
+// Implementation of Generator ---------------------------------------------------------------
 static string output;
 
 //TODO dodělat implementaci build-in funkcí
@@ -72,16 +98,19 @@ int genetate_main_end(){
     return OK;
 } 
 
-int generate_start_function(char *function_name){
+int generate_function_start(char *function_name){
     if( strAddConstStr(&output,"LABEL ")==STR_ERROR         || \
         strAddConstStr(&output,function_name)==STR_ERROR    || \
         strAddConstStr(&output,"\n PUSHFRAME")==STR_ERROR){
             return INTERNAL_COMPILER_ERR;
         }
+
+        // TODO vytvořit proměnné pro parametry funkce na LF.
     return OK;
 }
 
-int generate_end_function(char *function_name){
+int generate_function_end(char *function_name){
+    // TODO vymyslet jak vracet návratové hodnoty
     if( strAddConstStr(&output,"LABEL end_of_")==STR_ERROR  || \
         strAddConstStr(&output,function_name)==STR_ERROR    || \
         strAddConstStr(&output,"\nPOPFRAME\nRETURN\n")==STR_ERROR){
@@ -101,3 +130,40 @@ int generate_new_var(char *var_name){
     }
     return OK;
 }
+
+
+
+// Generate instruction -> "DEFVAR LF@(name of variable)\n" 
+int generate_if_start(/*expr*/){   
+    
+    if( strAddConstStr(&output,"PUSHFRAME\nCREATEFRAME\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+int generate_exp_if(){
+     // TODO zjistit pomocí čeho identifikovat if labely
+    return OK;
+}
+
+int generate_if_else(){
+     
+    if( strAddConstStr(&output,"JUMP if_")==STR_ERROR   || \
+        strAddConstStr(&output,"a"/*něco podle čeho bude jasné jaký if to bude--->hloubka zanoření+název funkce ve které je?*/)==STR_ERROR || \
+        strAddConstStr(&output,"_end\nLABEL if_")==STR_ERROR ||\
+        strAddConstStr(&output,"a"/*něco podle čeho bude jasné jaký if to bude--->hloubka zanoření+název funkce ve které je?*/)==STR_ERROR || \
+        strAddConstStr(&output,"_else\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+
+int generate__for_if(){
+    // TODO dodělat generování exp
+    // TODO zjistit pomocí čeho identifikovat if labely¨
+    return OK;
+}
+
+// -------------------------------------------------------------------------------------------

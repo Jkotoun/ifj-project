@@ -8,6 +8,28 @@
 #ifndef code_gen_h
 #define code_gen_h
 
+// Dynamic array for identifying how much if/while/for is in the scopes ----------------------
+#define ALLOCATE_CHUNK 8
+
+typedef struct dArray
+{
+    int* count_in_scope;
+    int size_of_array;
+}dArray;
+     
+int dArray_init(dArray* array);                     // Alocating first count_of_scopes, and set default values
+                                                    // Return 0 if the task was succesfull
+                                                    // otherwise return 1
+
+int dArray_add_to_scope(dArray* array, int index);  // Increment count_in_scope[index] by 1
+                                                    // Return 0 if the task was succesfull
+                                                    // otherwise return 1
+
+// -------------------------------------------------------------------------------------------
+
+
+// Generator of 3AC --------------------------------------------------------------------------
+
 // Initiation of generator
 int generator_init();
 int generate_build_in_function(string *output);              
@@ -36,18 +58,20 @@ int generate_ord();
 int generate_chr();
 
 // Generating sequential and selection instruction
-// - prefix
-int generate_start_for();
-int generate_start_while();
-int generate_start_if();
-int generate_start_else();
-int generate_start_function();
-// - postfix
-int generate_end_for();
-int generate_end_while();
-int generate_end_if();
-int generate_end_else();
-int generate_end_function();
+// -- Generating body of if else
+int generate_if_start();
+int generate_exp_if();
+int generate_if_else();
+int generate_if_end();
+// -- Generating boy of while loop
+int generate_while_start();
+int generate_while_end();
+// -- Generating body of for loop
+int generate_for_start();
+int generate_for_end();
+// -- Generating body of function
+int generate_function_start();
+int generate_function_end();
 
 // Calling function
 int generate_call_function(char *function_name);
@@ -55,6 +79,8 @@ int generate_return_function();
 
 // Cleaning inner string
 void generator_clear();
+
+// -------------------------------------------------------------------------------------------
 
 enum instruction_type
 {
