@@ -238,7 +238,7 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     return SYNTAX_ERR;
 }
 
-int parse_expression(table *sym_table, 
+int parse_expression(tDLList *scoped_symtables,
     token *token_arr, 
     int token_count,
     varType *out_type)
@@ -255,15 +255,20 @@ int parse_expression(table *sym_table,
         return push_code_0;
     }
 
-    for(int i = 0; i < token_count; i++)
-    {
+    token *input_token = token_arr;
+    token_count -= 1;
+    while(true){
         // Converts input token to the symbol
-        token *input_token = (token_arr + i);
         expression_symbol input_symbol;
-        int convert_code = convert_token_to_expression_symbol(input_token, &input_symbol);
-        if(convert_code != OK){
-            stack_dispose(&stack);
-            return convert_code;
+        if(input_token != NULL){
+            int convert_code = convert_token_to_expression_symbol(input_token, &input_symbol);
+            if(convert_code != OK){
+                stack_dispose(&stack);
+                return convert_code;
+            }
+        }
+        else{
+            input_symbol = dollar;
         }
 
         // Gets top terminal from the stack
@@ -292,8 +297,7 @@ int parse_expression(table *sym_table,
 
         // Gets the precedence from the table and perform suitable operation
         precedence precedence_evaluation = (precedence)precedence_table[top_stack_terminal_group][input_terminal_group];
-        switch(precedence_evaluation)
-        {
+        switch(precedence_evaluation){
             case Eq:
                 {
                     // ---------------------------------- EQUAL - = --------------------------------- //
@@ -304,12 +308,22 @@ int parse_expression(table *sym_table,
                         stack_dispose(&stack);
                         return push_code_1;
                     }
+
+                    // Increments token ptr
+                    if(token_count > 0){
+                        input_token += 1;
+                        token_count -= 1;
+                    }
+                    else{
+                        input_token = NULL;
+                    }
                 }
                 break;
                 
             case S:
                 {
-                    // ---------------------------------- SHIFT - < --------------------------------- //
+                    // ---------------------------------- SHIFT - < --------------------------------- //    
+
                     // PUSHES the reduce_br
                     int push_code_1 = stack_push_after_top_terminal(&stack, reduce_br, UNDEFINED);
                     if(push_code_1 != OK){
@@ -322,7 +336,7 @@ int parse_expression(table *sym_table,
                         case id:
                             {
                                 varType var_type;
-                                if(get_varType_from_symtable(input_token->str, &var_type) != -1){
+                                if(get_varType_from_symtable(scoped_symtables, input_token->str, &var_type) != -1){
                                     int push_code_2 = stack_push(&stack, input_symbol, var_type);
                                     if(push_code_2 != OK){
                                         stack_dispose(&stack);
@@ -361,6 +375,15 @@ int parse_expression(table *sym_table,
                                 }
                             }
                             break;
+                    }
+                   
+                    // Increments token ptr
+                    if(token_count > 0){
+                        input_token += 1;
+                        token_count -= 1;
+                    }
+                    else{
+                        input_token = NULL;
                     }
                 }
                 break;               
@@ -494,12 +517,12 @@ int parse_expression(table *sym_table,
                 break;
 
             case Er:
-                // ---------------------------------- ERROR - {}  --------------------------------- //
+                // --------------------------------- ERROR OR END --------------------------------- //
                 // May happen only if the input is invalid or when the end of the expression is reached
                 
                 if (input_symbol == dollar && top_stack_terminal->symbol == dollar){
                     // Expression has been successfuly parsed 
-                    *out_type = top_stack_terminal->type;
+                    *out_type = stack.top->type;
                     stack_dispose(&stack);
                     return OK;
                 }

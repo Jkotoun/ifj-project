@@ -21,13 +21,13 @@
  * is semantically correct and generates code for the interpreter.
  *
  * Should be called when expression was syntactically checked
- * @param sym_table TO BE ADD.
- * @param token_arr TO BE ADD.
- * @param token_count TO BE ADD.
- * @return EXIT_CODE
- * @see error_codes.h for EXIT_CODE details
+ * @param scoped_symtables representing scoped symtables
+ * @param token_arr first token in the expression
+ * @param token_count amount of tokens in the expression
+ * @param out_type reduced type during the expression parsing
+ * @return EXIT_CODE error_codes.h for details
  */
-int parse_expression(table *sym_table, 
+int parse_expression(tDLList *scoped_symtables,
     token *token_arr, 
     int token_count,
     varType *out_type);

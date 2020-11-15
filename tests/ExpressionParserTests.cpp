@@ -29,7 +29,7 @@ TEST_F(ExpressionParserTests, BasicTests)
    symtable_init(&scoped_symtables.Last->root_ptr);
    token tokens[0];
    varType out_type;
-   int expr_parser_output = parse_expression(scoped_symtables.Last,
+   int expr_parser_output = parse_expression(&scoped_symtables,
       tokens, 0, &out_type);
    EXPECT_EQ(expr_parser_output, SYNTAX_ERR);
    EXPECT_EQ(out_type, UNDEFINED);
@@ -39,7 +39,7 @@ TEST_F(ExpressionParserTests, SameScopeVarAdditions)
 {
    // SYMTABLE INIT
    // one symtable, variables a, b
-
+   
    tDLList scoped_symtables;
    DLInitList(&scoped_symtables);
    DLInsertLast(&scoped_symtables);
@@ -72,9 +72,9 @@ TEST_F(ExpressionParserTests, SameScopeVarAdditions)
    };
 
    varType out_type;
-   int expr_parser_output = parse_expression(scoped_symtables.Last,
+   int expr_parser_output = parse_expression(&scoped_symtables,
       tokens, 3, &out_type);
 
    EXPECT_EQ(expr_parser_output, OK);
-   //EXPECT_EQ(out_type, INT);
+   EXPECT_EQ(out_type, INT);
 };

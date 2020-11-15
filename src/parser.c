@@ -789,7 +789,7 @@ void def_var(token *varToken, varType type)
 {
     table *current_symtable = scoped_symtables.Last;
     varType existing_varType;
-    int declaredIndex = get_varType_from_symtable(varToken->str, &existing_varType);
+    int declaredIndex = get_varType_from_symtable(&scoped_symtables, varToken->str, &existing_varType);
     if (declaredIndex == -1 || declaredIndex < current_symtable->scope_index) //if var doesnt exist or is defied at lesser scope
     {
         symtable_insert_node_var(&current_symtable->root_ptr, varToken->str, type);
@@ -811,7 +811,7 @@ varType *tokenArr_to_varTypeArr(token *tokenArr, int count)
     {
         if (tokenArr[i].type == ID_TOKEN)
         {
-            if (get_varType_from_symtable(tokenArr[i].str, &typeArr[i]) == -1)
+            if (get_varType_from_symtable(&scoped_symtables, tokenArr[i].str, &typeArr[i]) == -1)
             {
                 handle_error(VAR_DEFINITION_ERR);
             }
@@ -825,9 +825,9 @@ varType *tokenArr_to_varTypeArr(token *tokenArr, int count)
 }
 
 //searches scopes backwards and returns the scope of the first occurence of input name and returns its type
-int get_varType_from_symtable(string *varName, varType *type)
+int get_varType_from_symtable(tDLList *scoped_symtables, string *varName, varType *type)
 {
-    table *symtable = scoped_symtables.Last;
+    table *symtable = scoped_symtables->Last;
     symbol_node *foundNode;
     while (symtable != NULL)
     {
@@ -865,7 +865,7 @@ varType get_varType_from_literal(token_type type)
 bool check_var_defined(string *varName)
 {
     varType _;
-    int res = get_varType_from_symtable(varName, &_);
+    int res = get_varType_from_symtable(&scoped_symtables, varName, &_);
     if (res == -1)
         return false;
     else
