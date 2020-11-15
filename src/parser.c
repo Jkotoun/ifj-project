@@ -617,6 +617,11 @@ void rule_expr_next()
         }
 
         //TODO: CALL EXPRESSION module
+
+        // TO DO GENERATE_CODE(save stack value to var)
+        // needs to save the value that is at the top of the stack to the output var (a := expr)
+        // use POPS frame@var
+
         rule_term();
 
         get_next_token();

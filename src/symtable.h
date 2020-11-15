@@ -9,12 +9,16 @@
 #include "dl_list.h"
 #include "str.h"
 #include <stdbool.h>
+
 typedef enum varType
 {
 	INT,
 	STRING,
-	FLOAT
-} varType;
+	FLOAT,
+	BOOL,
+	UNDEFINED
+}varType;
+
 typedef enum node_type
 {
 	func,
