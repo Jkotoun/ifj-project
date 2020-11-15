@@ -25,7 +25,7 @@ int dArray_add_to_scope(dArray* array, int index);  // Increment count_in_scope[
                                                     // Return 0 if the task was succesfull
                                                     // otherwise return 1
 
-int dArray_despose(dArray* array);                  // Free memory of array
+void dArray_despose(dArray* array);                  // Free memory of array
 // -------------------------------------------------------------------------------------------
 
 
@@ -65,8 +65,8 @@ int generate_if_start(int scope, char *name_of_function);
 int generate_if_else(int scope, char *name_of_function);
 int generate_if_end(int scope, char *name_of_function);
 // -- Generating boy of while loop
-int generate_while_start();
-int generate_while_end();
+int generate_while_start(int scope, char *name_of_function);
+int generate_while_end(int scope, char *name_of_function);
 // -- Generating body of for loop
 int generate_for_start();
 int generate_for_end();
