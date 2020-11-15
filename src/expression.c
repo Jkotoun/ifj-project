@@ -317,7 +317,7 @@ int parse_expression(table *sym_table,
                         case id:
                             {
                                 varType var_type;
-                                if(get_varType_from_symtable(input_token->str, &var_type)){
+                                if(get_varType_from_symtable(input_token->str, &var_type) != -1){
                                     int push_code_2 = stack_push(&stack, input_symbol, var_type);
                                     if(push_code_2 != OK){
                                         stack_dispose(&stack);
@@ -493,12 +493,7 @@ int parse_expression(table *sym_table,
                 // May happen only if the input is invalid or when the end of the expression is reached
                 
                 if (input_symbol == dollar && top_stack_terminal->symbol == dollar){
-                    // Expression has been successfuly parsed
-
-                    // TO DO GENERATE_CODE(save stack value to var)
-                    // needs to save the value that is at the top of the stack to the output var (a := expr)
-                    // use POPS frame@var
-                    
+                    // Expression has been successfuly parsed 
                     *out_type = top_stack_terminal->type;
                     stack_dispose(&stack);
                     return OK;
