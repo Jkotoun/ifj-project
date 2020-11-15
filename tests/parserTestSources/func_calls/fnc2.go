@@ -9,7 +9,7 @@ func main() {
 	d:=0
 	e:=0
 
-	a,b,c,d,e = five 	
+	a,b,c,d,e = five() 	
 }
 
 
