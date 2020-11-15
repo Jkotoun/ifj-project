@@ -138,6 +138,11 @@ int convert_expression_symbol_to_terminal_group(expression_symbol expression_sym
         case greater_eq:
             *out_terminal_group = rel_op_gr;
             break;
+        
+        // Dollar - end symbol
+        case dollar:
+            *out_terminal_group = dollar_gr;
+            break;
             
         // Unexpected token
         default:
