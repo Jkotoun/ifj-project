@@ -14,6 +14,7 @@
 #include "symtable.h"
 #include "error_codes.h"
 #include "queue.h"
+#include "expression.h"
 #include <string.h>
 #include "dl_list.h"
 #include <stdio.h>
@@ -42,7 +43,7 @@ tokenQueue exprTokenQ;
 token* leftTokenArr;
 int leftSideLength;
 
-int rightSideExprLength;
+int rightSideLength;
 // node rootNode;
 // tDLList list;
 
@@ -57,7 +58,6 @@ void parser_start()
 
     symtable_init(&functions_symtable);
     typeQueueInit(&typeQ);
-    //TODO: after program ends check for undefined functions
 
     DLInitList(&scoped_symtables);
 
@@ -319,7 +319,7 @@ void rule_statement_list_next()
 void rule_statement_next()
 {
     leftSideLength = 0;
-    rightSideExprLength = 0;
+    rightSideLength = 0;
     tokenQueueInit(&exprTokenQ);
     if (current_token.type == ID_TOKEN)
     {
@@ -388,7 +388,7 @@ void rule_statement_next()
         functionHasReturn = true;
         get_next_token();
         rule_statement_value_next();
-        assert_true(rightSideExprLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
+        assert_true(rightSideLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
     }
     else
     {
@@ -434,17 +434,22 @@ void rule_statement_action_next()
     }
     else if (current_token.type == ASSIGNMENT_TOKEN)
     {
+        typeQueueInit(&typeQ);
         leftTokenArr = tokenQueueToArray(&tokenQ);
         leftSideLength = tokenQueueLength(&tokenQ);
+        varType* leftTypeArr = malloc(leftSideLength * sizeof(varType));
+
         for (size_t i = 0; i < leftSideLength; i++)
         {
-            assert_true(check_var_defined(leftTokenArr[i].str), VAR_DEFINITION_ERR);
+            assert_true(get_varType_from_symtable(leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
         }
 
         get_next_token();
         rule_statement_value_next();
-        //FIXME: 
-        assert_true(rightSideExprLength == leftSideLength, OTHER_SEMANTIC_ERR);
+        assert_true(leftSideLength == rightSideLength, OTHER_SEMANTIC_ERR);
+        varType* righTypeArr = typeQueueToArray(&typeQ);
+        assert_true(types_equal(leftTypeArr, righTypeArr, leftSideLength), OTHER_SEMANTIC_ERR);
+
     }
     else if (current_token.type == SHORT_VAR_DECLARATION_TOKEN)
     {
@@ -454,20 +459,24 @@ void rule_statement_action_next()
         // leftTokenArr = tokenQueueToArray(&tokenQ);
         // leftSideLength = tokenQueueLength(&tokenQ);
         get_next_token();
-        rightSideExprLength = 1;
+        rightSideLength = 1;
         rule_expr_next();
         // TODO: get var type from expr module
-        def_var(&varToken, INT);
+        int tokenCount = tokenQueueLength(&exprTokenQ);
+        token* tokenArr = tokenQueueToArray(&exprTokenQ);
+        varType type;
+        parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+        def_var(&varToken, type);
     }
 }
 
 void rule_statement_value_next()
 {
-    rightSideExprLength = 0;
+    rightSideLength = 0;
     if (current_token.type == ID_TOKEN)
     {
         tokenQueueUp(&exprTokenQ, current_token);
-        rightSideExprLength++;
+        rightSideLength++;
         string* tokenName = get_token_str(&current_token);
         get_next_token();
         rule_arg_expr_next(tokenName);
@@ -478,7 +487,7 @@ void rule_statement_value_next()
         current_token.type == STRING_LITERAL_TOKEN)
     {
         tokenQueueUp(&exprTokenQ, current_token);
-        rightSideExprLength++;
+        rightSideLength++;
         rule_literal_expr_next();
         rule_expr_n_next();
     }
@@ -499,8 +508,13 @@ void rule_arg_expr_next(string* prevTokenName)
         varType* paramArr = tokenArr_to_varTypeArr(tokenArr, paramArrCount);
 
         varType* returnArr = tokenArr_to_varTypeArr(leftTokenArr, leftSideLength);
+        for (size_t i = 0; i < leftSideLength; i++)
+        {
+            typeQueueUp(&typeQ, returnArr[i]);
+        }
+
         def_func(prevTokenName, paramArr, paramArrCount, returnArr, leftSideLength, false);
-        rightSideExprLength = leftSideLength;
+        rightSideLength = leftSideLength;
         get_next_token();
     }
     else
@@ -517,12 +531,17 @@ void rule_arg_expr_next(string* prevTokenName)
 
 void rule_expr_n_next()
 {
-    //TODO:Call expr module
+    //TODO: use type from expression parser
+    int tokenCount = tokenQueueLength(&exprTokenQ);
+    token* tokenArr = tokenQueueToArray(&exprTokenQ);
+    varType type;
+    parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+    typeQueueUp(&typeQ, type);
 
     if (current_token.type == COMMA_TOKEN)
     {
         tokenQueueInit(&exprTokenQ);
-        rightSideExprLength++;
+        rightSideLength++;
         get_next_token();
         rule_expr_next();
         rule_expr_n_next();
