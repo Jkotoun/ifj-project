@@ -25,10 +25,12 @@ int dArray_add_to_scope(dArray* array, int index);  // Increment count_in_scope[
                                                     // Return 0 if the task was succesfull
                                                     // otherwise return 1
 
+int dArray_despose(dArray* array);                  // Free memory of array
 // -------------------------------------------------------------------------------------------
 
 
 // Generator of 3AC --------------------------------------------------------------------------
+#define MAX_DIGITS_OF_SCOPE 48
 
 // Initiation of generator
 int generator_init();
@@ -41,7 +43,7 @@ int genetate_main_end();        //<-- návěští pro předčasné ukončení ma
 
 
 // Generating for variables
-int generate_new_var(assignType);
+int generate_new_var();
 int generate_assign_var_to_var();
 int generate_assign_const_to_var();
 
@@ -59,10 +61,9 @@ int generate_chr();
 
 // Generating sequential and selection instruction
 // -- Generating body of if else
-int generate_if_start();
-int generate_exp_if();
-int generate_if_else();
-int generate_if_end();
+int generate_if_start(int scope, char *name_of_function);
+int generate_if_else(int scope, char *name_of_function);
+int generate_if_end(int scope, char *name_of_function);
 // -- Generating boy of while loop
 int generate_while_start();
 int generate_while_end();
