@@ -37,11 +37,11 @@ TEST_F(ListTests, BasicTests)
 
     //insert tables with trees to list
     EXPECT_EQ(DLInsertLast(&list), OK);
-    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), &name1, INT), OK);
+    EXPECT_EQ(symtable_insert_node_var(&(list.Last->root_ptr), &name1, INT), OK);
     EXPECT_EQ(DLInsertLast(&list), OK);
-    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), &name2, STRING), OK);
+    EXPECT_EQ(symtable_insert_node_var(&(list.Last->root_ptr), &name2, STRING), OK);
     EXPECT_EQ(DLInsertLast(&list), OK);
-    EXPECT_EQ(insert_node_var(&(list.Last->root_ptr), &name1, INT), OK);
+    EXPECT_EQ(symtable_insert_node_var(&(list.Last->root_ptr), &name1, INT), OK);
 
     //test of right pointers and scope indexing
     EXPECT_EQ(strCmpString(list.First->root_ptr->name, &name1), 0);

@@ -3,7 +3,7 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/src/headers",
+                "${workspaceFolder}/src",
                 "${workspaceFolder}/tests/googletest/googletest/include"
 
             ],
