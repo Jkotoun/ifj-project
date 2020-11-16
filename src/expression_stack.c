@@ -34,20 +34,33 @@ int stack_push_after_top_terminal(expression_stack *stack,
     expression_symbol symbol,
     varType type)
 {
-    // Gets the top terminal
-    expression_stack_node *top_terminal = NULL;
-    stack_top_terminal(stack, &top_terminal);
-
-    // Pushes new node
-    expression_stack_node* push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
-    if(push_node != NULL){
-        push_node->symbol = symbol;
-        push_node->type = type;
-        push_node->next = top_terminal->next;
-        top_terminal->next = push_node;
-        return OK;
-    }
-    return INTERNAL_COMPILER_ERR;
+    expression_stack_node *prev_node = NULL;
+    expression_stack_node* iterable_node = stack->top;
+	while(iterable_node != NULL){
+		if (iterable_node->symbol != reduce_br && iterable_node->symbol != nt)
+		{
+            expression_stack_node *push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
+            if(push_node != NULL){
+                push_node->symbol = symbol;
+                push_node->type = type;
+                if (prev_node != NULL){
+                    push_node->next = prev_node->next;
+                    prev_node->next = push_node;
+                }
+                else{
+                    push_node->next = stack->top;
+                    stack->top = push_node;
+                }
+                return OK;    
+            }
+            else{
+                return INTERNAL_COMPILER_ERR;
+            }
+		}
+		prev_node = iterable_node;
+        iterable_node = iterable_node->next;
+	}
+    return INTERNAL_COMPILER_ERR;    
 }
 
 int stack_pop(expression_stack *stack, 
@@ -107,7 +120,7 @@ int stack_reduction_elements(expression_stack *stack,
         && (*out_reduce_element_1)->next != NULL
         && (*out_reduce_element_1)->next->symbol != reduce_br)
     {
-        *out_reduce_element_2 = (*out_reduce_element_0)->next;
+        *out_reduce_element_2 = (*out_reduce_element_1)->next;
     }
 
     if(

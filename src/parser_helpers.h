@@ -24,7 +24,7 @@ void def_func(string* func_name, varType* paramArr, int paramArrLength, varType*
 
 char* copystr(string* str);
 
-int get_varType_from_symtable(string* varName, varType* type);
+int get_varType_from_symtable(tDLList *scoped_symtables, string* varName, varType* type);
 
 varType get_varType_from_literal(token_type type);
 
