@@ -214,10 +214,10 @@ int generate_if_end(int scope, char *name_of_function){
 
 int generate_while_start(int scope, char *name_of_function/*,expression*/){   
     char scope_string[MAX_DIGITS_OF_SCOPE];
-    char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
-    dArray_add_to_scope(&if_counter,scope);
+    char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];
+    dArray_add_to_scope(&while_counter,scope);
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
+    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_while_in_scope_string, "%d", while_counter.count_in_scope[scope])<0)
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"PUSHFRAME\nCREATEFRAME\nLABEL _while_")==STR_ERROR  ||\
@@ -225,14 +225,14 @@ int generate_while_start(int scope, char *name_of_function/*,expression*/){
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
+        strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
         strAddConstStr(&output,"_start\nJUMPIFNEQ _while_")==STR_ERROR              ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_end ")==STR_ERROR                                 ||\
+        strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
+        strAddConstStr(&output,"_end ")==STR_ERROR                                  ||\
         strAddConstStr(&output,"expression\n")==STR_ERROR  
         ){
         return INTERNAL_COMPILER_ERR;
@@ -242,9 +242,9 @@ int generate_while_start(int scope, char *name_of_function/*,expression*/){
 
 int generate_while_end(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
-    char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
+    char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
+    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_while_in_scope_string, "%d", while_counter.count_in_scope[scope])<0)
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"JUMP _while_")==STR_ERROR                           ||\
@@ -252,14 +252,14 @@ int generate_while_end(int scope, char *name_of_function){
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
+        strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
         strAddConstStr(&output,"_start\n")                                          ||\
         strAddConstStr(&output,"LABEL _while_")==STR_ERROR                          ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
+        strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
         strAddConstStr(&output,"_end\nPOPFRAME\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
