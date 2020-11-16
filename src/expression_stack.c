@@ -51,6 +51,7 @@ int stack_push_after_top_terminal(expression_stack *stack,
                     push_node->next = stack->top;
                     stack->top = push_node;
                 }
+                return OK;    
             }
             else{
                 return INTERNAL_COMPILER_ERR;
@@ -59,7 +60,7 @@ int stack_push_after_top_terminal(expression_stack *stack,
 		prev_node = iterable_node;
         iterable_node = iterable_node->next;
 	}
-    return OK;    
+    return INTERNAL_COMPILER_ERR;    
 }
 
 int stack_pop(expression_stack *stack, 

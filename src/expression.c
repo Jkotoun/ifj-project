@@ -238,10 +238,11 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     return SYNTAX_ERR;
 }
 
-int parse_expression(tDLList *scoped_symtables,
+int parse_expression_inner(tDLList *scoped_symtables,
     token *token_arr, 
     int token_count,
-    varType *out_type)
+    varType *out_type,
+    instrumented_node **out_instrumented_arr)
 {    
     // Out var type default
     *out_type = UNDEFINED;
@@ -463,7 +464,7 @@ int parse_expression(tDLList *scoped_symtables,
                             break;
                         case nt_div_nt:
                             if(reduce_element_0->type == reduce_element_2->type
-                                && reduce_element_0->type == INT){
+                                && reduce_element_0->type == INT){                                
                                 // TO DO: GENERATE_CODE(reduction_rule) - performs IDIVS - integer division on the stack
                                 reduced_type = INT;
                             }
@@ -498,6 +499,24 @@ int parse_expression(tDLList *scoped_symtables,
                                 return DATATYPE_COMPATIBILITY_ERR;
                             }
                             break;                    
+                    }
+
+                    // INSTRUMENTATION
+                    if(out_instrumented_arr != NULL){
+                        instrumented_node *node = *out_instrumented_arr;
+                        instrumented_node *new_node = (instrumented_node*)malloc(sizeof(instrumented_node));
+                        new_node->rule = reduction_rule;
+                        new_node->type = reduced_type;
+                        new_node->next = NULL;
+                        if (node == NULL){
+                            *out_instrumented_arr = new_node;
+                        }
+                        else{
+                            while (node->next != NULL){
+                                node = node->next;
+                            }
+                            node->next = new_node;
+                        }
                     }             
 
                     // STACK UPDATE
@@ -538,4 +557,21 @@ int parse_expression(tDLList *scoped_symtables,
     // Reached only if expression is not valid
     stack_dispose(&stack);
     return SYNTAX_ERR;
+}
+
+int parse_expression(tDLList *scoped_symtables,
+    token *token_arr, 
+    int token_count,
+    varType *out_type){
+    return parse_expression_inner(scoped_symtables, token_arr, token_count,
+        out_type, NULL);
+}
+
+int parse_instrumented_expression(tDLList *scoped_symtables,
+    token *token_arr, 
+    int token_count,
+    varType *out_type,
+    instrumented_node **out_instrumented_arr){
+    return parse_expression_inner(scoped_symtables, token_arr, token_count,
+        out_type, out_instrumented_arr);
 }
