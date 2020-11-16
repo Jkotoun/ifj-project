@@ -438,7 +438,7 @@ void rule_statement_action_next()
 
         for (size_t i = 0; i < leftSideLength; i++)
         {
-            assert_true(get_varType_from_symtable(leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
+            assert_true(get_varType_from_symtable(&scoped_symtables, leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
         }
 
         get_next_token();
@@ -461,7 +461,7 @@ void rule_statement_action_next()
         int tokenCount = tokenQueueLength(&exprTokenQ);
         token *tokenArr = tokenQueueToArray(&exprTokenQ);
         varType type;
-        parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+        parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         def_var(&varToken, type);
     }
 }
@@ -530,7 +530,7 @@ void rule_expr_n_next()
     int tokenCount = tokenQueueLength(&exprTokenQ);
     token *tokenArr = tokenQueueToArray(&exprTokenQ);
     varType type;
-    parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+    parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
     typeQueueUp(&typeQ, type);
 
     if (current_token.type == COMMA_TOKEN)
