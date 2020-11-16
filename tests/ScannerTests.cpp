@@ -42,7 +42,12 @@ TEST_F(ScannerTests, BasicLexemsTest)
    } while (token_var.type != EOF_TOKEN);
    fclose(stdin);
 }
-
+TEST_F(ScannerTests, UnclosedComment)
+{
+  stdin = fopen("../../tests/scannerTestSources/unclosedComment", "r");
+  EXPECT_EQ(get_token(&token_var), LEX_ERR);
+  fclose(stdin);
+}
 TEST_F(ScannerTests, CommentsRemoveTest)
 {
    stdin = fopen("../../tests/scannerTestSources/commentsRemoveSource", "r");
