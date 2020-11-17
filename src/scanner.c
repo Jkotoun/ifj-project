@@ -251,7 +251,7 @@ int get_token(token *token)
                 }
                 break;
             case ID_KEYWORD_STATE:
-                if(isalnum(c))
+                if(isalnum(c) || c=='_')
                 {
                     if(strAddChar(token->str,c) == STR_ERROR)
                         return INTERNAL_COMPILER_ERR;
