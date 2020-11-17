@@ -111,7 +111,7 @@ void rule_prolog()
     get_next_token();
 
     assert_token_is(ID_TOKEN);
-    assert_true(strCmpConstStr(current_token.str, "main") == 0, OTHER_SEMANTIC_ERR);
+    assert_true(strCmpConstStr(current_token.str, "main") == 0, SYNTAX_ERR);
 }
 
 void rule_eols_next()
@@ -362,19 +362,27 @@ void rule_statement_next()
     }
     else if (keyword_is(FOR_KEYWORD))
     {
+        DLInsertLast(&scoped_symtables);
+        symtable_init(&scoped_symtables.Last->root_ptr);
         get_next_token();
         rule_definition_next();
         assert_token_is(SEMICOLON_TOKEN);
 
         get_next_token();
+        tokenQueueInit(&exprTokenQ);
         rule_expr_next();
         assert_token_is(SEMICOLON_TOKEN);
+
+        int tokenCount = tokenQueueLength(&exprTokenQ);
+        token *tokenArr = tokenQueueToArray(&exprTokenQ);
+        varType type;
+        int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+        assert_true(result == 0, result);
+        assert_true(type == BOOL, DATATYPE_COMPATIBILITY_ERR);
 
         get_next_token();
         rule_assignment_next();
 
-        DLInsertLast(&scoped_symtables);
-        symtable_init(&scoped_symtables.Last->root_ptr);
         rule_body();
         DLDeleteLast(&scoped_symtables);
 
@@ -461,8 +469,9 @@ void rule_statement_action_next()
         int tokenCount = tokenQueueLength(&exprTokenQ);
         token *tokenArr = tokenQueueToArray(&exprTokenQ);
         varType type;
-        parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
-        def_var(&varToken, type);
+        int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+        assert_true(result == 0, result);
+        def_var(varToken.str, type);
     }
 }
 
@@ -530,7 +539,8 @@ void rule_expr_n_next()
     int tokenCount = tokenQueueLength(&exprTokenQ);
     token *tokenArr = tokenQueueToArray(&exprTokenQ);
     varType type;
-    parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+    int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+    assert_true(result == 0, result);
     typeQueueUp(&typeQ, type);
 
     if (current_token.type == COMMA_TOKEN)
@@ -574,12 +584,24 @@ void rule_definition_next()
 {
     if (current_token.type == ID_TOKEN)
     {
+        string var_name;
+        strInit(&var_name);
+        strCopyString(&var_name, current_token.str);
         //TODO: define var
         get_next_token();
         assert_token_is(SHORT_VAR_DECLARATION_TOKEN);
 
         get_next_token();
+        tokenQueueInit(&exprTokenQ);
         rule_expr_next();
+
+        int tokenCount = tokenQueueLength(&exprTokenQ);
+        token *tokenArr = tokenQueueToArray(&exprTokenQ);
+        varType type;
+        int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+        assert_true(result == 0, result);
+        def_var(&var_name, type);
+        strFree(&var_name);
     }
 }
 
@@ -588,12 +610,27 @@ void rule_assignment_next()
     if (current_token.type == ID_TOKEN)
     {
         assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
+        string var_name;
+        strInit(&var_name);
+        strCopyString(&var_name, current_token.str);
 
         get_next_token();
         assert_token_is(ASSIGNMENT_TOKEN);
 
+        tokenQueueInit(&exprTokenQ);
+
         get_next_token();
         rule_expr_next();
+
+        int tokenCount = tokenQueueLength(&exprTokenQ);
+        token *tokenArr = tokenQueueToArray(&exprTokenQ);
+        varType expr_type;
+        int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &expr_type);
+        assert_true(result == 0, result);
+
+        varType var_type;
+        get_varType_from_symtable(&scoped_symtables, &var_name, &var_type);
+        assert_true(var_type == expr_type, OTHER_SEMANTIC_ERR);
     }
 }
 
@@ -820,14 +857,14 @@ void def_func(string *func_name, varType *paramArr, int paramArrLength, varType 
     }
 }
 
-void def_var(token *varToken, varType type)
+void def_var(string *var_name, varType type)
 {
     table *current_symtable = scoped_symtables.Last;
     varType existing_varType;
-    int declaredIndex = get_varType_from_symtable(&scoped_symtables, varToken->str, &existing_varType);
+    int declaredIndex = get_varType_from_symtable(&scoped_symtables, var_name, &existing_varType);
     if (declaredIndex == -1 || declaredIndex < current_symtable->scope_index) //if var doesnt exist or is defied at lesser scope
     {
-        symtable_insert_node_var(&current_symtable->root_ptr, varToken->str, type);
+        symtable_insert_node_var(&current_symtable->root_ptr, var_name, type);
     }
     else //redefinition
     {
