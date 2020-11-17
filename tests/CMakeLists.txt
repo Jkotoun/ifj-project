@@ -7,7 +7,6 @@ target_link_libraries(ScannerTest PUBLIC
 )
 add_test(NAME ScannerTest COMMAND ScannerTest)
 
-
 add_executable(BTreeTest BTreeTests.cpp)
 target_link_libraries(BTreeTest PUBLIC
     gtest_main
@@ -35,3 +34,10 @@ target_link_libraries(ParserTest PUBLIC
     IFJ_compiler
 )
 add_test(NAME ParserTest COMMAND ParserTest)
+
+add_executable(ExpressionParserTests ExpressionParserTests.cpp)
+target_link_libraries(ExpressionParserTests PUBLIC
+    gtest_main
+    IFJ_compiler
+)
+add_test(NAME ExpressionParserTests COMMAND ExpressionParserTests)

@@ -29,8 +29,8 @@
 
 token current_token;
 
-symbol_node* functions_symtable;
-symbol_node* current_function;
+symbol_node *functions_symtable;
+symbol_node *current_function;
 
 bool functionHasReturn;
 
@@ -39,8 +39,7 @@ typeQueue typeQ;
 tokenQueue tokenQ;
 tokenQueue exprTokenQ;
 
-
-token* leftTokenArr;
+token *leftTokenArr;
 int leftSideLength;
 
 int rightSideLength;
@@ -63,7 +62,7 @@ void parser_start()
 
     rule_prog();
 
-    symbol_node* main_node;
+    symbol_node *main_node;
     string main_str;
     strInit(&main_str);
     strAddChar(&main_str, 'm');
@@ -157,27 +156,27 @@ void rule_func_decl()
 
     rule_param_first_next(&scoped_symtables.Last->root_ptr);
     assert_token_is(RIGHT_BRACKET_TOKEN);
-    varType* paramArr = typeQueueToArray(&typeQ);
+    varType *paramArr = typeQueueToArray(&typeQ);
     int paramArrLength = typeQueueLength(&typeQ);
 
     typeQueueInit(&typeQ);
     get_next_token();
     rule_return_list_next();
-    varType* returnArr = typeQueueToArray(&typeQ);
+    varType *returnArr = typeQueueToArray(&typeQ);
     int returnArrLength = typeQueueLength(&typeQ);
 
     def_func(&func_name, paramArr, paramArrLength, returnArr, returnArrLength, true);
     strClear(&func_name);
     functionHasReturn = false;
     rule_body();
-    if (!functionHasReturn && ((symbol_function*)current_function->data)->return_types_count > 0)
+    if (!functionHasReturn && ((symbol_function *)current_function->data)->return_types_count > 0)
     {
         handle_error(ARGS_RETURNS_COUNT_ERR);
     }
     DLDeleteLast(&scoped_symtables);
 }
 
-void rule_param_first_next(symbol_node** function_node)
+void rule_param_first_next(symbol_node **function_node)
 {
     if (current_token.type == RIGHT_BRACKET_TOKEN)
     {
@@ -195,7 +194,7 @@ void rule_param_first_next(symbol_node** function_node)
     }
 }
 
-void rule_param(symbol_node** function_root)
+void rule_param(symbol_node **function_root)
 {
     if (current_token.type != ID_TOKEN)
     {
@@ -211,7 +210,7 @@ void rule_param(symbol_node** function_root)
     typeQueueUp(&typeQ, type);
 }
 
-void rule_param_n_next(symbol_node** function_root)
+void rule_param_n_next(symbol_node **function_root)
 {
     if (current_token.type == COMMA_TOKEN)
     {
@@ -244,9 +243,9 @@ void rule_type_first_next()
         return;
     }
     else if (current_token.type == KEYWORD_TOKEN &&
-        (current_token.keyword == INT_KEYWORD ||
-            current_token.keyword == FLOAT64_KEYWORD ||
-            current_token.keyword == STRING_KEYWORD))
+             (current_token.keyword == INT_KEYWORD ||
+              current_token.keyword == FLOAT64_KEYWORD ||
+              current_token.keyword == STRING_KEYWORD))
     {
         varType type = rule_type();
         typeQueueUp(&typeQ, type);
@@ -330,13 +329,11 @@ void rule_statement_next()
         rule_id_list_next();
 
         rule_statement_action_next();
-
-
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN ||
-        current_token.type == INTEGER_LITERAL_TOKEN ||
-        current_token.type == STRING_LITERAL_TOKEN ||
-        current_token.type == DECIMAL_LITERAL_TOKEN)
+             current_token.type == INTEGER_LITERAL_TOKEN ||
+             current_token.type == STRING_LITERAL_TOKEN ||
+             current_token.type == DECIMAL_LITERAL_TOKEN)
     {
         rule_literal_expr_next();
     }
@@ -388,7 +385,7 @@ void rule_statement_next()
         functionHasReturn = true;
         get_next_token();
         rule_statement_value_next();
-        assert_true(rightSideLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
+        assert_true(rightSideLength == ((symbol_function *)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
     }
     else
     {
@@ -422,8 +419,8 @@ void rule_statement_action_next()
         int paramLength = tokenQueueLength(&tokenQ);
         if (paramLength > 0)
         {
-            token* tokenArr = tokenQueueToArray(&tokenQ);
-            varType* paramArr = tokenArr_to_varTypeArr(tokenArr, paramLength);
+            token *tokenArr = tokenQueueToArray(&tokenQ);
+            varType *paramArr = tokenArr_to_varTypeArr(tokenArr, paramLength);
             def_func(function_token.str, paramArr, paramLength, NULL, 0, false);
         }
         else
@@ -437,19 +434,18 @@ void rule_statement_action_next()
         typeQueueInit(&typeQ);
         leftTokenArr = tokenQueueToArray(&tokenQ);
         leftSideLength = tokenQueueLength(&tokenQ);
-        varType* leftTypeArr = malloc(leftSideLength * sizeof(varType));
+        varType *leftTypeArr = malloc(leftSideLength * sizeof(varType));
 
         for (size_t i = 0; i < leftSideLength; i++)
         {
-            assert_true(get_varType_from_symtable(leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
+            assert_true(get_varType_from_symtable(&scoped_symtables, leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
         }
 
         get_next_token();
         rule_statement_value_next();
         assert_true(leftSideLength == rightSideLength, OTHER_SEMANTIC_ERR);
-        varType* righTypeArr = typeQueueToArray(&typeQ);
+        varType *righTypeArr = typeQueueToArray(&typeQ);
         assert_true(types_equal(leftTypeArr, righTypeArr, leftSideLength), OTHER_SEMANTIC_ERR);
-
     }
     else if (current_token.type == SHORT_VAR_DECLARATION_TOKEN)
     {
@@ -463,9 +459,9 @@ void rule_statement_action_next()
         rule_expr_next();
         // TODO: get var type from expr module
         int tokenCount = tokenQueueLength(&exprTokenQ);
-        token* tokenArr = tokenQueueToArray(&exprTokenQ);
+        token *tokenArr = tokenQueueToArray(&exprTokenQ);
         varType type;
-        parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+        parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         def_var(&varToken, type);
     }
 }
@@ -477,7 +473,7 @@ void rule_statement_value_next()
     {
         tokenQueueUp(&exprTokenQ, current_token);
         rightSideLength++;
-        string* tokenName = get_token_str(&current_token);
+        string *tokenName = get_token_str(&current_token);
         get_next_token();
         rule_arg_expr_next(tokenName);
     }
@@ -491,10 +487,9 @@ void rule_statement_value_next()
         rule_literal_expr_next();
         rule_expr_n_next();
     }
-
 }
 
-void rule_arg_expr_next(string* prevTokenName)
+void rule_arg_expr_next(string *prevTokenName)
 {
     if (current_token.type == LEFT_BRACKET_TOKEN) //function call with assignment
     {
@@ -504,10 +499,10 @@ void rule_arg_expr_next(string* prevTokenName)
         assert_token_is(RIGHT_BRACKET_TOKEN);
 
         int paramArrCount = tokenQueueLength(&tokenQ);
-        token* tokenArr = tokenQueueToArray(&tokenQ);
-        varType* paramArr = tokenArr_to_varTypeArr(tokenArr, paramArrCount);
+        token *tokenArr = tokenQueueToArray(&tokenQ);
+        varType *paramArr = tokenArr_to_varTypeArr(tokenArr, paramArrCount);
 
-        varType* returnArr = tokenArr_to_varTypeArr(leftTokenArr, leftSideLength);
+        varType *returnArr = tokenArr_to_varTypeArr(leftTokenArr, leftSideLength);
         for (size_t i = 0; i < leftSideLength; i++)
         {
             typeQueueUp(&typeQ, returnArr[i]);
@@ -533,9 +528,9 @@ void rule_expr_n_next()
 {
     //TODO: use type from expression parser
     int tokenCount = tokenQueueLength(&exprTokenQ);
-    token* tokenArr = tokenQueueToArray(&exprTokenQ);
+    token *tokenArr = tokenQueueToArray(&exprTokenQ);
     varType type;
-    parse_expression(scoped_symtables.Last, tokenArr, tokenCount, &type);
+    parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
     typeQueueUp(&typeQ, type);
 
     if (current_token.type == COMMA_TOKEN)
@@ -654,7 +649,6 @@ void rule_expr_next()
         assert_token_is(RIGHT_BRACKET_TOKEN);
         tokenQueueUp(&exprTokenQ, current_token);
 
-
         get_next_token();
         rule_expr_end_next();
     }
@@ -712,26 +706,26 @@ void rule_expr_end_next()
 
 //----------HELPERS----------
 
-void func_handle_error(int errType, char const* func)
+void func_handle_error(int errType, char const *func)
 {
-    char* token = strGetStr(current_token.token_str_raw);
+    char *token = strGetStr(current_token.token_str_raw);
 
     switch (errType)
     {
-        case SYNTAX_ERR:
-            fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
+    case SYNTAX_ERR:
+        fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
                 func, token, current_token.type, current_token.source_line);
-            exit(SYNTAX_ERR);
-            break;
-        case LEX_ERR:
-            fprintf(stderr, "Lexical error on line %d\n",
+        exit(SYNTAX_ERR);
+        break;
+    case LEX_ERR:
+        fprintf(stderr, "Lexical error on line %d\n",
                 current_token.source_line);
-            exit(LEX_ERR);
+        exit(LEX_ERR);
 
-        default:
-            fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
+    default:
+        fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
                 func, errType, current_token.source_line);
-            exit(errType);
+        exit(errType);
     }
 }
 
@@ -748,7 +742,7 @@ bool token_is(token_type token)
     return current_token.type == token;
 }
 
-void func_assert_token_is(token_type token, char const* func)
+void func_assert_token_is(token_type token, char const *func)
 {
     if (current_token.type != token)
     {
@@ -756,7 +750,7 @@ void func_assert_token_is(token_type token, char const* func)
     }
 }
 
-void func_assert_true(bool expression, int errno, char const* func)
+void func_assert_true(bool expression, int errno, char const *func)
 {
     if (!expression)
     {
@@ -769,7 +763,7 @@ bool keyword_is(keyword keyword)
     return current_token.type == KEYWORD_TOKEN && current_token.keyword == keyword;
 }
 
-void func_assert_keyword_is(keyword keyword, char const* func)
+void func_assert_keyword_is(keyword keyword, char const *func)
 {
     if (!keyword_is(keyword))
     {
@@ -777,14 +771,14 @@ void func_assert_keyword_is(keyword keyword, char const* func)
     }
 }
 
-char* copystr(string* str)
+char *copystr(string *str)
 {
-    char* charArr = malloc(str->length);
+    char *charArr = malloc(str->length);
     strcpy(charArr, str->str);
     return charArr;
 }
 
-bool types_equal(varType* types1, varType* types2, int length)
+bool types_equal(varType *types1, varType *types2, int length)
 {
 
     for (size_t i = 0; i < length; i++)
@@ -797,12 +791,12 @@ bool types_equal(varType* types1, varType* types2, int length)
     return true;
 }
 
-void def_func(string* func_name, varType* paramArr, int paramArrLength, varType* returnArr, int returnArrLength, bool definition)
+void def_func(string *func_name, varType *paramArr, int paramArrLength, varType *returnArr, int returnArrLength, bool definition)
 {
-    symbol_node* found_func;
+    symbol_node *found_func;
     if (symtable_search(&functions_symtable, func_name, &found_func)) //func already exists
     {
-        symbol_function* data = (symbol_function*)(found_func->data);
+        symbol_function *data = (symbol_function *)(found_func->data);
         if (definition && data->defined) //redefinition
         {
             handle_error(VAR_DEFINITION_ERR);
@@ -824,14 +818,13 @@ void def_func(string* func_name, varType* paramArr, int paramArrLength, varType*
     {
         assert_true(symtable_search(&functions_symtable, func_name, &current_function), INTERNAL_COMPILER_ERR);
     }
-
 }
 
-void def_var(token* varToken, varType type)
+void def_var(token *varToken, varType type)
 {
-    table* current_symtable = scoped_symtables.Last;
+    table *current_symtable = scoped_symtables.Last;
     varType existing_varType;
-    int declaredIndex = get_varType_from_symtable(varToken->str, &existing_varType);
+    int declaredIndex = get_varType_from_symtable(&scoped_symtables, varToken->str, &existing_varType);
     if (declaredIndex == -1 || declaredIndex < current_symtable->scope_index) //if var doesnt exist or is defied at lesser scope
     {
         symtable_insert_node_var(&current_symtable->root_ptr, varToken->str, type);
@@ -842,18 +835,18 @@ void def_var(token* varToken, varType type)
     }
 }
 
-varType* tokenArr_to_varTypeArr(token* tokenArr, int count)
+varType *tokenArr_to_varTypeArr(token *tokenArr, int count)
 {
     if (count == 0)
     {
         return NULL;
     }
-    varType* typeArr = malloc(count * sizeof(tokenArr));
+    varType *typeArr = malloc(count * sizeof(tokenArr));
     for (size_t i = 0; i < count; i++)
     {
         if (tokenArr[i].type == ID_TOKEN)
         {
-            if (get_varType_from_symtable(tokenArr[i].str, &typeArr[i]) == -1)
+            if (get_varType_from_symtable(&scoped_symtables, tokenArr[i].str, &typeArr[i]) == -1)
             {
                 handle_error(VAR_DEFINITION_ERR);
             }
@@ -867,16 +860,16 @@ varType* tokenArr_to_varTypeArr(token* tokenArr, int count)
 }
 
 //searches scopes backwards and returns the scope of the first occurence of input name and returns its type
-int get_varType_from_symtable(string* varName, varType* type)
+int get_varType_from_symtable(tDLList *scoped_symtables, string *varName, varType *type)
 {
-    table* symtable = scoped_symtables.Last;
-    symbol_node* foundNode;
+    table *symtable = scoped_symtables->Last;
+    symbol_node *foundNode;
     while (symtable != NULL)
     {
-        symbol_node* rootNode = symtable->root_ptr;
+        symbol_node *rootNode = symtable->root_ptr;
         if (rootNode != NULL && symtable_search(&rootNode, varName, &foundNode))
         {
-            *type = ((symbol_variable*)foundNode->data)->var_type;
+            *type = ((symbol_variable *)foundNode->data)->var_type;
             return symtable->scope_index;
         }
         symtable = symtable->prev_table;
@@ -888,35 +881,35 @@ varType get_varType_from_literal(token_type type)
 {
     switch (type)
     {
-        case DECIMAL_LITERAL_TOKEN:
-            return FLOAT;
-            break;
-        case INTEGER_LITERAL_TOKEN:
-            return INT;
-            break;
-        case STRING_LITERAL_TOKEN:
-            return STRING;
-            break;
+    case DECIMAL_LITERAL_TOKEN:
+        return FLOAT;
+        break;
+    case INTEGER_LITERAL_TOKEN:
+        return INT;
+        break;
+    case STRING_LITERAL_TOKEN:
+        return STRING;
+        break;
 
-        default:
-            handle_error(SYNTAX_ERR);
-            break;
+    default:
+        handle_error(SYNTAX_ERR);
+        break;
     }
 }
 
-bool check_var_defined(string* varName)
+bool check_var_defined(string *varName)
 {
     varType _;
-    int res = get_varType_from_symtable(varName, &_);
+    int res = get_varType_from_symtable(&scoped_symtables, varName, &_);
     if (res == -1)
         return false;
     else
         return true;
 }
 
-string* get_token_str(token* token)
+string *get_token_str(token *token)
 {
-    string* newStr = malloc(sizeof(string));
+    string *newStr = malloc(sizeof(string));
     strInit(newStr);
     strCopyString(newStr, token->str);
     return newStr;

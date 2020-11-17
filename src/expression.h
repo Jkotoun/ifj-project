@@ -12,27 +12,7 @@
 #include "symtable.h"
 #include "expression_stack.h"
 
-/* ------------------------------- PUBLIC LOGIC ---------------------------------------*/
-
-/**
- * @brief Top-level function for expression handling
- * 
- * Parses expression using a precedence analysis, checks if the expression 
- * is semantically correct and generates code for the interpreter.
- *
- * Should be called when expression was syntactically checked
- * @param sym_table TO BE ADD.
- * @param token_arr TO BE ADD.
- * @param token_count TO BE ADD.
- * @return EXIT_CODE
- * @see error_codes.h for EXIT_CODE details
- */
-int parse_expression(table *sym_table, 
-    token *token_arr, 
-    int token_count,
-    varType *out_type);
-
-/* ------------------------------- INNER LOGIC ---------------------------------------*/
+/* ------------------------------- INNER LOGIC ------------------------------------*/
 
 /**
  * @enum Represents the precedence of rules 
@@ -78,6 +58,15 @@ typedef enum{
 } reduction_rule;
 
 /**
+ * @brief Represents one reduction step
+ */
+typedef struct instrumented_node{
+    reduction_rule rule;
+    varType type;
+    struct instrumented_node *next;
+}instrumented_node;
+
+/**
  * @brief Gets expression symbol from the token
  * 
  * @param token represents current input token
@@ -111,3 +100,62 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     expression_stack_node *reduce_element_1,
     expression_stack_node *reduce_element_2,
     reduction_rule *out_reduction_rule);
+
+/**
+ * @brief Inner function for expression handling
+ * 
+ * @param scoped_symtables representing scoped symtables
+ * @param token_arr first token in the expression
+ * @param token_count amount of tokens in the expression
+ * @param out_type reduced type during the expression parsing
+ * @param out_instrumented_arr nullable sequence of used reduction rules 
+ * @return EXIT_CODE error_codes.h for details
+ */
+int parse_expression_inner(tDLList *scoped_symtables,
+    token *token_arr, 
+    int token_count,
+    varType *out_type,
+    instrumented_node **out_instrumented_arr);
+
+/* ------------------------------- PUBLIC LOGIC ---------------------------------------*/
+
+/**
+ * @brief Top-level function for expression handling
+ * 
+ * Parses expression using a precedence analysis, checks if the expression 
+ * is semantically correct and generates code for the interpreter.
+ *
+ * Should be called when expression was syntactically checked. 
+ * Calls parse_expression_inner internaly.
+ * @param scoped_symtables representing scoped symtables
+ * @param token_arr first token in the expression
+ * @param token_count amount of tokens in the expression
+ * @param out_type reduced type during the expression parsing
+ * @return EXIT_CODE error_codes.h for details
+ */
+int parse_expression(tDLList *scoped_symtables,
+    token *token_arr, 
+    int token_count,
+    varType *out_type);
+    
+/* ---------------------------- INSTRUMENTATION LOGIC ----------------------------------*/
+
+/**
+ * @brief Top-level function for expression handling with instrumentation
+ * 
+ * Parses expression using a precedence analysis, checks if the expression 
+ * is semantically correct and generates code for the interpreter.
+ *
+ * Calls parse_expression_inner internaly.
+ * @param scoped_symtables representing scoped symtables
+ * @param token_arr first token in the expression
+ * @param token_count amount of tokens in the expression
+ * @param out_type reduced type during the expression parsing
+ * @param out_instrumented_arr sequence of used reduction rules 
+ * @return EXIT_CODE error_codes.h for details
+ */
+int parse_instrumented_expression(tDLList *scoped_symtables,
+    token *token_arr, 
+    int token_count,
+    varType *out_type,
+    instrumented_node **out_instrumented_arr);
