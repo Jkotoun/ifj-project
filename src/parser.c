@@ -339,8 +339,15 @@ void rule_statement_next()
     }
     else if (keyword_is(IF_KEYWORD))
     {
+        tokenQueueInit(&exprTokenQ);
         get_next_token();
         rule_expr_next();
+        int tokenCount = tokenQueueLength(&exprTokenQ);
+        token *tokenArr = tokenQueueToArray(&exprTokenQ);
+        varType type;
+        int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
+        assert_true(result == 0, result);
+        assert_true(type == BOOL, DATATYPE_COMPATIBILITY_ERR);
 
         DLInsertLast(&scoped_symtables);
         symtable_init(&scoped_symtables.Last->root_ptr);
@@ -391,9 +398,19 @@ void rule_statement_next()
     else if (keyword_is(RETURN_KEYWORD))
     {
         functionHasReturn = true;
+        tokenQueueInit(&exprTokenQ);
+
         get_next_token();
         rule_statement_value_next();
         assert_true(rightSideLength == ((symbol_function *)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
+
+        //TODO: Add type check for FUNC return
+
+        // int tokenCount = tokenQueueLength(&exprTokenQ);
+        // token *tokenArr = tokenQueueToArray(&exprTokenQ);
+        // varType expr_type;
+        // int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &expr_type);
+        // assert_true(result == 0, result);
     }
     else
     {
