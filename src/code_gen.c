@@ -79,7 +79,7 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
-    if(strAddConstStr(&output,"./IFJcode20\n")==STR_ERROR){
+    if(strAddConstStr(&output,".IFJcode20\nGF@expr\nGF@tmp\nJUMP main\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
@@ -120,7 +120,7 @@ void generator_print_output(){
 // Generating for main function --------------------------------------------------------------
 
 int genetate_main_start(){
-    if( strAddConstStr(&output,"LABEL main\nCREATEFRAME\nPUSHFRAME\n")==STR_ERROR){
+    if( strAddConstStr(&output,"LABEL main\nCREATEFRAME\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -128,7 +128,7 @@ int genetate_main_start(){
 }
 
 int genetate_main_end(){
-    if( strAddConstStr(&output,"LABEL end_of_main\nPOPFRAME\nCLEARS\n")==STR_ERROR){
+    if( strAddConstStr(&output,"LABEL end_of_main\nCLEARS\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -139,7 +139,7 @@ int genetate_main_end(){
 
 // Generating for if statement ---------------------------------------------------------------
 
-int generate_if_start(int scope, char *name_of_function/*,expression*/){   
+int generate_if_start(int scope, char *name_of_function){   
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
     dArray_add_to_scope(&if_counter,scope);
@@ -147,14 +147,14 @@ int generate_if_start(int scope, char *name_of_function/*,expression*/){
     if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"PUSHFRAME\nCREATEFRAME\nJUMPIFNEQ _if_")==STR_ERROR ||\
+    if( strAddConstStr(&output,"JUMPIFNEQ _if_")==STR_ERROR ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
         strAddConstStr(&output,"_else ")==STR_ERROR                                 ||\
-        strAddConstStr(&output,"expression\n")==STR_ERROR  
+        strAddConstStr(&output,"GF@expr bool@true\n")==STR_ERROR  
         ){
         return INTERNAL_COMPILER_ERR;
     }
@@ -201,7 +201,7 @@ int generate_if_end(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_end\nPOPFRAME\n")==STR_ERROR){
+        strAddConstStr(&output,"_end\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -212,7 +212,7 @@ int generate_if_end(int scope, char *name_of_function){
 
 // Generating for while cycle ----------------------------------------------------------------
 
-int generate_while_start(int scope, char *name_of_function/*,expression*/){   
+int generate_while_start(int scope, char *name_of_function){  
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];
     dArray_add_to_scope(&while_counter,scope);
@@ -220,20 +220,35 @@ int generate_while_start(int scope, char *name_of_function/*,expression*/){
     if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_while_in_scope_string, "%d", while_counter.count_in_scope[scope])<0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"PUSHFRAME\nCREATEFRAME\nLABEL _while_")==STR_ERROR  ||\
+    if( strAddConstStr(&output,"LABEL _while_")==STR_ERROR                          ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_start\nJUMPIFNEQ _while_")==STR_ERROR              ||\
+        strAddConstStr(&output,"_start\n")==STR_ERROR  ){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+
+int generate_while_relation_end(int scope, char *name_of_function){
+    char scope_string[MAX_DIGITS_OF_SCOPE];
+    char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];
+
+
+    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_while_in_scope_string, "%d", while_counter.count_in_scope[scope])<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"JUMPIFNEQ _while_")==STR_ERROR                      ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
         strAddConstStr(&output,"_end ")==STR_ERROR                                  ||\
-        strAddConstStr(&output,"expression\n")==STR_ERROR  
+        strAddConstStr(&output,"GF@expr bool@true\n")==STR_ERROR  
         ){
         return INTERNAL_COMPILER_ERR;
     }
@@ -260,7 +275,7 @@ int generate_while_end(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_while_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_end\nPOPFRAME\n")==STR_ERROR){
+        strAddConstStr(&output,"_end\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -268,6 +283,7 @@ int generate_while_end(int scope, char *name_of_function){
 }
 
 // -------------------------------------------------------------------------------------------
+/*
 
 
 
@@ -279,8 +295,7 @@ int generate_while_end(int scope, char *name_of_function){
 
 
 
-
-/*int generate_function_start(char *function_name){
+int generate_function_start(char *function_name){
     if( strAddConstStr(&output,"LABEL ")==STR_ERROR         || \
         strAddConstStr(&output,function_name)==STR_ERROR    || \
         strAddConstStr(&output,"\n PUSHFRAME")==STR_ERROR){
