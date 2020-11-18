@@ -9,7 +9,7 @@ func main()() {
 	s2:=54
 	s3:="zadar"
 
-	s1 = zadar()
+	s1,s2,s3 = zadar()
 }
 
 

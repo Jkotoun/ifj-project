@@ -952,6 +952,7 @@ varType get_varType_from_literal(token_type type)
 
         default:
             handle_error(SYNTAX_ERR);
+            return UNDEFINED;
             break;
     }
 }
