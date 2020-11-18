@@ -165,8 +165,11 @@ void rule_func_decl()
     varType* returnArr = typeQueueToArray(&typeQ);
     int returnArrLength = typeQueueLength(&typeQ);
 
+
     def_func(&func_name, paramArr, paramArrLength, returnArr, returnArrLength, true);
     strClear(&func_name);
+    strAddChar(&func_name, '_');
+    def_var(&func_name, UNDERSCORE);
     functionHasReturn = false;
     rule_body();
     if (!functionHasReturn && ((symbol_function*)current_function->data)->return_types_count > 0)
@@ -410,13 +413,6 @@ void rule_statement_next()
             ((symbol_function*)current_function->data)->return_types,
             rightSideLength), ARGS_RETURNS_COUNT_ERR);
 
-        //TODO: Add type check for FUNC return
-
-        // int tokenCount = tokenQueueLength(&exprTokenQ);
-        // token *tokenArr = tokenQueueToArray(&exprTokenQ);
-        // varType expr_type;
-        // int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &expr_type);
-        // assert_true(result == 0, result);
     }
     else
     {
@@ -482,13 +478,16 @@ void rule_statement_action_next()
     {
         token varToken;
         tokenQueueGet(&tokenQ, &varToken);
+        if (strCmpConstStr(varToken.str, "_") == 0)
+        {
+            handle_error(VAR_DEFINITION_ERR);
+        }
 
         // leftTokenArr = tokenQueueToArray(&tokenQ);
         // leftSideLength = tokenQueueLength(&tokenQ);
         get_next_token();
         rightSideLength = 1;
         rule_expr_next();
-        // TODO: get var type from expr module
         int tokenCount = tokenQueueLength(&exprTokenQ);
         token* tokenArr = tokenQueueToArray(&exprTokenQ);
         varType type;
@@ -558,7 +557,6 @@ void rule_arg_expr_next(string* prevTokenName)
 
 void rule_expr_n_next()
 {
-    //TODO: use type from expression parser
     int tokenCount = tokenQueueLength(&exprTokenQ);
     token* tokenArr = tokenQueueToArray(&exprTokenQ);
     varType type;
@@ -610,7 +608,6 @@ void rule_definition_next()
         string var_name;
         strInit(&var_name);
         strCopyString(&var_name, current_token.str);
-        //TODO: define var
         get_next_token();
         assert_token_is(SHORT_VAR_DECLARATION_TOKEN);
 
@@ -688,11 +685,10 @@ void rule_expr_next()
         if (current_token.type == ID_TOKEN)
         {
             assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
+            assert_true(strCmpConstStr(current_token.str, "_") != 0, OTHER_SEMANTIC_ERR);
         }
 
-        //TODO: CALL EXPRESSION module
-
-        // TO DO GENERATE_CODE(save stack value to var)
+        // TODO: GENERATE_CODE(save stack value to var)
         // needs to save the value that is at the top of the stack to the output var (a := expr)
         // use POPS frame@var
 
@@ -723,6 +719,7 @@ void rule_term()
     if (current_token.type == ID_TOKEN)
     {
         assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
+        assert_true(strCmpConstStr(current_token.str, "_") != 0, OTHER_SEMANTIC_ERR);
         return;
     }
     else
@@ -843,6 +840,8 @@ bool types_equal(varType* types1, varType* types2, int length)
 
     for (size_t i = 0; i < length; i++)
     {
+        if (types1[i] == UNDERSCORE || types2[i] == UNDERSCORE)
+            continue;
         if (types1[i] != types2[i])
         {
             return false;
