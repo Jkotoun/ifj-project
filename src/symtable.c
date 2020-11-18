@@ -8,15 +8,15 @@
 #include "symtable.h"
 #include "error_codes.h"
 #include <string.h>
-int symtable_init(symbol_node **rootptr)
+int symtable_init(symbol_node** rootptr)
 {
     *rootptr = NULL;
     return OK;
 }
 
-bool symtable_search(symbol_node **rootptr, string *name, symbol_node **found_node)
+bool symtable_search(symbol_node** rootptr, string* name, symbol_node** found_node)
 {
-    symbol_node *current = *rootptr;
+    symbol_node* current = *rootptr;
     while (current != NULL)
     {
         int cmp_result = strCmpString(name, current->name);
@@ -36,10 +36,10 @@ bool symtable_search(symbol_node **rootptr, string *name, symbol_node **found_no
     }
     return false;
 }
-symbol_node **getNodeToInsert(symbol_node *rootptr, string *name)
+symbol_node** getNodeToInsert(symbol_node* rootptr, string* name)
 {
 
-    symbol_node *current = rootptr;
+    symbol_node* current = rootptr;
     do
     {
         int cmp_result = strCmpString(name, current->name);
@@ -69,9 +69,9 @@ symbol_node **getNodeToInsert(symbol_node *rootptr, string *name)
     } while (current != NULL);
     return NULL;
 }
-int symtable_insert_node_func(symbol_node **rootptr, string *name, unsigned return_types_count, varType return_types[], unsigned params_count, varType params_types[], bool defined)
+int symtable_insert_node_func(symbol_node** rootptr, string* name, int return_types_count, varType return_types[], int params_count, varType params_types[], bool defined)
 {
-    symbol_node **ptrToNodePtr;
+    symbol_node** ptrToNodePtr;
     if (*rootptr == NULL)
     {
         ptrToNodePtr = rootptr;
@@ -86,13 +86,13 @@ int symtable_insert_node_func(symbol_node **rootptr, string *name, unsigned retu
         return OK;
     }
     //allocation of  node
-    (*ptrToNodePtr) = (symbol_node *)malloc(sizeof(symbol_node));
+    (*ptrToNodePtr) = (symbol_node*)malloc(sizeof(symbol_node));
     if (*ptrToNodePtr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
-    string *new_name = (string *)malloc(sizeof(string));
+    string* new_name = (string*)malloc(sizeof(string));
     if (strInit(new_name) == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
@@ -111,18 +111,21 @@ int symtable_insert_node_func(symbol_node **rootptr, string *name, unsigned retu
         free(*ptrToNodePtr);
         return INTERNAL_COMPILER_ERR;
     }
-    symbol_function *data_ptr = (symbol_function *)(*ptrToNodePtr)->data;
+    symbol_function* data_ptr = (symbol_function*)(*ptrToNodePtr)->data;
     data_ptr->defined = defined;
     data_ptr->par_count = params_count;
 
     //allocation of array of param types
-    data_ptr->parameters = (varType *)malloc(sizeof(varType) * params_count);
-    if (data_ptr->parameters == NULL)
+    if (params_count != -1)
     {
-        free(*ptrToNodePtr);
-        free((*ptrToNodePtr)->data);
-        return INTERNAL_COMPILER_ERR;
+        data_ptr->parameters = (varType*)malloc(sizeof(varType) * params_count);
     }
+    // if (data_ptr->parameters == NULL)
+    // {
+    //     free(*ptrToNodePtr);
+    //     free((*ptrToNodePtr)->data);
+    //     return INTERNAL_COMPILER_ERR;
+    // }
     for (int i = 0; i < params_count; i++)
     {
         data_ptr->parameters[i] = params_types[i];
@@ -130,7 +133,7 @@ int symtable_insert_node_func(symbol_node **rootptr, string *name, unsigned retu
     data_ptr->return_types_count = return_types_count;
 
     //allocation of array of return types
-    data_ptr->return_types = (varType *)malloc(sizeof(varType) * return_types_count);
+    data_ptr->return_types = (varType*)malloc(sizeof(varType) * return_types_count);
     if (data_ptr->return_types == NULL)
     {
         free(*ptrToNodePtr);
@@ -145,9 +148,9 @@ int symtable_insert_node_func(symbol_node **rootptr, string *name, unsigned retu
     return OK;
 }
 
-int symtable_insert_node_var(symbol_node **rootptr, string *name, varType var_type)
+int symtable_insert_node_var(symbol_node** rootptr, string* name, varType var_type)
 {
-    symbol_node **ptrToNodePtr;
+    symbol_node** ptrToNodePtr;
     if (*rootptr == NULL)
     {
         ptrToNodePtr = rootptr;
@@ -161,14 +164,14 @@ int symtable_insert_node_var(symbol_node **rootptr, string *name, varType var_ty
     {
         return OK;
     }
-    (*ptrToNodePtr) = (symbol_node *)malloc(sizeof(symbol_node));
+    (*ptrToNodePtr) = (symbol_node*)malloc(sizeof(symbol_node));
     if (*ptrToNodePtr == NULL)
     {
         return INTERNAL_COMPILER_ERR;
     }
     (*ptrToNodePtr)->l_ptr = (*ptrToNodePtr)->r_ptr = NULL;
 
-    string *new_name = (string *)malloc(sizeof(string));
+    string* new_name = (string*)malloc(sizeof(string));
     if (strInit(new_name) == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
@@ -179,22 +182,22 @@ int symtable_insert_node_var(symbol_node **rootptr, string *name, varType var_ty
     }
     (*ptrToNodePtr)->name = new_name;
     (*ptrToNodePtr)->type = var;
-    (*ptrToNodePtr)->data = (symbol_variable *)malloc(sizeof(symbol_variable));
+    (*ptrToNodePtr)->data = (symbol_variable*)malloc(sizeof(symbol_variable));
     if ((*ptrToNodePtr)->data == NULL)
     {
         free(*ptrToNodePtr);
         return INTERNAL_COMPILER_ERR;
     }
-    ((symbol_variable *)(*ptrToNodePtr)->data)->var_type = var_type;
+    ((symbol_variable*)(*ptrToNodePtr)->data)->var_type = var_type;
     return OK;
 }
 
-bool symtable_contains_undef_func(symbol_node **rootptr)
+bool symtable_contains_undef_func(symbol_node** rootptr)
 {
 
     if (*rootptr != NULL)
     {
-        symbol_function *func_data = (symbol_function *)((*rootptr)->data);
+        symbol_function* func_data = (symbol_function*)((*rootptr)->data);
         if (!func_data->defined)
         {
             return true;
@@ -207,13 +210,13 @@ bool symtable_contains_undef_func(symbol_node **rootptr)
     return false;
 }
 
-int symtable_free_node_memory(symbol_node *nodeptr)
+int symtable_free_node_memory(symbol_node* nodeptr)
 {
     if (nodeptr != NULL)
     {
         if (nodeptr->type == func)
         {
-            symbol_function *data = (symbol_function *)nodeptr->data;
+            symbol_function* data = (symbol_function*)nodeptr->data;
             //free params and return types arrays for function
             free(data->parameters);
             free(data->return_types);
@@ -234,7 +237,7 @@ int symtable_free_node_memory(symbol_node *nodeptr)
     return OK;
 }
 
-int symtable_dispose_tree(symbol_node **rootptr)
+int symtable_dispose_tree(symbol_node** rootptr)
 {
     if (*rootptr != NULL)
     {

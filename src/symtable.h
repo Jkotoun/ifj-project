@@ -48,9 +48,9 @@ typedef struct table
 //function data in global symtable
 typedef struct
 {
-	unsigned return_types_count; //func return type
+	int return_types_count; //func return type
 	varType* return_types;		 //pointer to array of return data types
-	unsigned par_count;			 //func params count
+	int par_count;			 //func params count
 	varType* parameters;		 //Pointer to array of params data types
 	bool defined;				 //found definition of function
 } symbol_function;
@@ -66,7 +66,7 @@ int symtable_init(symbol_node** rootptr);
 //returns if node with name is in tree and if yes, stores pointer to  found_node
 bool symtable_search(symbol_node** rootptr, string* name, symbol_node** found_node);
 //insert node into global function table
-int symtable_insert_node_func(symbol_node** rootptr, string* name, unsigned return_type_count, varType return_types[], unsigned params_count, varType params_types[], bool defined);
+int symtable_insert_node_func(symbol_node** rootptr, string* name, int return_type_count, varType return_types[], int params_count, varType params_types[], bool defined);
 //insert node into local variable table
 int symtable_insert_node_var(symbol_node** rootpr, string* name, varType var_type);
 //checks if any function from global functions symtable is undefined

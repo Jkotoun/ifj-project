@@ -46,6 +46,77 @@ int rightSideLength;
 // node rootNode;
 // tDLList list;
 
+void init_builtins()
+{
+    string func_name;
+    strInit(&func_name);
+
+
+    varType returnArr[] = { STRING, INT };
+    strAddConstStr(&func_name, "inputs");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
+    strClear(&func_name);
+
+
+    returnArr[0] = INT;
+    strAddConstStr(&func_name, "inputi");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
+    strClear(&func_name);
+
+    returnArr[0] = FLOAT;
+    strAddConstStr(&func_name, "inputf");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
+    strClear(&func_name);
+
+    strAddConstStr(&func_name, "print");
+    symtable_insert_node_func(&functions_symtable, &func_name, 0, NULL, -1, NULL, true);
+    strClear(&func_name);
+
+    varType paramArr[] = { INT, INT, INT };
+    returnArr[0] = FLOAT;
+    strAddConstStr(&func_name, "int2float");
+    symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
+    strClear(&func_name);
+
+    paramArr[0] = FLOAT;
+    returnArr[0] = INT;
+    strAddConstStr(&func_name, "float2int");
+    symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
+    strClear(&func_name);
+
+    paramArr[0] = STRING;
+    returnArr[0] = INT;
+    strAddConstStr(&func_name, "len");
+    symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
+    strClear(&func_name);
+
+    paramArr[0] = STRING;
+    paramArr[1] = INT;
+    paramArr[2] = INT;
+    returnArr[0] = STRING;
+    returnArr[1] = INT;
+    strAddConstStr(&func_name, "substr");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 3, paramArr, true);
+    strClear(&func_name);
+
+    paramArr[0] = STRING;
+    paramArr[1] = INT;
+    returnArr[0] = INT;
+    returnArr[1] = INT;
+    strAddConstStr(&func_name, "ord");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 2, paramArr, true);
+    strClear(&func_name);
+
+    paramArr[0] = INT;
+    returnArr[0] = STRING;
+    returnArr[1] = INT;
+    strAddConstStr(&func_name, "chr");
+    symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 1, paramArr, true);
+    strClear(&func_name);
+
+    strFree(&func_name);
+}
+
 void parser_start()
 {
     string str, rawStr;
@@ -59,6 +130,7 @@ void parser_start()
     typeQueueInit(&typeQ);
 
     DLInitList(&scoped_symtables);
+    init_builtins();
 
     rule_prog();
 
@@ -860,9 +932,12 @@ void def_func(string* func_name, varType* paramArr, int paramArrLength, varType*
         {
             handle_error(VAR_DEFINITION_ERR);
         }
-        assert_true(data->par_count == paramArrLength, ARGS_RETURNS_COUNT_ERR);
+        if (data->par_count != -1)// if par_count is -1, then params can be arbitrary
+        {
+            assert_true(data->par_count == paramArrLength, ARGS_RETURNS_COUNT_ERR);
+            assert_true(types_equal(paramArr, data->parameters, paramArrLength), ARGS_RETURNS_COUNT_ERR);
+        }
         assert_true(data->return_types_count == returnArrLength, ARGS_RETURNS_COUNT_ERR);
-        assert_true(types_equal(paramArr, data->parameters, paramArrLength), ARGS_RETURNS_COUNT_ERR);
         assert_true(types_equal(returnArr, data->return_types, returnArrLength), ARGS_RETURNS_COUNT_ERR);
         if (!data->defined)
         {
