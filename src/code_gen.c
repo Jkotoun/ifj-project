@@ -117,6 +117,126 @@ void generator_print_output(){
 
 // -------------------------------------------------------------------------------------------
 
+// Generationg stack operations -----------------------------------------------------
+
+int generate_add_var_to_stack(char *name_of_variable){
+    if( strAddConstStr(&output,"PUSHS TF@")==STR_ERROR      ||\
+        strAddConstStr(&output,name_of_variable)==STR_ERROR ||\
+        strAddConstStr(&output,"\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+int generate_add_const_to_stack(char *value, varType type){
+    switch (type)
+    {
+    case INT:
+        if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR  ||\
+            strAddConstStr(&output,value)==STR_ERROR            ||\
+            strAddConstStr(&output,"\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case STRING:
+        if( strAddConstStr(&output,"PUSHS string@")==STR_ERROR  ||\
+            strAddConstStr(&output,value)==STR_ERROR            ||\
+            strAddConstStr(&output,"\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;    
+    case FLOAT:
+    // TODO - dodělat implementaci float
+        if( strAddConstStr(&output,"PUSHS float@")==STR_ERROR  ||\
+            strAddConstStr(&output,value)==STR_ERROR            ||\
+            strAddConstStr(&output,"\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;    
+    default:
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+int generate_stack_operation(enum instruction_type operation){
+    switch (operation)
+    {
+    case ADDS:
+        if( strAddConstStr(&output,"ADDS\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case SUBS:
+        if( strAddConstStr(&output,"SUBS\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case MULS:
+        if( strAddConstStr(&output,"MULS\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case DIVS:
+        if( strAddConstStr(&output,"DIVS\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case IDIVS:
+        if( strAddConstStr(&output,"IDIVS\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    default:
+        return INTERNAL_COMPILER_ERR;
+        break;
+    }
+
+    return OK;
+}
+
+// -------------------------------------------------------------------------------------------
+
+// Generating relations ----------------------------------------------------------------------
+
+int generate_relation(enum instruction_type relation){
+    switch (relation)
+    {
+    case LTS:
+        if( strAddConstStr(&output,"LTS\nPOPS GF@tmp\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case GTS:
+        if( strAddConstStr(&output,"GTS\nPOPS GF@tmp\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case EQS:
+        if( strAddConstStr(&output,"EQS\nPOPS GF@tmp\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case LSES:
+        if( strAddConstStr(&output,"GTS\nNOTS\nPOPS GF@tmp\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    case GTES:
+        if( strAddConstStr(&output,"LTS\nNOTS\nPOPS GF@tmp\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+        break;
+    default:
+        return INTERNAL_COMPILER_ERR;
+        break;
+    }
+
+    return OK;
+}
+
+// -------------------------------------------------------------------------------------------
+
 // Generating for main function --------------------------------------------------------------
 
 int genetate_main_start(){
@@ -214,7 +334,7 @@ int generate_if_end(int scope, char *name_of_function){
 
 int generate_while_start(int scope, char *name_of_function){  
     char scope_string[MAX_DIGITS_OF_SCOPE];
-    char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];
+    char cnt_while_in_scope_string[MAX_DIGITS_OF_SCOPE];    
     dArray_add_to_scope(&while_counter,scope);
 
     if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_while_in_scope_string, "%d", while_counter.count_in_scope[scope])<0)
