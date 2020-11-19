@@ -41,5 +41,7 @@ jobs:
       run: make
     - name: Checkout submodules
       run: git submodule update --init
+    - name: Update g++
+      run: sudo apt install g++
     - name: Run tests
       run: make test
