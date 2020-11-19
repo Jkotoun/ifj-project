@@ -238,19 +238,122 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     return SYNTAX_ERR;
 }
 
+derived_value get_reduced_const_value(expression_stack_node *reduce_element_0,
+    expression_stack_node *reduce_element_1,
+    expression_stack_node *reduce_element_2,
+    reduction_rule rule)
+{
+    if(reduce_element_0->value.state == reduce_element_2->value.state 
+        && reduce_element_0->value.state != NOT_DETERMINED){
+        if(reduce_element_0->value.state == INT_VAL){
+            switch (rule){
+                case nt_plus_nt:
+                    {
+                        derived_value out = {
+                            .integer = reduce_element_2->value.integer 
+                                + reduce_element_0->value.integer,
+                            .state = INT_VAL
+                        };
+                        return out;
+                    }
+                case nt_minus_nt:
+                    {
+                        derived_value out = {
+                            .integer = reduce_element_2->value.integer 
+                                - reduce_element_0->value.integer,
+                            .state = INT_VAL
+                        };
+                        return out;
+                    }
+                case nt_mul_nt:
+                    {
+                        derived_value out = {
+                            .integer = reduce_element_2->value.integer 
+                                * reduce_element_0->value.integer,
+                            .state = INT_VAL
+                        };
+                        return out;
+                    }
+                case nt_div_nt:
+                    {
+                        derived_value out = {
+                            .integer = reduce_element_2->value.integer 
+                                / reduce_element_0->value.integer,
+                            .state = INT_VAL
+                        };
+                        return out;
+                    }
+                default:
+                    break;
+            }
+        }
+        else if(reduce_element_0->value.state == DECIMAL_VAL){
+            switch (rule){
+                case nt_plus_nt:
+                    {
+                        derived_value out = {
+                            .decimal = reduce_element_2->value.decimal 
+                                + reduce_element_0->value.decimal,
+                            .state = DECIMAL_VAL
+                        };
+                        return out;
+                    }
+                case nt_minus_nt:
+                    {
+                        derived_value out = {
+                            .decimal = reduce_element_2->value.decimal 
+                                - reduce_element_0->value.decimal,
+                            .state = DECIMAL_VAL
+                        };
+                        return out;
+                    }
+                case nt_mul_nt:
+                    {
+                        derived_value out = {
+                            .decimal = reduce_element_2->value.decimal 
+                                * reduce_element_0->value.decimal,
+                            .state = DECIMAL_VAL
+                        };
+                        return out;
+                    }
+                case nt_div_nt:
+                    {
+                        derived_value out = {
+                            .decimal = reduce_element_2->value.decimal 
+                                / reduce_element_0->value.decimal,
+                            .state = DECIMAL_VAL
+                        };
+                        return out;
+                    }
+                default:
+                    break;
+            }
+        }
+    }
+    derived_value not_det_val = {
+        .state = NOT_DETERMINED
+    };
+    return not_det_val;
+}
+
 int parse_expression_inner(tDLList *scoped_symtables,
     token *token_arr, 
     int token_count,
     varType *out_type,
     instrumented_node **out_instrumented_arr)
 {    
+    // Undefined derived_val
+    derived_value not_determined_val = {
+        .state = NOT_DETERMINED
+    };
+
     // Out var type default
     *out_type = UNDEFINED;
 
     // Initializes the stack and pushes stop element ($) to the stack
     expression_stack stack;
     stack_init(&stack);
-    int push_code_0 = stack_push(&stack, dollar, UNDEFINED);
+    int push_code_0 = stack_push(&stack, dollar, UNDEFINED, not_determined_val);
     if(push_code_0 != OK){
         stack_dispose(&stack);
         return push_code_0;
@@ -304,7 +407,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                     // ---------------------------------- EQUAL - = --------------------------------- //
                     // May happen only if top_stack_terminal_group = '(' and input_terminal_group = ')'
                     // NO_CODE_GENERATION and NO_SEMANTIC_CHECK needed = (nt)
-                    int push_code_1 = stack_push(&stack, input_symbol, UNDEFINED);
+                    int push_code_1 = stack_push(&stack, input_symbol, UNDEFINED, not_determined_val);
                     if(push_code_1 != OK){
                         stack_dispose(&stack);
                         return push_code_1;
@@ -338,7 +441,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             {
                                 varType var_type;
                                 if(get_varType_from_symtable(scoped_symtables, input_token->str, &var_type) != -1){
-                                    int push_code_2 = stack_push(&stack, input_symbol, var_type);
+                                    int push_code_2 = stack_push(&stack, input_symbol, var_type, not_determined_val);
                                     if(push_code_2 != OK){
                                         stack_dispose(&stack);
                                         return push_code_2;
@@ -353,11 +456,41 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             }
                             break;
                         case int_lit:
+                            {
+                                varType literal_type = get_varType_from_literal(input_token->type);
+                                derived_value derived_val = {
+                                    .integer = input_token->integer,
+                                    .state = INT_VAL
+                                };
+                                int push_code_2 = stack_push(&stack, input_symbol, literal_type, derived_val);
+                                if(push_code_2 != OK){
+                                    stack_dispose(&stack);
+                                    return push_code_2;
+                                }
+                                // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
+                                // pushes const value of a type to the stack
+                            }
+                            break;
                         case float64_lit:
+                            {
+                                derived_value derived_val = {
+                                    .decimal = input_token->decimal,
+                                    .state = DECIMAL_VAL
+                                };
+                                varType literal_type = get_varType_from_literal(input_token->type);
+                                int push_code_2 = stack_push(&stack, input_symbol, literal_type, derived_val);
+                                if(push_code_2 != OK){
+                                    stack_dispose(&stack);
+                                    return push_code_2;
+                                }
+                                // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
+                                // pushes const value of a type to the stack
+                            }
+                            break;
                         case string_lit:
                             {
                                 varType literal_type = get_varType_from_literal(input_token->type);
-                                int push_code_2 = stack_push(&stack, input_symbol, literal_type);
+                                int push_code_2 = stack_push(&stack, input_symbol, literal_type, not_determined_val);
                                 if(push_code_2 != OK){
                                     stack_dispose(&stack);
                                     return push_code_2;
@@ -369,7 +502,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                         default:
                             {
                                 // other possible input (e.g. +, -, ...)
-                                int push_code_2 = stack_push(&stack, input_symbol, UNDEFINED);
+                                int push_code_2 = stack_push(&stack, input_symbol, UNDEFINED, not_determined_val);
                                 if(push_code_2 != OK){
                                     stack_dispose(&stack);
                                     return push_code_2;
@@ -412,6 +545,9 @@ int parse_expression_inner(tDLList *scoped_symtables,
                     
                     // CODE GENERATION AND SEMANTIC CHECK
                     varType reduced_type = UNDEFINED;
+                    derived_value reduced_val = {
+                        .state = NOT_DETERMINED
+                    };
                     switch(reduction_rule){
                         case operand:
                             // NO_CODE_GENERATION - value has already been pushed to the stack
@@ -419,6 +555,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                 stack_dispose(&stack);
                                 return VAR_DEFINITION_ERR;
                             }
+                            reduced_val = reduce_element_0->value; 
                             reduced_type = reduce_element_0->type;
                             break;
                         case lbrack_nt_rbrack:
@@ -427,6 +564,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                 stack_dispose(&stack);
                                 return VAR_DEFINITION_ERR;
                             }
+                            reduced_val = reduce_element_1->value; 
                             reduced_type = reduce_element_1->type;
                             break;
                         case nt_plus_nt:
@@ -439,6 +577,8 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                 && reduce_element_0->type != BOOL
                                 && reduce_element_0->type != UNDEFINED){
                                 // TO DO: GENERATE_CODE(reduction_rule) - performs ADDS on the stack
+                                reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
+                                    reduce_element_2, reduction_rule);
                                 reduced_type = reduce_element_0->type;
                             }
                             else{
@@ -448,12 +588,29 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             }
                             break;
                         case nt_minus_nt:
+                            if(reduce_element_0->type == reduce_element_2->type
+                                && reduce_element_0->type != BOOL 
+                                && reduce_element_0->type != STRING
+                                && reduce_element_0->type != UNDEFINED){
+                                // TO DO: GENERATE_CODE(reduction_rule) - performs SUBS on the stack
+                                reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
+                                    reduce_element_2, reduction_rule);
+                                reduced_type = reduce_element_0->type;
+                            }
+                            else{
+                                // Mismatching data types
+                                stack_dispose(&stack);
+                                return DATATYPE_COMPATIBILITY_ERR;
+                            }
+                            break;
                         case nt_mul_nt:
                             if(reduce_element_0->type == reduce_element_2->type
                                 && reduce_element_0->type != BOOL 
                                 && reduce_element_0->type != STRING
                                 && reduce_element_0->type != UNDEFINED){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs SUBS/MULS on the stack
+                                // TO DO: GENERATE_CODE(reduction_rule) - performs MULS on the stack
+                                reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
+                                    reduce_element_2, reduction_rule);
                                 reduced_type = reduce_element_0->type;
                             }
                             else{
@@ -464,14 +621,30 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             break;
                         case nt_div_nt:
                             if(reduce_element_0->type == reduce_element_2->type
-                                && reduce_element_0->type == INT){                                
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs IDIVS - integer division on the stack
-                                reduced_type = INT;
+                                && reduce_element_0->type == INT){         
+                                if(reduce_element_0->value.state != NOT_DETERMINED
+                                    && reduce_element_0->value.integer == 0){
+                                    return DIVIDE_ZERO_ERR;
+                                }                       
+                                else{
+                                    // TO DO: GENERATE_CODE(reduction_rule) - performs IDIVS - integer division on the stack
+                                    reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
+                                        reduce_element_2, reduction_rule);
+                                    reduced_type = INT;
+                                }
                             }
                             else if(reduce_element_0->type == reduce_element_2->type
                                 && reduce_element_0->type == FLOAT){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs DIVS - floating point division on the stack
-                                reduced_type = FLOAT;
+                                if(reduce_element_0->value.state != NOT_DETERMINED
+                                    && reduce_element_0->value.decimal == 0.f){
+                                    return DIVIDE_ZERO_ERR;
+                                }
+                                else{
+                                    // TO DO: GENERATE_CODE(reduction_rule) - performs DIVS - floating point division on the stack
+                                    reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
+                                        reduce_element_2, reduction_rule);
+                                    reduced_type = FLOAT;
+                                }
                             }
                             else{
                                 // Mismatching data types
@@ -527,7 +700,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                         return pop_code_0;
                     }
                     // Pushes reduced non-terminal to the stack
-                    int push_code_1 = stack_push(&stack, nt, reduced_type);
+                    int push_code_1 = stack_push(&stack, nt, reduced_type, reduced_val);
                     if(push_code_1 != OK){
                         stack_dispose(&stack);
                         return push_code_1;

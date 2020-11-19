@@ -1742,3 +1742,387 @@ TEST_F(ExpressionParserTests, ExtendeExpressionsTests)
       EXPECT_EQ(reduction_steps->next->next->next->next->next->next->next->next->next->next->next->next->type, BOOL);   
    }
 }
+
+TEST_F(ExpressionParserTests, ZeroDivisionTestInt)
+{    
+   // c / 0
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, INT);
+          
+      token tokens[3] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 0
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 3, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, DIVIDE_ZERO_ERR);
+      EXPECT_EQ(out_type, UNDEFINED);
+      EXPECT_EQ(reduction_steps->rule, operand);
+      EXPECT_EQ(reduction_steps->type, INT);
+      EXPECT_EQ(reduction_steps->next->rule, operand);
+      EXPECT_EQ(reduction_steps->next->type, INT);
+   }
+
+   // c / ((8 + 8) * 8 / 16 - 8)
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, INT);
+          
+      token tokens[15] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = PLUS_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN,
+         },
+         {
+            .type = MULTIPLICATION_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 16
+         },
+         {
+            .type = MINUS_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 15, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, DIVIDE_ZERO_ERR);
+      EXPECT_EQ(out_type, UNDEFINED);
+   }
+
+   // c / ((8 + 8) * 8 / 16 - 8)
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, INT);
+          
+      token tokens[15] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = PLUS_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN,
+         },
+         {
+            .type = MULTIPLICATION_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 8
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = INTEGER_LITERAL_TOKEN,
+            .integer = 16
+         },
+         {
+            .type = MINUS_TOKEN
+         },
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 15, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, OK);
+      EXPECT_EQ(out_type, INT);
+   }
+}
+
+TEST_F(ExpressionParserTests, ZeroDivisionTestFloat)
+{    
+   // c / 0
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, FLOAT);
+          
+      token tokens[3] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 0
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 3, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, DIVIDE_ZERO_ERR);
+      EXPECT_EQ(out_type, UNDEFINED);
+      EXPECT_EQ(reduction_steps->rule, operand);
+      EXPECT_EQ(reduction_steps->type, FLOAT);
+      EXPECT_EQ(reduction_steps->next->rule, operand);
+      EXPECT_EQ(reduction_steps->next->type, FLOAT);
+   }
+
+   // c / ((4 + 3) * 8 / 16 - 3.5)
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, FLOAT);
+          
+      token tokens[15] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 4.0
+         },
+         {
+            .type = PLUS_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 3.0
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN,
+         },
+         {
+            .type = MULTIPLICATION_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 8.0
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 16.0
+         },
+         {
+            .type = MINUS_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 3.5
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 15, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, DIVIDE_ZERO_ERR);
+      EXPECT_EQ(out_type, UNDEFINED);
+   }
+
+   // c / ((4 + 3) * 8 / c - 3.5)
+   {
+      tDLList scoped_symtables;
+      DLInitList(&scoped_symtables);
+      DLInsertLast(&scoped_symtables);
+      symtable_init(&scoped_symtables.Last->root_ptr);
+
+      string param_c;
+      strInit(&param_c);
+      strAddChar(&param_c, 'c');      
+      symtable_insert_node_var(&scoped_symtables.Last->root_ptr, &param_c, FLOAT);
+          
+      token tokens[15] = {
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = LEFT_BRACKET_TOKEN,
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 4.0
+         },
+         {
+            .type = PLUS_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 3.0
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN,
+         },
+         {
+            .type = MULTIPLICATION_TOKEN
+         },
+         {
+            .type = ID_TOKEN,
+            .str = &param_c
+         },
+         {
+            .type = DIVISON_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 16.0
+         },
+         {
+            .type = MINUS_TOKEN
+         },
+         {
+            .type = DECIMAL_LITERAL_TOKEN,
+            .decimal = 3.5
+         },
+         {
+            .type = RIGHT_BRACKET_TOKEN
+         }
+      };
+
+      varType out_type;
+      instrumented_node *reduction_steps = NULL;
+      int expr_parser_output = parse_instrumented_expression(&scoped_symtables,
+         tokens, 15, &out_type, &reduction_steps);
+
+      EXPECT_EQ(expr_parser_output, OK);
+      EXPECT_EQ(out_type, FLOAT);
+   }
+}

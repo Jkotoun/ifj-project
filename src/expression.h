@@ -102,6 +102,21 @@ int get_reduction_rule(expression_stack_node *reduce_element_0,
     reduction_rule *out_reduction_rule);
 
 /**
+ * @brief Monitors derived value of float and int literals
+ * 
+ * Enables the zero division check feature.
+ * @param reduce_element_0 the last or an only element appearing in the rule if only one element in the rule
+ * @param reduce_element_1 the seccond element appearing in the rule if any
+ * @param reduce_element_2 the first element appearing in the rule if more than 1
+ * @param rule used reduction rule
+ * @return calculated derived value or default derived value if not possible to determine
+ */ 
+derived_value get_reduced_const_value(expression_stack_node *reduce_element_0,
+    expression_stack_node *reduce_element_1,
+    expression_stack_node *reduce_element_2,
+    reduction_rule rule);
+
+/**
  * @brief Inner function for expression handling
  * 
  * @param scoped_symtables representing scoped symtables

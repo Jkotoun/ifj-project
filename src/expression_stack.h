@@ -35,13 +35,29 @@ typedef enum{
     dollar          /// $
 } expression_symbol;
 
+typedef enum{
+    INT_VAL,                /// if value may be derived from int literals during compilation
+    DECIMAL_VAL,            /// if value may be derived from float literals during compilation
+    NOT_DETERMINED      /// if cannot value cannot be determined
+} derived_value_state;
+
+/**
+ * @brief Represents derived value type used for 0 division check
+ */
+typedef struct {
+    int64_t integer;            /// derived value of int literals only
+    double decimal;             /// derived value of float literals only
+    derived_value_state state;  /// state of value derivation
+} derived_value;
+
 /**
  * @brief Represents stack node type
  */
 typedef struct expression_stack_node{
-    expression_symbol symbol; // expression symbol type, e.g. id, $, ....
-    varType type; /// represents type of the symbol (for type conversions and semantics check)
+    expression_symbol symbol;           /// expression symbol type, e.g. id, $, ....
+    varType type;                       /// represents type of the symbol (for type conversions and semantics check)
     struct expression_stack_node *next; /// ptr to next expression_stack_node
+    derived_value value;                /// derived value used for 0 division check
 } expression_stack_node;
 
 /**
@@ -60,11 +76,13 @@ void stack_init(expression_stack *stack);
  * @brief Pushes symbol to the stack
  * @param symbol_type represents the actual "symbol"
  * @param type represents type of the symbol (for type conversions and semantics check)
+ * @param value represents derived value (for 0 division check)
  * @return EXIT_CODE see error_codes.h
  */
 int stack_push(expression_stack *stack,
     expression_symbol symbol,
-    varType type);
+    varType type,
+    derived_value value);
 
 /**
  * @brief Pushes symbol to the stack after the top terminal
