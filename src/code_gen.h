@@ -4,6 +4,7 @@
  * Generator of output code
 */
 #include "str.h"
+#include "symtable.h"
 
 #ifndef code_gen_h
 #define code_gen_h
@@ -42,17 +43,18 @@ int genetate_main_start();
 int genetate_main_end();        //<-- návěští pro předčasné ukončení mainu + return mainu
 
 // Generating stack operations
-int generate_add_var_to_stack(char *name_of_variable);
-int generate_add_const_to_stack(char *value, varType type);
+int generate_add_var_to_stack(int scope, char *name_of_variable);
+int generate_add_string_to_stack(char *value);
+int generate_add_int_to_stack(int value);
+int generate_add_float_to_stack(double value);
 int generate_stack_operation(enum instruction_type operation);
 
 // Generating relations
 int generate_relation(enum instruction_type relation);
 
 // Generating for variables
-int generate_new_var();
-int generate_assign_var_to_var();
-int generate_assign_const_to_var();
+int generate_new_var(int scope, char *name_of_var);
+int generate_assign_var(int scope, char *name_of_var);
 
 // Build-in functions
 int generate_inputs();
@@ -71,15 +73,14 @@ int generate_chr();
 int generate_if_start(int scope, char *name_of_function);
 int generate_if_else(int scope, char *name_of_function);
 int generate_if_end(int scope, char *name_of_function);
-// -- Generating boy of while loop
-int generate_while_start(int scope, char *name_of_function);
-int generate_while_relation_end(int scope, char *name_of_function);
-int generate_while_end(int scope, char *name_of_function);
 // -- Generating body of for loop
-int generate_for_start();
-int generate_for_end();
+int generate_for_start(int scope, char *name_of_function);
+int generate_for_assignment_end(int scope, char *name_of_function);
+int generate_for_comperation(int scope, char *name_of_function);
+int generate_for_end(int scope, char *name_of_function);
 // -- Generating body of function
 int generate_function_start();
+int generate_function_param();
 int generate_function_end();
 
 // Calling function
@@ -109,6 +110,7 @@ enum instruction_type
     LTS,
     GTS,
     EQS,
+    NEQS,
     LSES,
     GTES,
 };
