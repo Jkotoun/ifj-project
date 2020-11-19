@@ -28,7 +28,5 @@ jobs:
       run: git submodule update --init
     - name: Install golang
       run: sudo apt install golang
-    - name: cd
-      run: cd ifj-testsuite
     - name: Run tests
-      run: python2 testsuite.py -mc -c ../src/main
+      run: cd ifj-testsuite && python2 testsuite.py -mc -c ../src/main
