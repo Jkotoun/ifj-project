@@ -96,7 +96,7 @@ void generator_clear(){
     strFree(&output);
 }
 void generator_print_output(){
-    printf("%s",output);
+    printf("%a",output);
 }
 
 /*int generate_build_in_function(string *output){
