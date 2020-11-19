@@ -23,6 +23,7 @@ protected:
    void TearDown()
    {
       strFree(&str);
+      strFree(&raw_str);
    }
 };
 TEST_F(ScannerTests, BasicLexemsTest)
