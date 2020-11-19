@@ -461,6 +461,8 @@ int get_token(token *token)
                 else if(c == '\\')
                 {
                     scanner_state = ESCAPE_STRING_STATE;
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                 }
                 else if(c<=31)
                 {
@@ -479,26 +481,16 @@ int get_token(token *token)
                     strClear(token->str);
                     return LEX_ERR;
                 }
-                else if(c == '\\' || c == '"')
+                else if(c == '\\' || c == '"' || c=='n' || c=='t')
                 {
                     if(strAddChar(token->str,c) == STR_ERROR)
                         return INTERNAL_COMPILER_ERR;
                     scanner_state = STRING_STATE;
                 }
-                else if(c == 'n')
-                {
-                    if(strAddChar(token->str,'\n') == STR_ERROR)
-                        return INTERNAL_COMPILER_ERR;
-                    scanner_state = STRING_STATE;
-                }
-                else if(c == 't')
-                {
-                    if(strAddChar(token->str,'\t') == STR_ERROR)
-                        return INTERNAL_COMPILER_ERR;
-                    scanner_state = STRING_STATE;
-                }
                 else if(c == 'x')
                 {
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                        return INTERNAL_COMPILER_ERR;
                     scanner_state = HEXA_ESCAPE_FIRST_STATE;
                 }
                 else
@@ -510,14 +502,13 @@ int get_token(token *token)
             case HEXA_ESCAPE_FIRST_STATE:
                 if(isxdigit(c))
                 {
+                    if(strAddChar(token->str,c) == STR_ERROR)
+                            return INTERNAL_COMPILER_ERR;
                     //read second char to escape sequence
                     int hexa2 = getc(stdin);
                     if(isxdigit(hexa2))
                     {
-                        //init char array for int conversion by strtol 
-                        char hexa_literal[] = {c, hexa2, '\0'};
-                        int hexa_char =(int)strtol(hexa_literal,NULL,16);
-                        if(strAddChar(token->str,hexa_char) == STR_ERROR)
+                        if(strAddChar(token->str,hexa2) == STR_ERROR)
                             return INTERNAL_COMPILER_ERR;
                         scanner_state = STRING_STATE;
                     }

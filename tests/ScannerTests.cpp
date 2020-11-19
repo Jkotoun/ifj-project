@@ -151,7 +151,7 @@ TEST_F(ScannerTests, StringTest)
    EXPECT_EQ(get_token(&token_var), OK);
 
    EXPECT_EQ(token_var.type, STRING_LITERAL_TOKEN);
-   char string_expected[] = {"test hexaK newline\n tab\t quote\" slash\\\0"};
+   char string_expected[] = {"test hexa\\x4B newline\\n tab\\t quote\\\" slash\\"};
    int i = 0;
    char *string_got = strGetStr(token_var.str);
    
