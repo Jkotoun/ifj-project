@@ -8,18 +8,18 @@
 */
 
 #include "parser.h"
-#include "parser_rules.h"
+#include "dl_list.h"
+#include "error_codes.h"
+#include "expression.h"
 #include "parser_helpers.h"
+#include "parser_rules.h"
+#include "queue.h"
 #include "scanner.h"
 #include "symtable.h"
-#include "error_codes.h"
-#include "queue.h"
-#include "expression.h"
-#include <string.h>
-#include "dl_list.h"
-#include <stdio.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define assert_token_is(token) func_assert_token_is(token, __func__)
 #define assert_keyword_is(keyword) func_assert_keyword_is(keyword, __func__)
@@ -51,12 +51,10 @@ void init_builtins()
     string func_name;
     strInit(&func_name);
 
-
-    varType returnArr[] = { STRING, INT };
+    varType returnArr[] = {STRING, INT};
     strAddConstStr(&func_name, "inputs");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
-
 
     returnArr[0] = INT;
     strAddConstStr(&func_name, "inputi");
@@ -72,7 +70,7 @@ void init_builtins()
     symtable_insert_node_func(&functions_symtable, &func_name, 0, NULL, -1, NULL, true);
     strClear(&func_name);
 
-    varType paramArr[] = { INT, INT, INT };
+    varType paramArr[] = {INT, INT, INT};
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "int2float");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
@@ -144,8 +142,10 @@ void parser_start()
 
     if (!symtable_search(&functions_symtable, &main_str, &main_node)) //main not defined
     {
-        handle_error(OTHER_SEMANTIC_ERR);
+        handle_error(VAR_DEFINITION_ERR);
     }
+    assert_true(((symbol_function*)main_node->data)->par_count == 0, ARGS_RETURNS_COUNT_ERR);
+    assert_true(((symbol_function*)main_node->data)->return_types_count == 0, ARGS_RETURNS_COUNT_ERR);
 
     if (symtable_contains_undef_func(&functions_symtable))
     {
@@ -237,7 +237,6 @@ void rule_func_decl()
     varType* returnArr = typeQueueToArray(&typeQ);
     int returnArrLength = typeQueueLength(&typeQ);
 
-
     def_func(&func_name, paramArr, paramArrLength, returnArr, returnArrLength, true);
     strClear(&func_name);
     strAddChar(&func_name, '_');
@@ -318,9 +317,9 @@ void rule_type_first_next()
         return;
     }
     else if (current_token.type == KEYWORD_TOKEN &&
-        (current_token.keyword == INT_KEYWORD ||
-            current_token.keyword == FLOAT64_KEYWORD ||
-            current_token.keyword == STRING_KEYWORD))
+             (current_token.keyword == INT_KEYWORD ||
+              current_token.keyword == FLOAT64_KEYWORD ||
+              current_token.keyword == STRING_KEYWORD))
     {
         varType type = rule_type();
         typeQueueUp(&typeQ, type);
@@ -406,9 +405,9 @@ void rule_statement_next()
         rule_statement_action_next();
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN ||
-        current_token.type == INTEGER_LITERAL_TOKEN ||
-        current_token.type == STRING_LITERAL_TOKEN ||
-        current_token.type == DECIMAL_LITERAL_TOKEN)
+             current_token.type == INTEGER_LITERAL_TOKEN ||
+             current_token.type == STRING_LITERAL_TOKEN ||
+             current_token.type == DECIMAL_LITERAL_TOKEN)
     {
         rule_literal_expr_next();
     }
@@ -446,6 +445,7 @@ void rule_statement_next()
     {
         DLInsertLast(&scoped_symtables);
         symtable_init(&scoped_symtables.Last->root_ptr);
+
         get_next_token();
         rule_definition_next();
         assert_token_is(SEMICOLON_TOKEN);
@@ -465,7 +465,11 @@ void rule_statement_next()
         get_next_token();
         rule_assignment_next();
 
+        DLInsertLast(&scoped_symtables);
+        symtable_init(&scoped_symtables.Last->root_ptr);
+
         rule_body();
+        DLDeleteLast(&scoped_symtables);
         DLDeleteLast(&scoped_symtables);
 
         get_next_token();
@@ -482,9 +486,9 @@ void rule_statement_next()
         assert_true(rightSideLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
         varType* returnTypeArr = typeQueueToArray(&typeQ);
         assert_true(types_equal(returnTypeArr,
-            ((symbol_function*)current_function->data)->return_types,
-            rightSideLength), ARGS_RETURNS_COUNT_ERR);
-
+                                ((symbol_function*)current_function->data)->return_types,
+                                rightSideLength),
+                    ARGS_RETURNS_COUNT_ERR);
     }
     else
     {
@@ -537,7 +541,11 @@ void rule_statement_action_next()
 
         for (size_t i = 0; i < leftSideLength; i++)
         {
-            assert_true(get_varType_from_symtable(&scoped_symtables, leftTokenArr[i].str, &leftTypeArr[i]) != 1, VAR_DEFINITION_ERR);
+            int scope_index = get_varType_from_symtable(&scoped_symtables, leftTokenArr[i].str, &leftTypeArr[i]);
+            if (scope_index == -1)
+            {
+                handle_error(VAR_DEFINITION_ERR);
+            }
         }
 
         get_next_token();
@@ -566,6 +574,10 @@ void rule_statement_action_next()
         int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         assert_true(result == 0, result);
         def_var(varToken.str, type);
+    }
+    else
+    {
+        handle_error(SYNTAX_ERR);
     }
 }
 
@@ -677,6 +689,7 @@ void rule_definition_next()
 {
     if (current_token.type == ID_TOKEN)
     {
+
         string var_name;
         strInit(&var_name);
         strCopyString(&var_name, current_token.str);
@@ -841,20 +854,20 @@ void func_handle_error(int errType, char const* func)
 
     switch (errType)
     {
-        case SYNTAX_ERR:
-            fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
+    case SYNTAX_ERR:
+        fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
                 func, token, current_token.type, current_token.source_line);
-            exit(SYNTAX_ERR);
-            break;
-        case LEX_ERR:
-            fprintf(stderr, "Lexical error on line %d\n",
+        exit(SYNTAX_ERR);
+        break;
+    case LEX_ERR:
+        fprintf(stderr, "Lexical error on line %d\n",
                 current_token.source_line);
-            exit(LEX_ERR);
+        exit(LEX_ERR);
 
-        default:
-            fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
+    default:
+        fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
                 func, errType, current_token.source_line);
-            exit(errType);
+        exit(errType);
     }
 }
 
@@ -925,6 +938,10 @@ bool types_equal(varType* types1, varType* types2, int length)
 void def_func(string* func_name, varType* paramArr, int paramArrLength, varType* returnArr, int returnArrLength, bool definition)
 {
     symbol_node* found_func;
+    if (symtable_search(&scoped_symtables.Last->root_ptr, func_name, &found_func)) //func has same name as var
+    {
+        handle_error(VAR_DEFINITION_ERR);
+    }
     if (symtable_search(&functions_symtable, func_name, &found_func)) //func already exists
     {
         symbol_function* data = (symbol_function*)(found_func->data);
@@ -932,7 +949,7 @@ void def_func(string* func_name, varType* paramArr, int paramArrLength, varType*
         {
             handle_error(VAR_DEFINITION_ERR);
         }
-        if (data->par_count != -1)// if par_count is -1, then params can be arbitrary
+        if (data->par_count != -1) // if par_count is -1, then params can be arbitrary
         {
             assert_true(data->par_count == paramArrLength, ARGS_RETURNS_COUNT_ERR);
             assert_true(types_equal(paramArr, data->parameters, paramArrLength), ARGS_RETURNS_COUNT_ERR);
@@ -956,6 +973,12 @@ void def_func(string* func_name, varType* paramArr, int paramArrLength, varType*
 
 void def_var(string* var_name, varType type)
 {
+    // symbol_node *_;
+    // if (symtable_search(&functions_symtable, var_name, &_)) //func with same name already exists
+    // {
+    //     handle_error(VAR_DEFINITION_ERR);
+    // }
+
     table* current_symtable = scoped_symtables.Last;
     varType existing_varType;
     int declaredIndex = get_varType_from_symtable(&scoped_symtables, var_name, &existing_varType);
@@ -1015,20 +1038,20 @@ varType get_varType_from_literal(token_type type)
 {
     switch (type)
     {
-        case DECIMAL_LITERAL_TOKEN:
-            return FLOAT;
-            break;
-        case INTEGER_LITERAL_TOKEN:
-            return INT;
-            break;
-        case STRING_LITERAL_TOKEN:
-            return STRING;
-            break;
+    case DECIMAL_LITERAL_TOKEN:
+        return FLOAT;
+        break;
+    case INTEGER_LITERAL_TOKEN:
+        return INT;
+        break;
+    case STRING_LITERAL_TOKEN:
+        return STRING;
+        break;
 
-        default:
-            handle_error(SYNTAX_ERR);
-            return UNDEFINED;
-            break;
+    default:
+        handle_error(SYNTAX_ERR);
+        return UNDEFINED;
+        break;
     }
 }
 
