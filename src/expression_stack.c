@@ -17,13 +17,15 @@ void stack_init(expression_stack *stack){
 
 int stack_push(expression_stack *stack, 
     expression_symbol symbol,
-    varType type)
+    varType type,
+    derived_value value)
 {
     expression_stack_node* push_node = (expression_stack_node*)malloc(sizeof(expression_stack_node));
     if(push_node != NULL){
         push_node->symbol = symbol;
         push_node->type = type;
         push_node->next = stack->top;
+        push_node->value = value;
         stack->top = push_node;
         return OK;
     }
