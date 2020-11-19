@@ -30,3 +30,16 @@ jobs:
       run: sudo apt install golang
     - name: Run tests
       run: cd ifj-testsuite && python2 testsuite.py -mc -c ../src/main
+
+  test-gtest:
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: make
+      run: make
+    - name: Checkout submodules
+      run: git submodule update --init
+    - name: Run tests
+      run: make test
