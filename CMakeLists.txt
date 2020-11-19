@@ -16,12 +16,15 @@ set(Headers
     src/str.h;
     src/dl_list.h;
     src/code_gen.h;
+    src/expression_stack.h;
     src/expression.h;
     src/symtable.h;
     src/parser.h;
     src/parser_rules.h;
     src/parser_helpers.h;
     src/queue.h;
+    src/expression_stack.h;
+
 )
 set(Sources
     src/str.c 
@@ -29,7 +32,11 @@ set(Sources
     src/symtable.c
     src/dl_list.c
     src/parser.c
+    src/expression_stack.c
+    src/expression.c
     src/queue.c
+    src/expression.c;
+    src/expression_stack.c;
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)

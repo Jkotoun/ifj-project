@@ -1,3 +1,6 @@
 [submodule "tests/googletest"]
 	path = tests/googletest
 	url = https://github.com/google/googletest
+[submodule "ifj-testsuite"]
+	path = ifj-testsuite
+	url = https://gitlab.com/kam29/ifj-testsuite/

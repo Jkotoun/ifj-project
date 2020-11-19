@@ -251,7 +251,7 @@ int get_token(token *token)
                 }
                 break;
             case ID_KEYWORD_STATE:
-                if(isalnum(c))
+                if(isalnum(c) || c=='_')
                 {
                     if(strAddChar(token->str,c) == STR_ERROR)
                         return INTERNAL_COMPILER_ERR;
@@ -426,6 +426,11 @@ int get_token(token *token)
                     g_source_file_line++;
                     token->source_line = g_source_file_line;
                 }
+                else if(c == EOF)
+                {
+                    g_source_file_line = 1;
+                    return LEX_ERR;
+                }
                 break;
             case BLOCK_COMMENT_STAR_STATE:
                 if(c == '/')
@@ -438,6 +443,11 @@ int get_token(token *token)
                     {
                         g_source_file_line++;
                         token->source_line = g_source_file_line;
+                    }
+                    else if(c == EOF)
+                    {
+                        g_source_file_line = 1;
+                        return LEX_ERR;
                     }
                     scanner_state = BLOCK_COMMENT_STATE;
                 }
