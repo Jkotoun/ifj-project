@@ -1,7 +1,7 @@
 /****
  * Implementace překladače imperativního jazyka IFJ20.
  * Jiří Vlasák - xvlasa15
- * Fronta tokenů a typů - upraveno z 1. DU do IAL.
+ * Token and type queueu. Based on my implementation of the second IAL homework.
 */
 
 #include "queue.h"
