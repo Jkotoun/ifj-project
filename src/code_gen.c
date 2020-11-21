@@ -54,16 +54,47 @@ static string output;
 static dArray if_counter;
 static dArray for_counter;
 
+//func len(𝑠 string) (int) – Vrátí délku (počet znaků) řetězce zadaného jediným parametrem 𝑠. Např. len("x\nz") vrací 3.
+int generate_len(){
+    // Creates parameter variables
+    if(strAddConstStr(&output, "LABEL len\n \
+                                PUSHFRAME\n \
+                                CREATEFRAME\n \
+                                DEFVAR TF@str\n \
+                                POPS TF@str\n \
+                                DEFVAR TF@cnt\
+                                MOVE TF@cnt int@0\
+                                STRLEN TF@cnt TF@str\
+                                PUSHS TF@cnt\
+                                POPFRAME\
+                                RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
+int generate_int2float(){
+    if(strAddConstStr(&output, "LABEL int2float\n \
+                                INT2FLOATS\
+                                RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
+int generate_float2int(){
+    if(strAddConstStr(&output, "LABEL int2float\n \
+                                FLOAT2INTS\
+                                RETURN\n")==STR_ERROR)
+    return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 //TODO dodělat implementaci build-in funkcí
 /*int generate_inputs();
 int generate_inputi();
 int generate_inputf();
 int generate_print();
-int generate_int2float();
-int generate_float2int();
-int generate_len();
+
+
+
 int generate_substr();
 int generate_ord();
 int generate_chr();*/
@@ -82,7 +113,7 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
-    /*if (generate_build_in_function()==INTERNAL_COMPILER_ERR){
+    /*if (generate_build_in_function(&)==INTERNAL_COMPILER_ERR){
         return INTERNAL_COMPILER_ERR;
     }*/
     return OK;
@@ -150,12 +181,12 @@ int generate_add_string_to_stack(char *value){
                     return INTERNAL_COMPILER_ERR;
                 break;
             }   
-    }
+        }
         if(value[index]!='\0' && strAddChar(&output, value[index])==STR_ERROR)
-            return INTERNAL_COMPILER_ERR;
+                    return INTERNAL_COMPILER_ERR;
 
         index++;
-        }
+    }
     if( strAddConstStr(&output,"\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
 
