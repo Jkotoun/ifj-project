@@ -35,15 +35,18 @@ void dArray_despose(dArray* array);                  // Free memory of array
 
 // Initiation of generator
 int generator_init();
-int generate_build_in_function(string *output);              
+int generate_build_in_function();              
 void generator_print_output();
+
+// Cleaning inner string
+void generator_clear();
 
 // Main
 int genetate_main_start();
-int genetate_main_end();        //<-- návěští pro předčasné ukončení mainu + return mainu
+int genetate_main_end();
 
 // Generating stack operations
-int generate_add_var_to_stack(int scope, char *name_of_variable);
+int generate_add_var_to_stack(int scope, char *name_of_var);
 int generate_add_string_to_stack(char *value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
@@ -79,16 +82,13 @@ int generate_for_assignment_end(int scope, char *name_of_function);
 int generate_for_comperation(int scope, char *name_of_function);
 int generate_for_end(int scope, char *name_of_function);
 // -- Generating body of function
-int generate_function_start();
-int generate_function_param();
+int generate_function_start(char *name_of_function);
+int generate_function_param(int scope, char *name_of_parameter);
 int generate_function_end();
 
 // Calling function
-int generate_call_function(char *function_name);
-int generate_return_function();
-
-// Cleaning inner string
-void generator_clear();
+int generate_function_call(char *function_name);
+int generate_function_return_var(int scope, char *name_of_var);
 
 // -------------------------------------------------------------------------------------------
 

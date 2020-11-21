@@ -82,7 +82,7 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
-    /*if (generate_build_in_function(&output)==INTERNAL_COMPILER_ERR){
+    /*if (generate_build_in_function()==INTERNAL_COMPILER_ERR){
         return INTERNAL_COMPILER_ERR;
     }*/
     return OK;
@@ -97,7 +97,7 @@ void generator_print_output(){
     printf("%s",output);
 }
 
-/*int generate_build_in_function(string *output){
+/*int generate_build_in_function(){
     if( generate_inputs()!=OK       || \
         generate_inputi()!=OK       || \
         generate_inputf()!=OK       || \
@@ -117,7 +117,7 @@ void generator_print_output(){
 
 // Generationg stack operations --------------------------------------------------------------
 
-int generate_add_var_to_stack(int scope, char *name_of_variable){
+int generate_add_var_to_stack(int scope, char *name_of_var){
     // TODO zeptat se víťi jestli předává při a:=5 5 na zásobník
     char scope_string[MAX_DIGITS_OF_SCOPE];
    
@@ -125,7 +125,7 @@ int generate_add_var_to_stack(int scope, char *name_of_variable){
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"PUSHS TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_variable)==STR_ERROR     ||
+        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
         strAddConstStr(&output,"_")==STR_ERROR                  ||
         strAddConstStr(&output,scope_string)==STR_ERROR         ||
         strAddConstStr(&output,"\n")==STR_ERROR){
@@ -257,14 +257,14 @@ int generate_relation(enum instruction_type relation){
 // -------------------------------------------------------------------------------------------
 
 // Generating for variables-------------------------------------------------------------------
-int generate_new_var(int scope, char *name_of_variable){
+int generate_new_var(int scope, char *name_of_var){
     char scope_string[MAX_DIGITS_OF_SCOPE];
    
     if(sprintf(scope_string, "%d", scope)<0)
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"DEFVAR TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_variable)==STR_ERROR     ||
+        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
         strAddConstStr(&output,"_")==STR_ERROR                  ||
         strAddConstStr(&output,scope_string)==STR_ERROR         ||
         strAddConstStr(&output,"\n")==STR_ERROR){
@@ -272,14 +272,14 @@ int generate_new_var(int scope, char *name_of_variable){
     }
     return OK;
 }
-int generate_assign_var(int scope, char *name_of_variable){
+int generate_assign_var(int scope, char *name_of_var){
     char scope_string[MAX_DIGITS_OF_SCOPE];
    
     if(sprintf(scope_string, "%d", scope)<0)
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"POPS TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_variable)==STR_ERROR     ||
+        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
         strAddConstStr(&output,"_")==STR_ERROR                  ||
         strAddConstStr(&output,scope_string)==STR_ERROR         ||
         strAddConstStr(&output,"\n")==STR_ERROR){
@@ -478,6 +478,67 @@ int generate_for_end(int scope, char *name_of_function){
     }
 
     return OK;
+}
+
+int generate_function_start(char *name_of_function){
+
+    if( strAddConstStr(&output,"LABEL ")==STR_ERROR                      ||\
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK; 
+}
+
+int generate_function_param(int scope, char *name_of_parameter){
+    char scope_string[MAX_DIGITS_OF_SCOPE];
+
+    if(sprintf(scope_string, "%d", scope)<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"DEFVAR TF@")==STR_ERROR                      ||\
+        strAddConstStr(&output,name_of_parameter)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                         ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
+        strAddConstStr(&output,"\nPOPS TF@\n")==STR_ERROR ||\
+        strAddConstStr(&output,name_of_parameter)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                         ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
+        strAddConstStr(&output,"\n")==STR_ERROR                      ){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK; 
+}
+int generate_function_end(){
+    if( strAddConstStr(&output,"POPFRAME\nRETURN\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK; 
+}
+
+// Calling function
+int generate_function_call(char *name_of_function){
+    if( strAddConstStr(&output,"CALL ")==STR_ERROR ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR ||
+        strAddConstStr(&output,"\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK; 
+}
+int generate_function_return_var(int scope, char *name_of_var){
+    char scope_string[MAX_DIGITS_OF_SCOPE];
+
+    if(sprintf(scope_string, "%d", scope)<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"POPS TF@\n")==STR_ERROR ||\
+        strAddConstStr(&output,name_of_var)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                         ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
+        strAddConstStr(&output,"\n")==STR_ERROR                      ){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK; 
 }
 
 // -------------------------------------------------------------------------------------------
