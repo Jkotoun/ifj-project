@@ -11,6 +11,7 @@
 
 // Dynamic array for identifying how much if/while/for is in the scopes ----------------------
 #define ALLOCATE_CHUNK 8
+#define SIZE_OF_ASCII_ARRAY 35
 
 typedef struct dArray
 {

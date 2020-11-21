@@ -135,15 +135,30 @@ int generate_add_var_to_stack(int scope, char *name_of_var){
 }
 
 int generate_add_string_to_stack(char *value){
-    int i=0;
-    while(value[i]=='\0'){
-        // TODO zpracovat stringy na formát /xyz
+    int index=0;
+    int arr_of_chars[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,35,92};
+    while(value[index]!='\0'){
+        for (int i = 0; i < SIZE_OF_ASCII_ARRAY; i++)
+        {
+            if((int)value[index]==arr_of_chars[i]){
+                char ascii_string[MAX_DIGITS_OF_SCOPE];
+                if(sprintf(ascii_string, "%3d", (int)value[index])<0)
+                    return INTERNAL_COMPILER_ERR;
+
+                if( strAddConstStr(&output,"\\")==STR_ERROR ||
+                    strAddConstStr(&output,ascii_string)==STR_ERROR)
+                    return INTERNAL_COMPILER_ERR;
+                break;
+            }   
     }
-    if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR     ||
-        strAddConstStr(&output,value)==STR_ERROR            ||
-        strAddConstStr(&output,"\n")==STR_ERROR){
+        if(value[index]!='\0' && strAddChar(&output, value[index])==STR_ERROR)
             return INTERNAL_COMPILER_ERR;
+
+        index++;
         }
+    if( strAddConstStr(&output,"\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+
     return OK;
 }
 int generate_add_int_to_stack(int value){
@@ -479,6 +494,10 @@ int generate_for_end(int scope, char *name_of_function){
 
     return OK;
 }
+
+// -------------------------------------------------------------------------------------------
+
+// Generating function -----------------------------------------------------------------------
 
 int generate_function_start(char *name_of_function){
 
