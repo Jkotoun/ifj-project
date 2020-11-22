@@ -167,11 +167,10 @@ int generate_add_var_to_stack(int scope, char *name_of_var){
 
 int generate_add_string_to_stack(char *value){
     int index=0;
-    int arr_of_chars[]={0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,35,92};
     while(value[index]!='\0'){
         for (int i = 0; i < SIZE_OF_ASCII_ARRAY; i++)
         {
-            if((int)value[index]==arr_of_chars[i]){
+            if(((int)value[index]>=0&&(int)value[index]<=32)||(int)value[index]==35||(int)value[index]<=92){
                 char ascii_string[MAX_DIGITS_OF_SCOPE];
                 if(sprintf(ascii_string, "%3d", (int)value[index])<0)
                     return INTERNAL_COMPILER_ERR;
