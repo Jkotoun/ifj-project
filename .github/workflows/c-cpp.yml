@@ -6,12 +6,22 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
+jobs: 
+  test:
+    
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
+    - name: Checkout submodules
+      run: git submodule update --init
+    - name: Install golang
+      run: sudo apt install golang
     - name: make
       run: make
+    - name: Run google tests
+      run: make test
+    - name: Run testsuite compile mode
+      run: cd ifj-testsuite && python2 testsuite.py -mc -c ../src/main
+    - name: Run testsuite compile and interpret mode 
+      run: cd ifj-testsuite && python2 testsuite.py -c ../src/main

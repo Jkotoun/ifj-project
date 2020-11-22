@@ -1,3 +1,9 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Jiří Vlasák (xvlasa15)
+ * Parser helper functions
+ */
+
 #include "symtable.h"
 
 
