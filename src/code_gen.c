@@ -5,6 +5,7 @@
 */
 
 #include <stdio.h>
+#include <string.h>
 #include "code_gen.h"
 #include "error_codes.h"
 #include "symtable.h"
@@ -109,7 +110,7 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
-    if(strAddConstStr(&output,".IFJcode20\nGF@expr\nGF@trash\nJUMP main\n")==STR_ERROR){
+    if(strAddConstStr(&output,".IFJcode20\nGF@expr\nGF@trash\nGF@concat_l\nGF@concat_r\nJUMP main\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
@@ -147,9 +148,17 @@ void generator_print_output(){
 // -------------------------------------------------------------------------------------------
 
 // Generationg stack operations --------------------------------------------------------------
+int generate_add_concat_to_stack(){
+    if( strAddConstStr(&output,"POPS GF@concat_l\n \
+                                POPS GF@concat_r\n \
+                                CONCAT GF@concat_l GF@concat_l GF@concat_r \
+                                PUSHS GF@concat_l")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
+    return OK;
+}
 
 int generate_add_var_to_stack(int scope, char *name_of_var){
-    // TODO zeptat se víťi jestli předává při a:=5 5 na zásobník
     char scope_string[MAX_DIGITS_OF_SCOPE];
    
     if(sprintf(scope_string, "%d", scope)<0)
@@ -218,7 +227,7 @@ int generate_add_float_to_stack(double value){
     return OK;
 }
 
-int generate_stack_operation(enum instruction_type operation){
+int generate_stack_operation(instruction_type operation){
     switch (operation)
     {
     case ADDS:
@@ -258,7 +267,7 @@ int generate_stack_operation(enum instruction_type operation){
 
 // Generating relations ----------------------------------------------------------------------
 
-int generate_relation(enum instruction_type relation){
+int generate_relation(instruction_type relation){
     switch (relation)
     {
     case LTS:
@@ -319,16 +328,20 @@ int generate_new_var(int scope, char *name_of_var){
 }
 int generate_assign_var(int scope, char *name_of_var){
     char scope_string[MAX_DIGITS_OF_SCOPE];
-   
-    if(sprintf(scope_string, "%d", scope)<0)
+    if(strcmp(name_of_var,"_")==0){
+        if(strAddConstStr(&output,"POPS GF@trash\n")==STR_ERROR)
+            return INTERNAL_COMPILER_ERR;
+    }else{
+        if(sprintf(scope_string, "%d", scope)<0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"POPS TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
-        strAddConstStr(&output,"_")==STR_ERROR                  ||
-        strAddConstStr(&output,scope_string)==STR_ERROR         ||
-        strAddConstStr(&output,"\n")==STR_ERROR){
-        return INTERNAL_COMPILER_ERR;
+        if( strAddConstStr(&output,"POPS TF@")==STR_ERROR          ||
+            strAddConstStr(&output,name_of_var)==STR_ERROR     ||
+            strAddConstStr(&output,"_")==STR_ERROR                  ||
+            strAddConstStr(&output,scope_string)==STR_ERROR         ||
+            strAddConstStr(&output,"\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }    
     }
     return OK;
 }
