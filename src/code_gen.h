@@ -113,7 +113,7 @@ int generate_function_return(char *name_of_parameter);
 int generate_function_end(char *name_of_parameter);
 
 // Calling function
-int generate_function_call(char *function_name);
+int generate_function_call(char *function_name, int number_of_parameters);
 int generate_function_return_var(int scope, char *name_of_var);
 
 // -------------------------------------------------------------------------------------------

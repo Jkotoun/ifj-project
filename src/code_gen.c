@@ -588,8 +588,15 @@ int generate_function_end(char *name_of_function){
 }
 
 // Calling function
-int generate_function_call(char *name_of_function){
-    if( strAddConstStr(&output,"CALL ")==STR_ERROR ||
+int generate_function_call(char *name_of_function, int number_of_parameters){
+    char number_of_parameters_string[MAX_DIGITS_OF_SCOPE];
+
+    if(sprintf(number_of_parameters_string, "%d", number_of_parameters)<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR ||
+        strAddConstStr(&output,number_of_parameters_string)==STR_ERROR ||
+        strAddConstStr(&output,"\nCALL ")==STR_ERROR ||
         strAddConstStr(&output,name_of_function)==STR_ERROR ||
         strAddConstStr(&output,"\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
