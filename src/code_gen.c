@@ -63,11 +63,11 @@ int generate_len(){
                                 CREATEFRAME\n \
                                 DEFVAR TF@str\n \
                                 POPS TF@str\n \
-                                DEFVAR TF@cnt\
-                                MOVE TF@cnt int@0\
-                                STRLEN TF@cnt TF@str\
-                                PUSHS TF@cnt\
-                                POPFRAME\
+                                DEFVAR TF@cnt\n \
+                                MOVE TF@cnt int@0\n \
+                                STRLEN TF@cnt TF@str\n \
+                                PUSHS TF@cnt\n \
+                                POPFRAME\n \
                                 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
@@ -75,7 +75,7 @@ int generate_len(){
 
 int generate_int2float(){
     if(strAddConstStr(&output, "LABEL int2float\n \
-                                INT2FLOATS\
+                                INT2FLOATS\n \
                                 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
@@ -83,7 +83,7 @@ int generate_int2float(){
 
 int generate_float2int(){
     if(strAddConstStr(&output, "LABEL int2float\n \
-                                FLOAT2INTS\
+                                FLOAT2INTS\n \
                                 RETURN\n")==STR_ERROR)
     return INTERNAL_COMPILER_ERR;
     return OK;
@@ -149,10 +149,10 @@ void generator_print_output(){
 
 // Generationg stack operations --------------------------------------------------------------
 int generate_add_concat_to_stack(){
-    if( strAddConstStr(&output,"POPS GF@concat_l\n \
-                                POPS GF@concat_r\n \
-                                CONCAT GF@concat_l GF@concat_l GF@concat_r \
-                                PUSHS GF@concat_l")==STR_ERROR){
+    if( strAddConstStr(&output,"POPS GF@concat_l\n\
+                                POPS GF@concat_r\n\
+                                CONCAT GF@concat_l GF@concat_l GF@concat_r\n\
+                                PUSHS GF@concat_l\n")==STR_ERROR){
             return INTERNAL_COMPILER_ERR;
         }
     return OK;
@@ -176,23 +176,20 @@ int generate_add_var_to_stack(int scope, char *name_of_var){
 
 int generate_add_string_to_stack(char *value){
     int index=0;
+    if( strAddConstStr(&output,"PUSHS string@")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
     while(value[index]!='\0'){
-        for (int i = 0; i < SIZE_OF_ASCII_ARRAY; i++)
-        {
-            if(((int)value[index]>=0&&(int)value[index]<=32)||(int)value[index]==35||(int)value[index]<=92){
-                char ascii_string[MAX_DIGITS_OF_SCOPE];
-                if(sprintf(ascii_string, "%3d", (int)value[index])<0)
+        if(((int)value[index]>=0&&(int)value[index]<=32)||(int)value[index]==35||(int)value[index]==92){
+            char ascii_string[MAX_DIGITS_OF_SCOPE];
+            if(sprintf(ascii_string, "%03d", (int)value[index])<0)
+                return INTERNAL_COMPILER_ERR;
+            if( strAddConstStr(&output,"\\")==STR_ERROR ||
+                strAddConstStr(&output,ascii_string)==STR_ERROR)
+                return INTERNAL_COMPILER_ERR;
+        }else{
+            if(strAddChar(&output, value[index])==STR_ERROR)
                     return INTERNAL_COMPILER_ERR;
-
-                if( strAddConstStr(&output,"\\")==STR_ERROR ||
-                    strAddConstStr(&output,ascii_string)==STR_ERROR)
-                    return INTERNAL_COMPILER_ERR;
-                break;
-            }   
         }
-        if(value[index]!='\0' && strAddChar(&output, value[index])==STR_ERROR)
-                    return INTERNAL_COMPILER_ERR;
-
         index++;
     }
     if( strAddConstStr(&output,"\n")==STR_ERROR)
