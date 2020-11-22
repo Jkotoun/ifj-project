@@ -19,6 +19,20 @@ typedef struct dArray
     int size_of_array;
 } dArray;
 
+int dArray_init(dArray* array); // Alocating first count_of_scopes, and set default values
+                                // Return 0 if the task was succesfull
+                                // otherwise return 1
+
+int dArray_add_to_scope(dArray* array, int index); // Increment count_in_scope[index] by 1
+                                                   // Return 0 if the task was succesfull
+                                                   // otherwise return 1
+
+void dArray_despose(dArray* array); // Free memory of array
+// -------------------------------------------------------------------------------------------
+
+// Generator of 3AC --------------------------------------------------------------------------
+#define MAX_DIGITS_OF_SCOPE 48
+
 typedef enum instruction_type
 {
     // Stack
@@ -42,20 +56,6 @@ typedef enum instruction_type
     GTES,
 } instruction_type;
 
-int dArray_init(dArray* array); // Alocating first count_of_scopes, and set default values
-                                // Return 0 if the task was succesfull
-                                // otherwise return 1
-
-int dArray_add_to_scope(dArray* array, int index); // Increment count_in_scope[index] by 1
-                                                   // Return 0 if the task was succesfull
-                                                   // otherwise return 1
-
-void dArray_despose(dArray* array); // Free memory of array
-// -------------------------------------------------------------------------------------------
-
-// Generator of 3AC --------------------------------------------------------------------------
-#define MAX_DIGITS_OF_SCOPE 48
-
 // Initiation of generator
 int generator_init();
 int generate_build_in_function();
@@ -65,15 +65,14 @@ void generator_print_output();
 void generator_clear();
 
 // Main
-int genetate_main_start();
-int genetate_main_end();
+int generate_main_start();
+int generate_main_end();
 
 // Generating stack operations
 int generate_add_var_to_stack(int scope, char* name_of_var);
 int generate_add_string_to_stack(char* value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
-
 int generate_stack_operation(instruction_type operation);
 
 // Generating relations
@@ -108,7 +107,8 @@ int generate_for_end(int scope, char* name_of_function);
 // -- Generating body of function
 int generate_function_start(char* name_of_function);
 int generate_function_param(int scope, char* name_of_parameter);
-int generate_function_end();
+int generate_function_return(char* name_of_parameter);
+int generate_function_end(char* name_of_parameter);
 
 // Calling function
 int generate_function_call(char* function_name);

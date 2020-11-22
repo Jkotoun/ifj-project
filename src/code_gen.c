@@ -8,6 +8,7 @@
 #include "error_codes.h"
 #include "symtable.h"
 #include <stdio.h>
+#include <string.h>
 
 // Implementation of dynemic array ----------------------------------------------------------
 int dArray_init(dArray* array)
@@ -122,7 +123,7 @@ int generator_init()
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
-    if (strAddConstStr(&output, ".IFJcode20\nGF@expr\nGF@trash\nJUMP main\n") == STR_ERROR)
+    if (strAddConstStr(&output, ".IFJcode20\nGF@expr\nGF@trash\nGF@concat_l\nGF@concat_r\nJUMP main\n") == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
     }
@@ -141,7 +142,7 @@ void generator_clear()
 }
 void generator_print_output()
 {
-    printf("%s", output.str);
+    printf("%s", output);
 }
 
 /*int generate_build_in_function(){
@@ -163,10 +164,20 @@ void generator_print_output()
 // -------------------------------------------------------------------------------------------
 
 // Generationg stack operations --------------------------------------------------------------
+int generate_add_concat_to_stack()
+{
+    if (strAddConstStr(&output, "POPS GF@concat_l\n \
+                                POPS GF@concat_r\n \
+                                CONCAT GF@concat_l GF@concat_l GF@concat_r \
+                                PUSHS GF@concat_l") == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
 
 int generate_add_var_to_stack(int scope, char* name_of_var)
 {
-    // TODO zeptat se víťi jestli předává při a:=5 5 na zásobník
     char scope_string[MAX_DIGITS_OF_SCOPE];
 
     if (sprintf(scope_string, "%d", scope) < 0)
@@ -186,12 +197,11 @@ int generate_add_var_to_stack(int scope, char* name_of_var)
 int generate_add_string_to_stack(char* value)
 {
     int index = 0;
-    int arr_of_chars[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 35, 92};
     while (value[index] != '\0')
     {
         for (int i = 0; i < SIZE_OF_ASCII_ARRAY; i++)
         {
-            if ((int)value[index] == arr_of_chars[i])
+            if (((int)value[index] >= 0 && (int)value[index] <= 32) || (int)value[index] == 35 || (int)value[index] <= 92)
             {
                 char ascii_string[MAX_DIGITS_OF_SCOPE];
                 if (sprintf(ascii_string, "%3d", (int)value[index]) < 0)
@@ -361,17 +371,24 @@ int generate_new_var(int scope, char* name_of_var)
 int generate_assign_var(int scope, char* name_of_var)
 {
     char scope_string[MAX_DIGITS_OF_SCOPE];
-
-    if (sprintf(scope_string, "%d", scope) < 0)
-        return INTERNAL_COMPILER_ERR;
-
-    if (strAddConstStr(&output, "POPS TF@") == STR_ERROR ||
-        strAddConstStr(&output, name_of_var) == STR_ERROR ||
-        strAddConstStr(&output, "_") == STR_ERROR ||
-        strAddConstStr(&output, scope_string) == STR_ERROR ||
-        strAddConstStr(&output, "\n") == STR_ERROR)
+    if (strcmp(name_of_var, "_") == 0)
     {
-        return INTERNAL_COMPILER_ERR;
+        if (strAddConstStr(&output, "POPS GF@trash\n") == STR_ERROR)
+            return INTERNAL_COMPILER_ERR;
+    }
+    else
+    {
+        if (sprintf(scope_string, "%d", scope) < 0)
+            return INTERNAL_COMPILER_ERR;
+
+        if (strAddConstStr(&output, "POPS TF@") == STR_ERROR ||
+            strAddConstStr(&output, name_of_var) == STR_ERROR ||
+            strAddConstStr(&output, "_") == STR_ERROR ||
+            strAddConstStr(&output, scope_string) == STR_ERROR ||
+            strAddConstStr(&output, "\n") == STR_ERROR)
+        {
+            return INTERNAL_COMPILER_ERR;
+        }
     }
     return OK;
 }
@@ -379,7 +396,7 @@ int generate_assign_var(int scope, char* name_of_var)
 
 // Generating for main function --------------------------------------------------------------
 
-int genetate_main_start()
+int generate_main_start()
 {
     if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\n") == STR_ERROR)
     {
@@ -389,7 +406,7 @@ int genetate_main_start()
     return OK;
 }
 
-int genetate_main_end()
+int generate_main_end()
 {
     if (strAddConstStr(&output, "LABEL end_of_main\nCLEARS\n") == STR_ERROR)
     {
@@ -618,9 +635,23 @@ int generate_function_param(int scope, char* name_of_parameter)
     }
     return OK;
 }
-int generate_function_end()
+
+int generate_function_return(char* name_of_function)
 {
-    if (strAddConstStr(&output, "POPFRAME\nRETURN\n") == STR_ERROR)
+    if (strAddConstStr(&output, "JUMP end_of_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+int generate_function_end(char* name_of_function)
+{
+    if (strAddConstStr(&output, "LABEL end_of_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "\nPOPFRAME\nRETURN\n") == STR_ERROR)
     {
         return INTERNAL_COMPILER_ERR;
     }

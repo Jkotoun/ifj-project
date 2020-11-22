@@ -133,6 +133,8 @@ void parser_start()
     strInit(&str);
     strInit(&rawStr);
 
+    generator_init();
+
     current_token.str = &str;
     current_token.token_str_raw = &rawStr;
 
@@ -160,6 +162,9 @@ void parser_start()
     {
         handle_error(VAR_DEFINITION_ERR);
     }
+
+    generator_print_output();
+    generator_clear();
     strFree(&main_str);
     exit(0);
 }
@@ -227,7 +232,14 @@ void rule_func_decl()
     string func_name;
     strInit(&func_name);
     strCopyString(&func_name, current_token.str);
-    // generate_function_start(&func_name.str);
+    if (strCmpConstStr(&func_name, "main") == 0)
+    {
+        generate_main_start();
+    }
+    else
+    {
+        generate_function_start(func_name.str);
+    }
 
     get_next_token();
     assert_token_is(LEFT_BRACKET_TOKEN);
@@ -254,27 +266,21 @@ void rule_func_decl()
     def_var(&func_name, UNDERSCORE);
     functionHasReturn = false;
 
-    //// TODO: dodělat generování main
-    // if (strCmpConstStr(&func_name, "main") == 0)
-    // {
-    //     generate_main_start();
-    //     rule_body();
-    //     generate_main_end();
-    // }
-    // else
-    // {
-    //     generate_function_start(&func_name.str);
-    //     rule_body();
-    //     generate_function_end();
-    // }
     rule_body();
-    generate_function_end();
+    if (strCmpConstStr(&func_name, "main") == 0)
+    {
+        generate_main_end();
+    }
+    else
+    {
+        generate_function_end(func_name.str);
+    }
 
     if (!functionHasReturn && ((symbol_function*)current_function->data)->return_types_count > 0)
     {
         handle_error(ARGS_RETURNS_COUNT_ERR);
     }
-    DLDeleteLast(&scoped_symtables);
+    DLDisposeList(&scoped_symtables);
 }
 
 void rule_param_first_next(symbol_node** function_node)
@@ -309,6 +315,8 @@ void rule_param(symbol_node** function_root)
     varType type = rule_type();
     symtable_insert_node_var(function_root, &param_name, type);
     typeQueueUp(&typeQ, type);
+    generate_function_param(0, param_name.str);
+    strFree(&param_name);
 }
 
 void rule_param_n_next(symbol_node** function_root)
@@ -450,6 +458,8 @@ void rule_statement_next()
         assert_true(result == 0, result);
         assert_true(type == BOOL, DATATYPE_COMPATIBILITY_ERR);
 
+        generate_if_start(scoped_symtables.Last->scope_index, current_function->name->str);
+
         DLInsertLast(&scoped_symtables);
         symtable_init(&scoped_symtables.Last->root_ptr);
         rule_body();
@@ -457,6 +467,8 @@ void rule_statement_next()
 
         get_next_token();
         assert_keyword_is(ELSE_KEYWORD);
+
+        generate_if_else(scoped_symtables.Last->scope_index, current_function->name->str);
 
         get_next_token();
         rule_eols_next();
@@ -466,10 +478,12 @@ void rule_statement_next()
         rule_body();
         DLDeleteLast(&scoped_symtables);
 
+        generate_if_end(scoped_symtables.Last->scope_index, current_function->name->str);
         get_next_token();
     }
     else if (keyword_is(FOR_KEYWORD))
     {
+        //TODO: generate code
         DLInsertLast(&scoped_symtables);
         symtable_init(&scoped_symtables.Last->root_ptr);
 
@@ -516,6 +530,7 @@ void rule_statement_next()
                                 ((symbol_function*)current_function->data)->return_types,
                                 rightSideLength),
                     ARGS_RETURNS_COUNT_ERR);
+        generate_function_return(current_function->name->str);
     }
     else
     {
@@ -580,6 +595,11 @@ void rule_statement_action_next()
         assert_true(leftSideLength == rightSideLength, OTHER_SEMANTIC_ERR);
         varType* righTypeArr = typeQueueToArray(&typeQ);
         assert_true(types_equal(leftTypeArr, righTypeArr, leftSideLength), OTHER_SEMANTIC_ERR);
+
+        for (int i = leftSideLength - 1; i >= 0; i--)
+        {
+            generate_assign_var(scoped_symtables.Last->scope_index, leftTokenArr[i].str->str);
+        }
     }
     else if (current_token.type == SHORT_VAR_DECLARATION_TOKEN)
     {
@@ -601,6 +621,8 @@ void rule_statement_action_next()
         int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         assert_true(result == 0, result);
         def_var(varToken.str, type);
+        generate_new_var(scoped_symtables.Last->scope_index, varToken.str->str);
+        generate_assign_var(scoped_symtables.Last->scope_index, varToken.str->str);
     }
     else
     {
@@ -652,6 +674,38 @@ void rule_arg_expr_next(string* prevTokenName)
 
         def_func(prevTokenName, paramArr, paramArrCount, returnArr, leftSideLength, false);
         rightSideLength = leftSideLength;
+
+        for (size_t i = 0; i < paramArrCount; i++)
+        {
+            token token = tokenArr[i];
+            if (token.type == ID_TOKEN)
+            {
+                varType type;
+                int varScope = get_varType_from_symtable(&scoped_symtables, token.str, &type);
+                generate_add_var_to_stack(varScope, token.str->str);
+            }
+            else if (token.type == DECIMAL_LITERAL_TOKEN)
+            {
+                generate_add_float_to_stack(token.decimal);
+            }
+            else if (token.type == INTEGER_LITERAL_TOKEN)
+            {
+                generate_add_int_to_stack(token.integer);
+            }
+            else if (token.type == STRING_LITERAL_TOKEN)
+            {
+                generate_add_string_to_stack(token.str->str);
+            }
+        }
+        generate_function_call(prevTokenName->str);
+        for (int i = leftSideLength - 1; i >= 0; i--)
+        {
+            token token = leftTokenArr[i];
+            varType type;
+            int varScope = get_varType_from_symtable(&scoped_symtables, token.str, &type);
+            generate_assign_var(varScope, token.str->str);
+        }
+
         get_next_token();
     }
     else
@@ -733,6 +787,9 @@ void rule_definition_next()
         int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         assert_true(result == 0, result);
         def_var(&var_name, type);
+        generate_new_var(scoped_symtables.Last->scope_index, var_name.str);
+        generate_assign_var(scoped_symtables.Last->scope_index, var_name.str);
+
         strFree(&var_name);
     }
 }
@@ -799,11 +856,6 @@ void rule_expr_next()
             assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
             assert_true(strCmpConstStr(current_token.str, "_") != 0, OTHER_SEMANTIC_ERR);
         }
-
-        // TODO: GENERATE_CODE(save stack value to var)
-        // needs to save the value that is at the top of the stack to the output var (a := expr)
-        // use POPS frame@var
-
         rule_term();
 
         get_next_token();

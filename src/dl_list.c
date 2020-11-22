@@ -7,7 +7,9 @@
 #include "dl_list.h"
 #include "error_codes.h"
 
-int DLInitList(tDLList *list)
+int scope_counter = 0;
+
+int DLInitList(tDLList* list)
 {
     if (list == NULL)
     {
@@ -18,12 +20,12 @@ int DLInitList(tDLList *list)
     return OK;
 }
 
-int DLDeleteLast(tDLList *list)
+int DLDeleteLast(tDLList* list)
 {
     //list has any elements
     if (list->First != NULL)
     {
-        table *tmp = list->Last;
+        table* tmp = list->Last;
         //list has 1 element
         if (list->Last == list->First)
         {
@@ -47,18 +49,19 @@ int DLDeleteLast(tDLList *list)
     }
     return OK;
 }
-int DLDisposeList(tDLList *list)
+int DLDisposeList(tDLList* list)
 {
     while (list->First != NULL)
     {
         DLDeleteLast(list);
     }
+    scope_counter = 0;
     return OK;
 }
 
-int DLInsertLast(tDLList *list)
+int DLInsertLast(tDLList* list)
 {
-    table *new = (table *)malloc(sizeof(table));
+    table* new = (table*)malloc(sizeof(table));
     if (new == NULL)
     {
         return INTERNAL_COMPILER_ERR;
@@ -76,10 +79,11 @@ int DLInsertLast(tDLList *list)
         }
         else
         {
-            new->scope_index = list->Last->scope_index + 1; //table for scope has index greater by 1
+            new->scope_index = scope_counter; //table for scope has index greater by 1
             list->Last->next_table = new;
         }
         list->Last = new;
+        scope_counter++;
     }
     return OK;
 }
