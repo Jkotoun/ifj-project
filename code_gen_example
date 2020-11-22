@@ -1,0 +1,67 @@
+#Generating of assigning to variable
+
+/-Go code - nová proměná a + přiřazení proměnné
+a := 0
+/-end Go
+-pomocí funkce generate_new_var(scope,"a") vytvoří novou proměnou
+-předá 0 víťovy a ten to přidá 0 do zásobníku pomocí funkce generate_add_int_to_stack(0)
+-potom přiřadí do a vrchol zásobníku pomocí funkce generate_assign_var(scope,"a")
+
+/-Go code - přiřazení výrazu do proměnné 
+a = c+d
+/-end Go
+-předá a+d víťovy a ten na vrchol zásobníku uloží výsledek výrazu a+d na vrchol zásobníku pomocí funkce 
+        -generate_add_var_to_stack(scope,"c");
+        -generate_add_var_to_stack(scope,"d");
+        -generate_stack_operation(ADDS);
+-potom přiřadí do a vrchol zásobníku pomocí funkce generate_assign_var(scope,"a")
+
+/-Go code - if statement
+if a < b {
+    b=b+1
+} else {
+    a=a+1
+}
+/-end Go
+-nejdřív víťa zpracuje nerovnost pomocí funkcí
+        -generate_add_var_to_stack(scope,"c");      //zpracuje levou stranu
+        -generate_add_var_to_stack(scope,"b");      //zpracuje pravou stranu
+        -generate_relation(LTS);
+-poté Jiří vygeneruje začátek ifu pomocí generate_if_start(scope,název funkce ve které se tento if nachází)
+-poté se vygeneruje vnitřek pozitivní větve ifu stejně jako v předchozím případě
+-po ukočení pozitivní větvě ifu se vygeneruje else pomocí funkce generate_if_else(scope,název funkce ve které se tento if nachází)
+-poté se vygeneruje vnitřek negativní větve ifu
+-a nakonec se vygeneruje konec ifu pomocí generate_if_end(scope,název funkce ve které se tento if nachází)
+
+/-Go code -for cycle
+for a:=0 ; a != 10 ; a=a+1 {
+    b=b+1
+}
+/-end Go
+-nejdříve se vygeneruje vytvoření a přiřazení nové proměnné a stejně jako v příkladu nová proměná a + přiřazení proměnné
+-následovně se vygeneruje začátek foru pomocí funkce generate_for_start(scope, název funkce ve které se tento if nachází)
+-dále ze vygeneruje přiřazení a=a+1 stejně jako v příkladu přiřazení výrazu do proměnné 
+-poté se vygeneruje label konce přiřazování pomocí funkce generate_for_assignment_end(scope, název funkce ve které se tento if nachází)
+-dále se předá a zpracuje u víťi a != 10 stejně jako v příkladu if statement
+- následovně se vygeneruje porovnání výsledku nerovnosti pomocí funkce generate_for_compareation (scope, název funkce ve které se tento if 
+-dále se zpracuje vnitřek foru stejně jako v přákladě přiřazení výrazu do proměnné 
+-nakonec se vygeneruje konec foru pomocí funkce generate_for_end(scope, název funkce ve které se tento if nachází)
+
+
+/-Go code - vytváření funkce
+func ajaj(a int,b int) (int, int) {
+    ret1 := a+b
+    ret2 := a-b
+    return ret1, ret2
+}
+/-end Go
+-Zaprvé se vygeneruje začátek funkce pomocí generate_function_start(ajaj)
+-poté se ze zásobníku načtou všechny parametry pomocí funkce 
+            -generate_function_param(scope,a)
+            -generate_function_param(scope,b)
+-následně se provede kód uvnitř funkce stejně jako při minulích příkladů
+-poté se při oběvení "return" nastrkají proměnné do zásobníku, zde pomocí funkcí
+            -generate_add_var_to_stack(scope, "ret1")
+            -generate_add_var_to_stack(scope, "ret2")
+-dále se vygeneruje skok na konec funkce pomocí funkce generate_function_return(ajaj)
+-když se dostaneme na konec funkce, tak vygenerujeme konce funkce pomocí funkce generate_function_end(ajaj)

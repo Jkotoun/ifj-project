@@ -337,7 +337,7 @@ int generate_assign_var(int scope, char *name_of_var){
 
 // Generating for main function --------------------------------------------------------------
 
-int genetate_main_start(){
+int generate_main_start(){
     if( strAddConstStr(&output,"LABEL main\nCREATEFRAME\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
@@ -345,7 +345,7 @@ int genetate_main_start(){
     return OK;
 }
 
-int genetate_main_end(){
+int generate_main_end(){
     if( strAddConstStr(&output,"LABEL end_of_main\nCLEARS\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
@@ -559,8 +559,20 @@ int generate_function_param(int scope, char *name_of_parameter){
     }
     return OK; 
 }
-int generate_function_end(){
-    if( strAddConstStr(&output,"POPFRAME\nRETURN\n")==STR_ERROR){
+
+int generate_function_return(char *name_of_function){
+    if( strAddConstStr(&output,"JUMP end_of_")==STR_ERROR                      ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||
+        strAddConstStr(&output,"\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
+int generate_function_end(char *name_of_function){
+    if( strAddConstStr(&output,"LABEL end_of_")==STR_ERROR                      ||\
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||
+        strAddConstStr(&output,"\nPOPFRAME\nRETURN\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK; 

@@ -43,8 +43,8 @@ void generator_print_output();
 void generator_clear();
 
 // Main
-int genetate_main_start();
-int genetate_main_end();
+int generate_main_start();
+int generate_main_end();
 
 // Generating stack operations
 int generate_add_var_to_stack(int scope, char *name_of_var);
@@ -85,7 +85,8 @@ int generate_for_end(int scope, char *name_of_function);
 // -- Generating body of function
 int generate_function_start(char *name_of_function);
 int generate_function_param(int scope, char *name_of_parameter);
-int generate_function_end();
+int generate_function_return(char *name_of_parameter);
+int generate_function_end(char *name_of_parameter);
 
 // Calling function
 int generate_function_call(char *function_name);
