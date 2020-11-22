@@ -43,8 +43,8 @@ void generator_print_output();
 void generator_clear();
 
 // Main
-int genetate_main_start();
-int genetate_main_end();
+int generate_main_start();
+int generate_main_end();
 
 // Generating stack operations
 int generate_add_var_to_stack(int scope, char *name_of_var);
