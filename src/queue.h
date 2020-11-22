@@ -1,3 +1,9 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Jiří Vlasák - xvlasa15
+ * Fronta tokenů a typů - upraveno z 1. DU do IAL.
+*/
+
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
