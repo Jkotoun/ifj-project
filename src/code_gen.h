@@ -85,7 +85,8 @@ int generate_for_end(int scope, char *name_of_function);
 // -- Generating body of function
 int generate_function_start(char *name_of_function);
 int generate_function_param(int scope, char *name_of_parameter);
-int generate_function_end();
+int generate_function_return(char *name_of_parameter);
+int generate_function_end(char *name_of_parameter);
 
 // Calling function
 int generate_function_call(char *function_name);
