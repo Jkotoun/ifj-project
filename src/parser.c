@@ -8,6 +8,7 @@
 */
 
 #include "parser.h"
+#include "code_gen.h"
 #include "dl_list.h"
 #include "error_codes.h"
 #include "expression.h"
@@ -48,6 +49,7 @@ int rightSideLength;
 
 void init_builtins()
 {
+    //TODO: pridat generovani builtin funkci
     string func_name;
     strInit(&func_name);
 
@@ -55,38 +57,45 @@ void init_builtins()
     strAddConstStr(&func_name, "inputs");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
+    // generate_inputs();
 
     returnArr[0] = INT;
     strAddConstStr(&func_name, "inputi");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
+    // generate_inputi();
 
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "inputf");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
+    // generate_inputf();
 
     strAddConstStr(&func_name, "print");
     symtable_insert_node_func(&functions_symtable, &func_name, 0, NULL, -1, NULL, true);
     strClear(&func_name);
+    // generate_print();
 
     varType paramArr[] = {INT, INT, INT};
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "int2float");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
+    // generate_int2float();
 
     paramArr[0] = FLOAT;
     returnArr[0] = INT;
     strAddConstStr(&func_name, "float2int");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
+    // generate_float2int();
 
     paramArr[0] = STRING;
     returnArr[0] = INT;
     strAddConstStr(&func_name, "len");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
+    // generate_len();
 
     paramArr[0] = STRING;
     paramArr[1] = INT;
@@ -96,6 +105,7 @@ void init_builtins()
     strAddConstStr(&func_name, "substr");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 3, paramArr, true);
     strClear(&func_name);
+    // generate_substr();
 
     paramArr[0] = STRING;
     paramArr[1] = INT;
@@ -104,6 +114,7 @@ void init_builtins()
     strAddConstStr(&func_name, "ord");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 2, paramArr, true);
     strClear(&func_name);
+    // generate_ord();
 
     paramArr[0] = INT;
     returnArr[0] = STRING;
@@ -111,6 +122,7 @@ void init_builtins()
     strAddConstStr(&func_name, "chr");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 1, paramArr, true);
     strClear(&func_name);
+    // generate_chr();
 
     strFree(&func_name);
 }
@@ -135,10 +147,7 @@ void parser_start()
     symbol_node* main_node;
     string main_str;
     strInit(&main_str);
-    strAddChar(&main_str, 'm');
-    strAddChar(&main_str, 'a');
-    strAddChar(&main_str, 'i');
-    strAddChar(&main_str, 'n');
+    strAddConstStr(&main_str, "main");
 
     if (!symtable_search(&functions_symtable, &main_str, &main_node)) //main not defined
     {
@@ -151,6 +160,7 @@ void parser_start()
     {
         handle_error(VAR_DEFINITION_ERR);
     }
+    strFree(&main_str);
     exit(0);
 }
 
@@ -217,6 +227,7 @@ void rule_func_decl()
     string func_name;
     strInit(&func_name);
     strCopyString(&func_name, current_token.str);
+    // generate_function_start(&func_name.str);
 
     get_next_token();
     assert_token_is(LEFT_BRACKET_TOKEN);
@@ -242,7 +253,23 @@ void rule_func_decl()
     strAddChar(&func_name, '_');
     def_var(&func_name, UNDERSCORE);
     functionHasReturn = false;
+
+    //// TODO: dodělat generování main
+    // if (strCmpConstStr(&func_name, "main") == 0)
+    // {
+    //     generate_main_start();
+    //     rule_body();
+    //     generate_main_end();
+    // }
+    // else
+    // {
+    //     generate_function_start(&func_name.str);
+    //     rule_body();
+    //     generate_function_end();
+    // }
     rule_body();
+    generate_function_end();
+
     if (!functionHasReturn && ((symbol_function*)current_function->data)->return_types_count > 0)
     {
         handle_error(ARGS_RETURNS_COUNT_ERR);
