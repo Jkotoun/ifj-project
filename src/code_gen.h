@@ -75,6 +75,7 @@ int generate_add_string_to_stack(char *value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
 int generate_stack_operation(instruction_type operation);
+int generate_add_concat_to_stack();
 
 // Generating relations
 int generate_relation(instruction_type relation);

@@ -126,7 +126,7 @@ void generator_clear(){
     strFree(&output);
 }
 void generator_print_output(){
-    printf("%s",output);
+    printf("%s",output.str);
 }
 
 /*int generate_build_in_function(){
