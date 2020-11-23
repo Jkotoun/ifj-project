@@ -259,7 +259,7 @@ int generate_add_float_to_stack(double value)
     if (sprintf(value_string, "%a", value) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if (strAddConstStr(&output, "PUSHS int@") == STR_ERROR ||
+    if (strAddConstStr(&output, "PUSHS float@") == STR_ERROR ||
         strAddConstStr(&output, value_string) == STR_ERROR ||
         strAddConstStr(&output, "\n") == STR_ERROR)
     {
