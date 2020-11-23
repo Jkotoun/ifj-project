@@ -74,6 +74,7 @@ int generate_add_string_to_stack(char* value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
 int generate_stack_operation(instruction_type operation);
+int generate_add_concat_to_stack();
 
 // Generating relations
 int generate_relation(instruction_type relation);
@@ -111,8 +112,8 @@ int generate_function_return(char* name_of_parameter);
 int generate_function_end(char* name_of_parameter);
 
 // Calling function
-int generate_function_call(char* function_name);
-int generate_function_return_var(int scope, char* name_of_var);
+int generate_function_call(char *function_name, int number_of_parameters);
+int generate_function_return_var(int scope, char *name_of_var);
 
 // -------------------------------------------------------------------------------------------
 

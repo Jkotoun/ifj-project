@@ -352,6 +352,8 @@ instruction_type convert_reduction_rule_to_relation(reduction_rule rule){
             return GTS;
         case nt_more_eq_nt:
             return GTES;
+        default:
+            return CLEARS; // TO DO error handle - clears is symbolizing error (při překladu to házelo warning, že tady není default)
     }
 }
 

@@ -71,31 +71,53 @@ int generate_len()
                                 CREATEFRAME\n \
                                 DEFVAR TF@str\n \
                                 POPS TF@str\n \
-                                DEFVAR TF@cnt\
-                                MOVE TF@cnt int@0\
-                                STRLEN TF@cnt TF@str\
-                                PUSHS TF@cnt\
-                                POPFRAME\
-                                RETURN\n") == STR_ERROR)
+                                DEFVAR TF@cnt\n \
+                                MOVE TF@cnt int@0\n \
+                                STRLEN TF@cnt TF@str\n \
+                                PUSHS TF@cnt\n \
+                                POPFRAME\n \
+                                RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
-int generate_int2float()
-{
-    if (strAddConstStr(&output, "LABEL int2float\n \
-                                INT2FLOATS\
-                                RETURN\n") == STR_ERROR)
+int generate_int2float(){
+    if(strAddConstStr(&output, "LABEL int2float\n \
+                                INT2FLOATS\n \
+                                RETURN\n")==STR_ERROR)
+
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
-int generate_float2int()
-{
-    if (strAddConstStr(&output, "LABEL int2float\n \
-                                FLOAT2INTS\
-                                RETURN\n") == STR_ERROR)
-        return INTERNAL_COMPILER_ERR;
+int generate_float2int(){
+    if(strAddConstStr(&output, "LABEL int2float\n \
+                                FLOAT2INTS\n \
+                                RETURN\n")==STR_ERROR)
+    return INTERNAL_COMPILER_ERR;
+    return OK;
+}
+int generate_print(){
+    if(strAddConstStr(&output, "\
+LABEL print\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+DEFVAR TF@cnt_of_parameter\n\
+DEFVAR TF@to_print\n\
+DEFVAR TF@cnt\n\
+POPS TF@cnt_of_parameter\n\
+MOVE TF@cnt int@0\n\
+LABEL _print_while_start\n\
+LT GF@expr TF@cnt TF@cnt_of_parameter\n\
+JUMPIFNEQ _print_while_end GF@expr bool@true\n\
+POPS TF@to_print\n\
+WRITE TF@to_print\n\
+ADD TF@cnt TF@cnt int@1\n\
+JUMP _print_while_start\n\
+LABEL _print_while_end\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+    return INTERNAL_COMPILER_ERR;
     return OK;
 }
 //TODO dodělat implementaci build-in funkcí
@@ -128,9 +150,9 @@ int generator_init()
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
-    /*if (generate_build_in_function(&)==INTERNAL_COMPILER_ERR){
+    if (generate_build_in_function()==INTERNAL_COMPILER_ERR){
         return INTERNAL_COMPILER_ERR;
-    }*/
+    }
     return OK;
 }
 
@@ -140,39 +162,37 @@ void generator_clear()
     dArray_despose(&for_counter);
     strFree(&output);
 }
-void generator_print_output()
-{
-    printf("%s", output);
+
+void generator_print_output(){
+    printf("%s",output.str);
 }
 
-/*int generate_build_in_function(){
-    if( generate_inputs()!=OK       || \
-        generate_inputi()!=OK       || \
-        generate_inputf()!=OK       || \
-        generate_print()!=OK        || \
-        generate_int2float()!=OK    || \
-        generate_float2int()!=OK    || \
-        generate_len()!=OK          || \
-        generate_substr()!=OK       || \
-        generate_ord()!=OK          || \
-        generate_chr()!=OK){
+int generate_build_in_function(){
+    if( //generate_inputs()!=OK       || 
+        //generate_inputi()!=OK       || 
+        //generate_inputf()!=OK       || 
+        //generate_chr()!=OK        || 
+        //generate_int2float()!=OK    || 
+        //generate_float2int()!=OK    || 
+        //generate_len()!=OK          || 
+        //generate_substr()!=OK       || 
+        //generate_ord()!=OK          || 
+        generate_print()!=OK){
             return INTERNAL_COMPILER_ERR;
         }
         return OK;
-}*/
+}
 
 // -------------------------------------------------------------------------------------------
 
 // Generationg stack operations --------------------------------------------------------------
-int generate_add_concat_to_stack()
-{
-    if (strAddConstStr(&output, "POPS GF@concat_l\n \
-                                POPS GF@concat_r\n \
-                                CONCAT GF@concat_l GF@concat_l GF@concat_r \
-                                PUSHS GF@concat_l") == STR_ERROR)
-    {
-        return INTERNAL_COMPILER_ERR;
-    }
+int generate_add_concat_to_stack(){
+    if( strAddConstStr(&output,"POPS GF@concat_l\n\
+                                POPS GF@concat_r\n\
+                                CONCAT GF@concat_l GF@concat_l GF@concat_r\n\
+                                PUSHS GF@concat_l\n")==STR_ERROR){
+            return INTERNAL_COMPILER_ERR;
+        }
     return OK;
 }
 
@@ -194,27 +214,22 @@ int generate_add_var_to_stack(int scope, char* name_of_var)
     return OK;
 }
 
-int generate_add_string_to_stack(char* value)
-{
-    int index = 0;
-    while (value[index] != '\0')
-    {
-        for (int i = 0; i < SIZE_OF_ASCII_ARRAY; i++)
-        {
-            if (((int)value[index] >= 0 && (int)value[index] <= 32) || (int)value[index] == 35 || (int)value[index] <= 92)
-            {
-                char ascii_string[MAX_DIGITS_OF_SCOPE];
-                if (sprintf(ascii_string, "%3d", (int)value[index]) < 0)
+int generate_add_string_to_stack(char *value){
+    int index=0;
+    if( strAddConstStr(&output,"PUSHS string@")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    while(value[index]!='\0'){
+        if(((int)value[index]>=0&&(int)value[index]<=32)||(int)value[index]==35||(int)value[index]==92){
+            char ascii_string[MAX_DIGITS_OF_SCOPE];
+            if(sprintf(ascii_string, "%03d", (int)value[index])<0)
+                return INTERNAL_COMPILER_ERR;
+            if( strAddConstStr(&output,"\\")==STR_ERROR ||
+                strAddConstStr(&output,ascii_string)==STR_ERROR)
+                return INTERNAL_COMPILER_ERR;
+        }else{
+            if(strAddChar(&output, value[index])==STR_ERROR)
                     return INTERNAL_COMPILER_ERR;
-
-                if (strAddConstStr(&output, "\\") == STR_ERROR ||
-                    strAddConstStr(&output, ascii_string) == STR_ERROR)
-                    return INTERNAL_COMPILER_ERR;
-                break;
-            }
         }
-        if (value[index] != '\0' && strAddChar(&output, value[index]) == STR_ERROR)
-            return INTERNAL_COMPILER_ERR;
 
         index++;
     }
@@ -605,10 +620,10 @@ int generate_for_end(int scope, char* name_of_function)
 int generate_function_start(char* name_of_function)
 {
 
-    if (strAddConstStr(&output, "LABEL ") == STR_ERROR ||
-        strAddConstStr(&output, name_of_function) == STR_ERROR ||
-        strAddConstStr(&output, "\nPUSHFRAME\nCREATEFRAME\n") == STR_ERROR)
-    {
+    if( strAddConstStr(&output,"LABEL ")==STR_ERROR                      ||\
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\n")==STR_ERROR||
+        strAddConstStr(&output,"POPS GF@trash\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
@@ -659,12 +674,17 @@ int generate_function_end(char* name_of_function)
 }
 
 // Calling function
-int generate_function_call(char* name_of_function)
-{
-    if (strAddConstStr(&output, "CALL ") == STR_ERROR ||
-        strAddConstStr(&output, name_of_function) == STR_ERROR ||
-        strAddConstStr(&output, "\n") == STR_ERROR)
-    {
+int generate_function_call(char *name_of_function, int number_of_parameters){
+    char number_of_parameters_string[MAX_DIGITS_OF_SCOPE];
+
+    if(sprintf(number_of_parameters_string, "%d", number_of_parameters)<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR ||
+        strAddConstStr(&output,number_of_parameters_string)==STR_ERROR ||
+        strAddConstStr(&output,"\nCALL ")==STR_ERROR ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR ||
+        strAddConstStr(&output,"\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
