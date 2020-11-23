@@ -649,7 +649,7 @@ int generate_function_param(int scope, char* name_of_parameter)
         strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
         strAddConstStr(&output, "_") == STR_ERROR ||
         strAddConstStr(&output, scope_string) == STR_ERROR ||
-        strAddConstStr(&output, "\nPOPS TF@\n") == STR_ERROR ||
+        strAddConstStr(&output, "\nPOPS TF@") == STR_ERROR ||
         strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
         strAddConstStr(&output, "_") == STR_ERROR ||
         strAddConstStr(&output, scope_string) == STR_ERROR ||
@@ -694,23 +694,6 @@ int generate_function_call(char *name_of_function, int number_of_parameters){
         strAddConstStr(&output,"\nCALL ")==STR_ERROR ||
         strAddConstStr(&output,name_of_function)==STR_ERROR ||
         strAddConstStr(&output,"\n")==STR_ERROR){
-        return INTERNAL_COMPILER_ERR;
-    }
-    return OK;
-}
-int generate_function_return_var(int scope, char* name_of_var)
-{
-    char scope_string[MAX_DIGITS_OF_SCOPE];
-
-    if (sprintf(scope_string, "%d", scope) < 0)
-        return INTERNAL_COMPILER_ERR;
-
-    if (strAddConstStr(&output, "POPS TF@\n") == STR_ERROR ||
-        strAddConstStr(&output, name_of_var) == STR_ERROR ||
-        strAddConstStr(&output, "_") == STR_ERROR ||
-        strAddConstStr(&output, scope_string) == STR_ERROR ||
-        strAddConstStr(&output, "\n") == STR_ERROR)
-    {
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
