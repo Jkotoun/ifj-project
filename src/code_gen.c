@@ -188,7 +188,7 @@ int generate_build_in_function(){
 int generate_add_concat_to_stack(){
     if( strAddConstStr(&output,"POPS GF@concat_l\n\
                                 POPS GF@concat_r\n\
-                                CONCAT GF@concat_l GF@concat_l GF@concat_r\n\
+                                CONCAT GF@concat_l GF@concat_r GF@concat_l\n\
                                 PUSHS GF@concat_l\n")==STR_ERROR){
             return INTERNAL_COMPILER_ERR;
         }
