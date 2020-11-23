@@ -66,37 +66,40 @@ static dArray for_counter;
 int generate_len()
 {
     // Creates parameter variables
-    if (strAddConstStr(&output, "LABEL len\n \
-                                PUSHFRAME\n \
-                                CREATEFRAME\n \
-                                DEFVAR TF@str\n \
-                                POPS TF@str\n \
-                                DEFVAR TF@cnt\n \
-                                MOVE TF@cnt int@0\n \
-                                STRLEN TF@cnt TF@str\n \
-                                PUSHS TF@cnt\n \
-                                POPFRAME\n \
+    if (strAddConstStr(&output, "LABEL len\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@str\n\
+POPS TF@str\n\
+DEFVAR TF@cnt\n\
+MOVE TF@cnt int@0\n\
+STRLEN TF@cnt TF@str\n\
+PUSHS TF@cnt\n\
+POPFRAME\n\
                                 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
 int generate_int2float(){
-    if(strAddConstStr(&output, "LABEL int2float\n \
-                                INT2FLOATS\n \
+    if(strAddConstStr(&output, "LABEL int2float\n\
+POPS GF@trash\n\
+INT2FLOATS\n\
                                 RETURN\n")==STR_ERROR)
-
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
 int generate_float2int(){
     if(strAddConstStr(&output, "LABEL int2float\n \
+POPS GF@trash\n\
                                 FLOAT2INTS\n \
                                 RETURN\n")==STR_ERROR)
     return INTERNAL_COMPILER_ERR;
     return OK;
 }
+
 int generate_print(){
     if(strAddConstStr(&output, "\
 LABEL print\n\
@@ -319,37 +322,37 @@ int generate_relation(instruction_type relation)
     switch (relation)
     {
     case LTS:
-        if (strAddConstStr(&output, "LTS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "LTS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case GTS:
-        if (strAddConstStr(&output, "GTS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "GTS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case EQS:
-        if (strAddConstStr(&output, "EQS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "EQS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case NEQS:
-        if (strAddConstStr(&output, "EQS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "EQS\nNOTS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case LSES:
-        if (strAddConstStr(&output, "GTS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "GTS\nNOTS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case GTES:
-        if (strAddConstStr(&output, "LTS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        if (strAddConstStr(&output, "LTS\nNOTS\nPOPS GF@expr\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
