@@ -519,6 +519,7 @@ int generate_for_compare(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
+    dArray_add_to_scope(&for_counter, scope);
 
     if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0)
         return INTERNAL_COMPILER_ERR;
