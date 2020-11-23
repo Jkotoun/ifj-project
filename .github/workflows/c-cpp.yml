@@ -2,7 +2,7 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, generator ]
   pull_request:
     branches: [ main ]
 
@@ -23,5 +23,9 @@ jobs:
       run: make test
     - name: Run testsuite compile mode
       run: cd ifj-testsuite && python2 testsuite.py -mc -c ../src/main
+    - name: Display test log
+      run: cat ifj-testsuite/log
     - name: Run testsuite compile and interpret mode 
       run: cd ifj-testsuite && python2 testsuite.py -c ../src/main
+    - name: Display test log
+      run: cat ifj-testsuite/log
