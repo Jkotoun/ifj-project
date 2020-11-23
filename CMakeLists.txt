@@ -31,6 +31,7 @@ set(Sources
     src/scanner.c
     src/symtable.c
     src/dl_list.c
+    src/code_gen.c;
     src/parser.c
     src/expression_stack.c
     src/expression.c

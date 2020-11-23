@@ -41,3 +41,10 @@ target_link_libraries(ExpressionParserTests PUBLIC
     IFJ_compiler
 )
 add_test(NAME ExpressionParserTests COMMAND ExpressionParserTests)
+
+add_executable(CodeGenTest CodeGenTest.cpp)
+target_link_libraries(CodeGenTest PUBLIC
+    gtest_main
+    IFJ_compiler
+)
+add_test(NAME CodeGenTest COMMAND CodeGenTest)
