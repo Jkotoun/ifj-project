@@ -24,7 +24,7 @@ set(Headers
     src/parser_helpers.h;
     src/queue.h;
     src/expression_stack.h;
-
+    src/code_gen.h;
 )
 set(Sources
     src/str.c 
@@ -37,6 +37,7 @@ set(Sources
     src/queue.c
     src/expression.c;
     src/expression_stack.c;
+    src/code_gen.c;
 )
 add_library(${Project_name} STATIC ${Sources} ${Headers})
 add_subdirectory(tests)

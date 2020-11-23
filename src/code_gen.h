@@ -17,19 +17,18 @@ typedef struct dArray
 {
     int* count_in_scope;
     int size_of_array;
-}dArray;
-     
-int dArray_init(dArray* array);                     // Alocating first count_of_scopes, and set default values
-                                                    // Return 0 if the task was succesfull
-                                                    // otherwise return 1
+} dArray;
 
-int dArray_add_to_scope(dArray* array, int index);  // Increment count_in_scope[index] by 1
-                                                    // Return 0 if the task was succesfull
-                                                    // otherwise return 1
+int dArray_init(dArray* array); // Alocating first count_of_scopes, and set default values
+                                // Return 0 if the task was succesfull
+                                // otherwise return 1
 
-void dArray_despose(dArray* array);                  // Free memory of array
+int dArray_add_to_scope(dArray* array, int index); // Increment count_in_scope[index] by 1
+                                                   // Return 0 if the task was succesfull
+                                                   // otherwise return 1
+
+void dArray_despose(dArray* array); // Free memory of array
 // -------------------------------------------------------------------------------------------
-
 
 // Generator of 3AC --------------------------------------------------------------------------
 #define MAX_DIGITS_OF_SCOPE 48
@@ -55,11 +54,11 @@ typedef enum instruction_type
     NEQS,
     LSES,
     GTES,
-}instruction_type;
+} instruction_type;
 
 // Initiation of generator
 int generator_init();
-int generate_build_in_function();              
+int generate_build_in_function();
 void generator_print_output();
 
 // Cleaning inner string
@@ -70,8 +69,8 @@ int generate_main_start();
 int generate_main_end();
 
 // Generating stack operations
-int generate_add_var_to_stack(int scope, char *name_of_var);
-int generate_add_string_to_stack(char *value);
+int generate_add_var_to_stack(int scope, char* name_of_var);
+int generate_add_string_to_stack(char* value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
 int generate_stack_operation(instruction_type operation);
@@ -81,8 +80,8 @@ int generate_add_concat_to_stack();
 int generate_relation(instruction_type relation);
 
 // Generating for variables
-int generate_new_var(int scope, char *name_of_var);
-int generate_assign_var(int scope, char *name_of_var);
+int generate_new_var(int scope, char* name_of_var);
+int generate_assign_var(int scope, char* name_of_var);
 
 // Build-in functions
 int generate_inputs();
@@ -98,25 +97,24 @@ int generate_chr();
 
 // Generating sequential and selection instruction
 // -- Generating body of if else
-int generate_if_start(int scope, char *name_of_function);
-int generate_if_else(int scope, char *name_of_function);
-int generate_if_end(int scope, char *name_of_function);
+int generate_if_start(int scope, char* name_of_function);
+int generate_if_else(int scope, char* name_of_function);
+int generate_if_end(int scope, char* name_of_function);
 // -- Generating body of for loop
-int generate_for_start(int scope, char *name_of_function);
-int generate_for_assignment_end(int scope, char *name_of_function);
-int generate_for_comperation(int scope, char *name_of_function);
-int generate_for_end(int scope, char *name_of_function);
+int generate_for_start(int scope, char* name_of_function);
+int generate_for_assignment_end(int scope, char* name_of_function);
+int generate_for_comperation(int scope, char* name_of_function);
+int generate_for_end(int scope, char* name_of_function);
 // -- Generating body of function
-int generate_function_start(char *name_of_function);
-int generate_function_param(int scope, char *name_of_parameter);
-int generate_function_return(char *name_of_parameter);
-int generate_function_end(char *name_of_parameter);
+int generate_function_start(char* name_of_function);
+int generate_function_param(int scope, char* name_of_parameter);
+int generate_function_return(char* name_of_parameter);
+int generate_function_end(char* name_of_parameter);
 
 // Calling function
 int generate_function_call(char *function_name, int number_of_parameters);
 int generate_function_return_var(int scope, char *name_of_var);
 
 // -------------------------------------------------------------------------------------------
-
 
 #endif
