@@ -560,7 +560,7 @@ void rule_statement_action_next()
             token* tokenArr = tokenQueueToArray(&tokenQ);
             varType* paramArr = tokenArr_to_varTypeArr(tokenArr, paramLength);
 
-            for (size_t i = 0; i < paramLength; i++)
+            for (int i = paramLength - 1; i >= 0; i--)
             {
                 token token = tokenArr[i];
                 if (token.type == ID_TOKEN)
@@ -693,7 +693,7 @@ void rule_arg_expr_next(string* prevTokenName)
         def_func(prevTokenName, paramArr, paramArrCount, returnArr, leftSideLength, false);
         rightSideLength = leftSideLength;
 
-        for (size_t i = 0; i < paramArrCount; i++)
+        for (int i = paramArrCount - 1; i >= 0; i--)
         {
             token token = tokenArr[i];
             if (token.type == ID_TOKEN)
