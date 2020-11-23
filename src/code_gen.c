@@ -88,6 +88,29 @@ int generate_float2int(){
     return INTERNAL_COMPILER_ERR;
     return OK;
 }
+int generate_print(){
+    if(strAddConstStr(&output, "\
+LABEL print\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+DEFVAR TF@cnt_of_parameter\n\
+DEFVAR TF@to_print\n\
+DEFVAR TF@cnt\n\
+POPS TF@cnt_of_parameter\n\
+MOVE TF@cnt int@0\n\
+LABEL _print_while_start\n\
+LT GF@expr TF@cnt TF@cnt_of_parameter\n\
+JUMPIFNEQ _print_while_end GF@expr bool@true\n\
+POPS TF@to_print\n\
+WRITE TF@to_print\n\
+ADD TF@cnt TF@cnt int@1\n\
+JUMP _print_while_start\n\
+LABEL _print_while_end\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+    return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 //TODO dodělat implementaci build-in funkcí
 /*int generate_inputs();
 int generate_inputi();
@@ -114,9 +137,9 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
-    /*if (generate_build_in_function(&)==INTERNAL_COMPILER_ERR){
+    if (generate_build_in_function()==INTERNAL_COMPILER_ERR){
         return INTERNAL_COMPILER_ERR;
-    }*/
+    }
     return OK;
 }
 
@@ -129,21 +152,21 @@ void generator_print_output(){
     printf("%s",output.str);
 }
 
-/*int generate_build_in_function(){
-    if( generate_inputs()!=OK       || \
-        generate_inputi()!=OK       || \
-        generate_inputf()!=OK       || \
-        generate_print()!=OK        || \
-        generate_int2float()!=OK    || \
-        generate_float2int()!=OK    || \
-        generate_len()!=OK          || \
-        generate_substr()!=OK       || \
-        generate_ord()!=OK          || \
-        generate_chr()!=OK){
+int generate_build_in_function(){
+    if( //generate_inputs()!=OK       || 
+        //generate_inputi()!=OK       || 
+        //generate_inputf()!=OK       || 
+        //generate_chr()!=OK        || 
+        //generate_int2float()!=OK    || 
+        //generate_float2int()!=OK    || 
+        //generate_len()!=OK          || 
+        //generate_substr()!=OK       || 
+        //generate_ord()!=OK          || 
+        generate_print()!=OK){
             return INTERNAL_COMPILER_ERR;
         }
         return OK;
-}*/
+}
 
 // -------------------------------------------------------------------------------------------
 
@@ -543,7 +566,8 @@ int generate_function_start(char *name_of_function){
 
     if( strAddConstStr(&output,"LABEL ")==STR_ERROR                      ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\n")==STR_ERROR){
+        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\n")==STR_ERROR||
+        strAddConstStr(&output,"POPS GF@trash\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK; 
