@@ -49,7 +49,6 @@ int rightSideLength;
 
 void init_builtins()
 {
-    //TODO: pridat generovani builtin funkci
     string func_name;
     strInit(&func_name);
 
@@ -57,45 +56,38 @@ void init_builtins()
     strAddConstStr(&func_name, "inputs");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
-    // generate_inputs();
 
     returnArr[0] = INT;
     strAddConstStr(&func_name, "inputi");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
-    // generate_inputi();
 
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "inputf");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
-    // generate_inputf();
 
     strAddConstStr(&func_name, "print");
     symtable_insert_node_func(&functions_symtable, &func_name, 0, NULL, -1, NULL, true);
     strClear(&func_name);
-    // generate_print();
 
     varType paramArr[] = {INT, INT, INT};
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "int2float");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
-    // generate_int2float();
 
     paramArr[0] = FLOAT;
     returnArr[0] = INT;
     strAddConstStr(&func_name, "float2int");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
-    // generate_float2int();
 
     paramArr[0] = STRING;
     returnArr[0] = INT;
     strAddConstStr(&func_name, "len");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
     strClear(&func_name);
-    // generate_len();
 
     paramArr[0] = STRING;
     paramArr[1] = INT;
@@ -105,7 +97,6 @@ void init_builtins()
     strAddConstStr(&func_name, "substr");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 3, paramArr, true);
     strClear(&func_name);
-    // generate_substr();
 
     paramArr[0] = STRING;
     paramArr[1] = INT;
@@ -114,7 +105,6 @@ void init_builtins()
     strAddConstStr(&func_name, "ord");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 2, paramArr, true);
     strClear(&func_name);
-    // generate_ord();
 
     paramArr[0] = INT;
     returnArr[0] = STRING;
@@ -122,7 +112,6 @@ void init_builtins()
     strAddConstStr(&func_name, "chr");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 1, paramArr, true);
     strClear(&func_name);
-    // generate_chr();
 
     strFree(&func_name);
 }
@@ -566,7 +555,32 @@ void rule_statement_action_next()
         {
             token* tokenArr = tokenQueueToArray(&tokenQ);
             varType* paramArr = tokenArr_to_varTypeArr(tokenArr, paramLength);
+
+            for (size_t i = 0; i < paramLength; i++)
+            {
+                token token = tokenArr[i];
+                if (token.type == ID_TOKEN)
+                {
+                    varType type;
+                    int varScope = get_varType_from_symtable(&scoped_symtables, token.str, &type);
+                    generate_add_var_to_stack(varScope, token.str->str);
+                }
+                else if (token.type == DECIMAL_LITERAL_TOKEN)
+                {
+                    generate_add_float_to_stack(token.decimal);
+                }
+                else if (token.type == INTEGER_LITERAL_TOKEN)
+                {
+                    generate_add_int_to_stack(token.integer);
+                }
+                else if (token.type == STRING_LITERAL_TOKEN)
+                {
+                    generate_add_string_to_stack(token.str->str);
+                }
+            }
+
             def_func(function_token.str, paramArr, paramLength, NULL, 0, false);
+            generate_function_call(function_token.str->str, paramLength);
         }
         else
         {
@@ -697,7 +711,7 @@ void rule_arg_expr_next(string* prevTokenName)
                 generate_add_string_to_stack(token.str->str);
             }
         }
-        generate_function_call(prevTokenName->str);
+        generate_function_call(prevTokenName->str, paramArrCount);
         for (int i = leftSideLength - 1; i >= 0; i--)
         {
             token token = leftTokenArr[i];
