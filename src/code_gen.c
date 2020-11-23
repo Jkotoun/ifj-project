@@ -4,47 +4,54 @@
  * Generator of output code
 */
 
-#include <stdio.h>
-#include <string.h>
 #include "code_gen.h"
 #include "error_codes.h"
 #include "symtable.h"
+#include <stdio.h>
+#include <string.h>
 
 // Implementation of dynemic array ----------------------------------------------------------
-int dArray_init(dArray* array){
-    if((array->count_in_scope=malloc(ALLOCATE_CHUNK*sizeof(int)))==NULL)
-        return 1;                                                   // ERROR
-    array->size_of_array=ALLOCATE_CHUNK;
+int dArray_init(dArray* array)
+{
+    if ((array->count_in_scope = malloc(ALLOCATE_CHUNK * sizeof(int))) == NULL)
+        return 1; // ERROR
+    array->size_of_array = ALLOCATE_CHUNK;
     for (int i = 0; i < array->size_of_array; i++)
     {
-        array->count_in_scope[i]=0;
+        array->count_in_scope[i] = 0;
     }
-    
-    return 0;                                                       // SUCCES
+
+    return 0; // SUCCES
 }
 
-int dArray_add_to_scope(dArray* array, int index){
-    if(index>=array->size_of_array){                                // The array at index is not allocated
+int dArray_add_to_scope(dArray* array, int index)
+{
+    if (index >= array->size_of_array)
+    { // The array at index is not allocated
         int* tmp_count_in_scope;
-        if((tmp_count_in_scope=realloc(array->count_in_scope,(ALLOCATE_CHUNK+array->size_of_array)*sizeof(int)))==NULL){
+        if ((tmp_count_in_scope = realloc(array->count_in_scope, (ALLOCATE_CHUNK + array->size_of_array) * sizeof(int))) == NULL)
+        {
             free(array->count_in_scope);
-            array->count_in_scope=NULL;
-            return 1;                                               // ERROR
-        }else{
-            array->count_in_scope=tmp_count_in_scope;
-            for (int i = array->size_of_array; i < array->size_of_array+ALLOCATE_CHUNK; i++)
+            array->count_in_scope = NULL;
+            return 1; // ERROR
+        }
+        else
+        {
+            array->count_in_scope = tmp_count_in_scope;
+            for (int i = array->size_of_array; i < array->size_of_array + ALLOCATE_CHUNK; i++)
             {
-                array->count_in_scope[i]=0;
+                array->count_in_scope[i] = 0;
             }
-            array->size_of_array+=ALLOCATE_CHUNK;
+            array->size_of_array += ALLOCATE_CHUNK;
         }
     }
     array->count_in_scope[index]++;
 
-    return 0;                                                       // SUCCES
+    return 0; // SUCCES
 }
 
-void dArray_despose(dArray* array){
+void dArray_despose(dArray* array)
+{
     free(array->count_in_scope);
 }
 // -------------------------------------------------------------------------------------------
@@ -56,9 +63,10 @@ static dArray if_counter;
 static dArray for_counter;
 
 //func len(𝑠 string) (int) – Vrátí délku (počet znaků) řetězce zadaného jediným parametrem 𝑠. Např. len("x\nz") vrací 3.
-int generate_len(){
+int generate_len()
+{
     // Creates parameter variables
-    if(strAddConstStr(&output, "LABEL len\n \
+    if (strAddConstStr(&output, "LABEL len\n \
                                 PUSHFRAME\n \
                                 CREATEFRAME\n \
                                 DEFVAR TF@str\n \
@@ -77,6 +85,7 @@ int generate_int2float(){
     if(strAddConstStr(&output, "LABEL int2float\n \
                                 INT2FLOATS\n \
                                 RETURN\n")==STR_ERROR)
+
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
@@ -123,13 +132,16 @@ int generate_substr();
 int generate_ord();
 int generate_chr();*/
 
-int generator_init(){
+int generator_init()
+{
     // Initiation of counters for LABLE creation
-    if(dArray_init(&if_counter)==1&&dArray_init(&for_counter)==1){
+    if (dArray_init(&if_counter) == 1 && dArray_init(&for_counter) == 1)
+    {
         return INTERNAL_COMPILER_ERR;
     }
     // Initiation of output string
-    if(strInit(&output)==STR_ERROR){
+    if (strInit(&output) == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
@@ -143,11 +155,13 @@ int generator_init(){
     return OK;
 }
 
-void generator_clear(){
+void generator_clear()
+{
     dArray_despose(&if_counter);
     dArray_despose(&for_counter);
     strFree(&output);
 }
+
 void generator_print_output(){
     printf("%s",output.str);
 }
@@ -181,17 +195,19 @@ int generate_add_concat_to_stack(){
     return OK;
 }
 
-int generate_add_var_to_stack(int scope, char *name_of_var){
+int generate_add_var_to_stack(int scope, char* name_of_var)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
-   
-    if(sprintf(scope_string, "%d", scope)<0)
+
+    if (sprintf(scope_string, "%d", scope) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"PUSHS TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
-        strAddConstStr(&output,"_")==STR_ERROR                  ||
-        strAddConstStr(&output,scope_string)==STR_ERROR         ||
-        strAddConstStr(&output,"\n")==STR_ERROR){
+    if (strAddConstStr(&output, "PUSHS TF@") == STR_ERROR ||
+        strAddConstStr(&output, name_of_var) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
@@ -213,65 +229,76 @@ int generate_add_string_to_stack(char *value){
             if(strAddChar(&output, value[index])==STR_ERROR)
                     return INTERNAL_COMPILER_ERR;
         }
+
         index++;
     }
-    if( strAddConstStr(&output,"\n")==STR_ERROR)
+    if (strAddConstStr(&output, "\n") == STR_ERROR)
         return INTERNAL_COMPILER_ERR;
 
     return OK;
 }
-int generate_add_int_to_stack(int value){
+int generate_add_int_to_stack(int value)
+{
     char value_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(value_string, "%d", value)<0)
+    if (sprintf(value_string, "%d", value) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR     ||
-            strAddConstStr(&output,value_string)==STR_ERROR            ||
-            strAddConstStr(&output,"\n")==STR_ERROR){
-            return INTERNAL_COMPILER_ERR;
-        }
+    if (strAddConstStr(&output, "PUSHS int@") == STR_ERROR ||
+        strAddConstStr(&output, value_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
     return OK;
 }
-int generate_add_float_to_stack(double value){
-     char value_string[MAX_DIGITS_OF_SCOPE];
+int generate_add_float_to_stack(double value)
+{
+    char value_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(value_string, "%a", value)<0)
+    if (sprintf(value_string, "%a", value) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"PUSHS int@")==STR_ERROR||
-        strAddConstStr(&output,value_string)==STR_ERROR||
-        strAddConstStr(&output,"\n")==STR_ERROR){
+    if (strAddConstStr(&output, "PUSHS int@") == STR_ERROR ||
+        strAddConstStr(&output, value_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
-        }
+    }
     return OK;
 }
 
-int generate_stack_operation(instruction_type operation){
+int generate_stack_operation(instruction_type operation)
+{
     switch (operation)
     {
     case ADDS:
-        if( strAddConstStr(&output,"ADDS\n")==STR_ERROR){
+        if (strAddConstStr(&output, "ADDS\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case SUBS:
-        if( strAddConstStr(&output,"SUBS\n")==STR_ERROR){
+        if (strAddConstStr(&output, "SUBS\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case MULS:
-        if( strAddConstStr(&output,"MULS\n")==STR_ERROR){
+        if (strAddConstStr(&output, "MULS\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case DIVS:
-        if( strAddConstStr(&output,"DIVS\n")==STR_ERROR){
+        if (strAddConstStr(&output, "DIVS\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case IDIVS:
-        if( strAddConstStr(&output,"IDIVS\n")==STR_ERROR){
+        if (strAddConstStr(&output, "IDIVS\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
@@ -287,36 +314,43 @@ int generate_stack_operation(instruction_type operation){
 
 // Generating relations ----------------------------------------------------------------------
 
-int generate_relation(instruction_type relation){
+int generate_relation(instruction_type relation)
+{
     switch (relation)
     {
     case LTS:
-        if( strAddConstStr(&output,"LTS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "LTS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case GTS:
-        if( strAddConstStr(&output,"GTS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "GTS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case EQS:
-        if( strAddConstStr(&output,"EQS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "EQS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case NEQS:
-        if( strAddConstStr(&output,"EQS\nNOTS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "EQS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case LSES:
-        if( strAddConstStr(&output,"GTS\nNOTS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "GTS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case GTES:
-        if( strAddConstStr(&output,"LTS\nNOTS\nPOPS GF@tmp\n")==STR_ERROR){
+        if (strAddConstStr(&output, "LTS\nNOTS\nPOPS GF@tmp\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
         }
         break;
@@ -331,37 +365,44 @@ int generate_relation(instruction_type relation){
 // -------------------------------------------------------------------------------------------
 
 // Generating for variables-------------------------------------------------------------------
-int generate_new_var(int scope, char *name_of_var){
+int generate_new_var(int scope, char* name_of_var)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
-   
-    if(sprintf(scope_string, "%d", scope)<0)
+
+    if (sprintf(scope_string, "%d", scope) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"DEFVAR TF@")==STR_ERROR          ||
-        strAddConstStr(&output,name_of_var)==STR_ERROR     ||
-        strAddConstStr(&output,"_")==STR_ERROR                  ||
-        strAddConstStr(&output,scope_string)==STR_ERROR         ||
-        strAddConstStr(&output,"\n")==STR_ERROR){
+    if (strAddConstStr(&output, "DEFVAR TF@") == STR_ERROR ||
+        strAddConstStr(&output, name_of_var) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
 }
-int generate_assign_var(int scope, char *name_of_var){
+int generate_assign_var(int scope, char* name_of_var)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
-    if(strcmp(name_of_var,"_")==0){
-        if(strAddConstStr(&output,"POPS GF@trash\n")==STR_ERROR)
+    if (strcmp(name_of_var, "_") == 0)
+    {
+        if (strAddConstStr(&output, "POPS GF@trash\n") == STR_ERROR)
             return INTERNAL_COMPILER_ERR;
-    }else{
-        if(sprintf(scope_string, "%d", scope)<0)
-        return INTERNAL_COMPILER_ERR;
+    }
+    else
+    {
+        if (sprintf(scope_string, "%d", scope) < 0)
+            return INTERNAL_COMPILER_ERR;
 
-        if( strAddConstStr(&output,"POPS TF@")==STR_ERROR          ||
-            strAddConstStr(&output,name_of_var)==STR_ERROR     ||
-            strAddConstStr(&output,"_")==STR_ERROR                  ||
-            strAddConstStr(&output,scope_string)==STR_ERROR         ||
-            strAddConstStr(&output,"\n")==STR_ERROR){
+        if (strAddConstStr(&output, "POPS TF@") == STR_ERROR ||
+            strAddConstStr(&output, name_of_var) == STR_ERROR ||
+            strAddConstStr(&output, "_") == STR_ERROR ||
+            strAddConstStr(&output, scope_string) == STR_ERROR ||
+            strAddConstStr(&output, "\n") == STR_ERROR)
+        {
             return INTERNAL_COMPILER_ERR;
-        }    
+        }
     }
     return OK;
 }
@@ -369,89 +410,98 @@ int generate_assign_var(int scope, char *name_of_var){
 
 // Generating for main function --------------------------------------------------------------
 
-int generate_main_start(){
-    if( strAddConstStr(&output,"LABEL main\nCREATEFRAME\n")==STR_ERROR){
+int generate_main_start()
+{
+    if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
     return OK;
 }
 
-int generate_main_end(){
-    if( strAddConstStr(&output,"LABEL end_of_main\nCLEARS\n")==STR_ERROR){
+int generate_main_end()
+{
+    if (strAddConstStr(&output, "LABEL end_of_main\nCLEARS\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
     return OK;
-} 
+}
 
 // -------------------------------------------------------------------------------------------
 
 // Generating for if statement ---------------------------------------------------------------
 
-int generate_if_start(int scope, char *name_of_function){   
+int generate_if_start(int scope, char* name_of_function)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
-    dArray_add_to_scope(&if_counter,scope);
+    dArray_add_to_scope(&if_counter, scope);
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
+    if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"JUMPIFNEQ _if_")==STR_ERROR ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_else ")==STR_ERROR                                 ||\
-        strAddConstStr(&output,"GF@expr bool@true\n")==STR_ERROR  
-        ){
+    if (strAddConstStr(&output, "JUMPIFNEQ _if_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_if_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_else ") == STR_ERROR ||
+        strAddConstStr(&output, "GF@expr bool@true\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
     return OK;
 }
 
-int generate_if_else(int scope, char *name_of_function){
+int generate_if_else(int scope, char* name_of_function)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
+    if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
-     
-    if( strAddConstStr(&output,"JUMP _if_")==STR_ERROR                              ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_end\nLABEL _if_")==STR_ERROR                       ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_else\n")==STR_ERROR){
+
+    if (strAddConstStr(&output, "JUMP _if_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_if_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_end\nLABEL _if_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_if_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_else\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
     return OK;
 }
 
-int generate_if_end(int scope, char *name_of_function){
+int generate_if_end(int scope, char* name_of_function)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_if_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope])<0)
+    if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_if_in_scope_string, "%d", if_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"LABEL _if_")==STR_ERROR                             ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_if_in_scope_string)==STR_ERROR                   ||\
-        strAddConstStr(&output,"_end\n")==STR_ERROR){
+    if (strAddConstStr(&output, "LABEL _if_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_if_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_end\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -487,8 +537,7 @@ int generate_for_assignment(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
-
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0)
+    if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
 
     if( strAddConstStr(&output,"JUMPIFNEQ _for_")==STR_ERROR                      ||\
@@ -544,27 +593,29 @@ int generate_for_before_code(int scope, char *name_of_function){
     return OK;
 }
 
-int generate_for_end(int scope, char *name_of_function){
+int generate_for_end(int scope, char* name_of_function)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0)
+    if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"JUMP _for_")==STR_ERROR                           ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_assignment\n")                                          ||\
-        strAddConstStr(&output,"LABEL _for_")==STR_ERROR                          ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_end\n")==STR_ERROR){
+    if (strAddConstStr(&output, "JUMP _for_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_for_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_assignment\n") ||
+        strAddConstStr(&output, "LABEL _for_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, cnt_for_in_scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "_end\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -575,7 +626,8 @@ int generate_for_end(int scope, char *name_of_function){
 
 // Generating function -----------------------------------------------------------------------
 
-int generate_function_start(char *name_of_function){
+int generate_function_start(char* name_of_function)
+{
 
     if( strAddConstStr(&output,"LABEL ")==STR_ERROR                      ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
@@ -583,45 +635,51 @@ int generate_function_start(char *name_of_function){
         strAddConstStr(&output,"POPS GF@trash\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
-    return OK; 
+    return OK;
 }
 
-int generate_function_param(int scope, char *name_of_parameter){
+int generate_function_param(int scope, char* name_of_parameter)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0)
+    if (sprintf(scope_string, "%d", scope) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"DEFVAR TF@")==STR_ERROR                      ||\
-        strAddConstStr(&output,name_of_parameter)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                         ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
-        strAddConstStr(&output,"\nPOPS TF@\n")==STR_ERROR ||\
-        strAddConstStr(&output,name_of_parameter)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                         ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
-        strAddConstStr(&output,"\n")==STR_ERROR                      ){
+    if (strAddConstStr(&output, "DEFVAR TF@") == STR_ERROR ||
+        strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "\nPOPS TF@\n") == STR_ERROR ||
+        strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
-    }
-    return OK; 
-}
-
-int generate_function_return(char *name_of_function){
-    if( strAddConstStr(&output,"JUMP end_of_")==STR_ERROR                      ||
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||
-        strAddConstStr(&output,"\n")==STR_ERROR){
-            return INTERNAL_COMPILER_ERR;
     }
     return OK;
 }
 
-int generate_function_end(char *name_of_function){
-    if( strAddConstStr(&output,"LABEL end_of_")==STR_ERROR                      ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||
-        strAddConstStr(&output,"\nPOPFRAME\nRETURN\n")==STR_ERROR){
+int generate_function_return(char* name_of_function)
+{
+    if (strAddConstStr(&output, "JUMP end_of_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
-    return OK; 
+    return OK;
+}
+
+int generate_function_end(char* name_of_function)
+{
+    if (strAddConstStr(&output, "LABEL end_of_") == STR_ERROR ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR ||
+        strAddConstStr(&output, "\nPOPFRAME\nRETURN\n") == STR_ERROR)
+    {
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
 }
 
 // Calling function
@@ -638,22 +696,24 @@ int generate_function_call(char *name_of_function, int number_of_parameters){
         strAddConstStr(&output,"\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
-    return OK; 
+    return OK;
 }
-int generate_function_return_var(int scope, char *name_of_var){
+int generate_function_return_var(int scope, char* name_of_var)
+{
     char scope_string[MAX_DIGITS_OF_SCOPE];
 
-    if(sprintf(scope_string, "%d", scope)<0)
+    if (sprintf(scope_string, "%d", scope) < 0)
         return INTERNAL_COMPILER_ERR;
 
-    if( strAddConstStr(&output,"POPS TF@\n")==STR_ERROR ||\
-        strAddConstStr(&output,name_of_var)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                         ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                         ||\
-        strAddConstStr(&output,"\n")==STR_ERROR                      ){
+    if (strAddConstStr(&output, "POPS TF@\n") == STR_ERROR ||
+        strAddConstStr(&output, name_of_var) == STR_ERROR ||
+        strAddConstStr(&output, "_") == STR_ERROR ||
+        strAddConstStr(&output, scope_string) == STR_ERROR ||
+        strAddConstStr(&output, "\n") == STR_ERROR)
+    {
         return INTERNAL_COMPILER_ERR;
     }
-    return OK; 
+    return OK;
 }
 
 // -------------------------------------------------------------------------------------------
