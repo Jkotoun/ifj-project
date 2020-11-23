@@ -133,7 +133,7 @@ int generator_init(){
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
-    if(strAddConstStr(&output,".IFJcode20\nGF@expr\nGF@trash\nGF@concat_l\nGF@concat_r\nJUMP main\n")==STR_ERROR){
+    if(strAddConstStr(&output,".IFJcode20\nDEFVAR GF@expr\nDEFVAR GF@trash\nDEFVAR GF@concat_l\nDEFVAR GF@concat_r\nJUMP main\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
@@ -462,33 +462,7 @@ int generate_if_end(int scope, char *name_of_function){
 
 // Generating for for cycle ----------------------------------------------------------------
 
-int generate_for_start(int scope, char *name_of_function){  
-    char scope_string[MAX_DIGITS_OF_SCOPE];
-    char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];    
-    dArray_add_to_scope(&for_counter,scope);
-
-    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0)
-        return INTERNAL_COMPILER_ERR;
-
-    if( strAddConstStr(&output,"JUMP _for_")==STR_ERROR                          ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_start\nLABEL _for_")==STR_ERROR                          ||\
-        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
-        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
-        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_assignment\n")){
-        return INTERNAL_COMPILER_ERR;
-    }
-    return OK;
-}
-
-int generate_for_assignment_end(int scope, char *name_of_function){
+int generate_for_compare(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
@@ -502,14 +476,14 @@ int generate_for_assignment_end(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_start\n")){
+        strAddConstStr(&output,"_compare\n")){
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
 }
 
 
-int generate_for_compareation(int scope, char *name_of_function){
+int generate_for_assignment(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
 
@@ -524,11 +498,50 @@ int generate_for_compareation(int scope, char *name_of_function){
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
         strAddConstStr(&output,"_end ")==STR_ERROR                                  ||\
-        strAddConstStr(&output,"GF@expr bool@true\n")==STR_ERROR  
-        ){
+        strAddConstStr(&output,"GF@expr bool@true\nJUMP _for_")==STR_ERROR  ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
+        strAddConstStr(&output,"_code\nLABEL _for_")==STR_ERROR  ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
+        strAddConstStr(&output,"_code\n")==STR_ERROR                                  ||\
+        strAddConstStr(&output,"\n")==STR_ERROR ){
         return INTERNAL_COMPILER_ERR;
     }
     return OK; 
+}
+
+int generate_for_before_code(int scope, char *name_of_function){
+    char scope_string[MAX_DIGITS_OF_SCOPE];
+    char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
+
+    if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0)
+        return INTERNAL_COMPILER_ERR;
+
+    if( strAddConstStr(&output,"JUMP _for_")==STR_ERROR                           ||\
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
+        strAddConstStr(&output,"_compare\n")                                          ||\
+        strAddConstStr(&output,"LABEL _for_")==STR_ERROR                          ||\
+        strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
+        strAddConstStr(&output,"_")==STR_ERROR                                      ||\
+        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
+        strAddConstStr(&output,"_code\n")==STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+
+    return OK;
 }
 
 int generate_for_end(int scope, char *name_of_function){
