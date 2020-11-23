@@ -250,9 +250,11 @@ void rule_func_decl()
     int returnArrLength = typeQueueLength(&typeQ);
 
     def_func(&func_name, paramArr, paramArrLength, returnArr, returnArrLength, true);
-    strClear(&func_name);
-    strAddChar(&func_name, '_');
-    def_var(&func_name, UNDERSCORE);
+
+    string underscore;
+    strInit(&underscore);
+    strAddChar(&underscore, '_');
+    def_var(&underscore, UNDERSCORE);
     functionHasReturn = false;
 
     rule_body();
@@ -270,6 +272,8 @@ void rule_func_decl()
         handle_error(ARGS_RETURNS_COUNT_ERR);
     }
     DLDisposeList(&scoped_symtables);
+    strFree(&func_name);
+    strFree(&underscore);
 }
 
 void rule_param_first_next(symbol_node** function_node)
