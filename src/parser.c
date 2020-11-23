@@ -716,13 +716,13 @@ void rule_arg_expr_next(string* prevTokenName)
             }
         }
         generate_function_call(prevTokenName->str, paramArrCount);
-        for (int i = leftSideLength - 1; i >= 0; i--)
-        {
-            token token = leftTokenArr[i];
-            varType type;
-            int varScope = get_varType_from_symtable(&scoped_symtables, token.str, &type);
-            generate_assign_var(varScope, token.str->str);
-        }
+        // for (int i = leftSideLength - 1; i >= 0; i--)
+        // {
+        //     token token = leftTokenArr[i];
+        //     varType type;
+        //     int varScope = get_varType_from_symtable(&scoped_symtables, token.str, &type);
+        //     generate_assign_var(varScope, token.str->str);
+        // }
 
         get_next_token();
     }
