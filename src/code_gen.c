@@ -78,7 +78,7 @@ MOVE TF@cnt int@0\n\
 STRLEN TF@cnt TF@str\n\
 PUSHS TF@cnt\n\
 POPFRAME\n\
-                                RETURN\n")==STR_ERROR)
+RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
@@ -88,7 +88,7 @@ int generate_int2float(){
 LABEL int2float\n\
 POPS GF@trash\n\
 INT2FLOATS\n\
-                                RETURN\n")==STR_ERROR)
+RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
     return OK;
 }
@@ -98,8 +98,8 @@ int generate_float2int(){
 LABEL float2int\n\
 POPS GF@trash\n\
 FLOAT2INTS\n\
-                                RETURN\n")==STR_ERROR)
-    return INTERNAL_COMPILER_ERR;
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
@@ -123,7 +123,7 @@ JUMP _print_while_start\n\
 LABEL _print_while_end\n\
 POPFRAME\n\
 RETURN\n")==STR_ERROR)
-    return INTERNAL_COMPILER_ERR;
+        return INTERNAL_COMPILER_ERR;
     return OK;
 }
 
@@ -143,7 +143,38 @@ RETURN\n")==STR_ERROR)
     return OK;
 }
 
+int generate_inputi(){
+    if(strAddConstStr(&output, "\
+LABEL inputi\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@out_int\n\
+READ TF@out_int int\n\
+PUSHS TF@out_int\n\
+PUSHS int@10\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
+int generate_inputf(){
+    if(strAddConstStr(&output, "\
+LABEL inputf\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@out_float\n\
+READ TF@out_float float\n\
+PUSHS TF@out_float\n\
+PUSHS int@10\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
+//func ord(s string, i int) (int, int)
 int generate_ord(){
         if(strAddConstStr(&output, "\
 LABEL ord\n\
@@ -266,11 +297,6 @@ RETURN\n")==STR_ERROR)
 }
 
 
-//TODO dodělat implementaci build-in funkcí
-/*
-int generate_inputi();
-int generate_inputf();
-*/
 int generator_init()
 {
     // Initiation of counters for LABLE creation
@@ -307,8 +333,8 @@ void generator_print_output(){
 
 int generate_build_in_function(){
     if( generate_inputs()!=OK       || 
-        //generate_inputi()!=OK       || 
-        //generate_inputf()!=OK       || 
+        generate_inputi()!=OK       || 
+        generate_inputf()!=OK       || 
         generate_chr()!=OK        || 
         generate_int2float()!=OK    || 
         generate_float2int()!=OK    || 
@@ -327,9 +353,9 @@ int generate_build_in_function(){
 int generate_add_concat_to_stack(){
     if( strAddConstStr(&output,"\
 POPS GF@concat_l\n\
-                                POPS GF@concat_r\n\
-                                CONCAT GF@concat_l GF@concat_r GF@concat_l\n\
-                                PUSHS GF@concat_l\n")==STR_ERROR){
+POPS GF@concat_r\n\
+CONCAT GF@concat_l GF@concat_r GF@concat_l\n\
+PUSHS GF@concat_l\n")==STR_ERROR){
             return INTERNAL_COMPILER_ERR;
         }
     return OK;
@@ -677,7 +703,7 @@ int generate_for_compare(int scope, char *name_of_function){
 int generate_for_assignment(int scope, char *name_of_function){
     char scope_string[MAX_DIGITS_OF_SCOPE];
     char cnt_for_in_scope_string[MAX_DIGITS_OF_SCOPE];
-
+    
     if (sprintf(scope_string, "%d", scope) < 0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope]) < 0)
         return INTERNAL_COMPILER_ERR;
 
