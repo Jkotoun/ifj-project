@@ -212,10 +212,65 @@ RETURN\n")==STR_ERROR)
     return OK;
 }
 
-int generate_substr();
-int generate_ord();
-int generate_chr();*/
+int generate_substr(){
+        if(strAddConstStr(&output, "\
+LABEL substr\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@ret_str\n\
+DEFVAR TF@err\n\
+MOVE TF@ret_str string@\n\
+MOVE TF@err int@1\n\
+DEFVAR TF@s\n\
+POPS TF@s\n\
+DEFVAR TF@i\n\
+POPS TF@i\n\
+DEFVAR TF@n\n\
+POPS TF@n\n\
+DEFVAR TF@char\n\
+MOVE TF@char string@\n\
+DEFVAR TF@str_len\n\
+DEFVAR TF@l_limit\n\
+DEFVAR TF@r_limit\n\
+STRLEN TF@str_len TF@s\n\
+LT TF@l_limit TF@i int@0\n\
+NOT TF@l_limit TF@l_limit\n\
+GT TF@r_limit TF@i TF@str_len\n\
+NOT TF@r_limit TF@r_limit\n\
+AND TF@l_limit TF@l_limit TF@r_limit\n\
+LT TF@r_limit TF@n int@0\n\
+NOT TF@r_limit TF@r_limit\n\
+AND TF@l_limit TF@l_limit TF@r_limit\n\
+JUMPIFNEQ _sub_end TF@l_limit bool@true\n\
+MOVE TF@err int@0\n\
+DEFVAR TF@cnt_of_loaded\n\
+MOVE TF@cnt_of_loaded int@0\n\
+LABEL _sub_while\n\
+LT TF@l_limit TF@i TF@str_len\n\
+LT TF@r_limit TF@cnt_of_loaded TF@n \n\
+AND TF@l_limit TF@l_limit TF@r_limit\n\
+JUMPIFNEQ _sub_end TF@l_limit bool@true\n\
+GETCHAR TF@char TF@s TF@i\n\
+CONCAT TF@ret_str TF@ret_str TF@char\n\
+ADD TF@cnt_of_loaded TF@cnt_of_loaded int@1\n\
+ADD TF@i TF@i int@1\n\
+JUMP _sub_while\n\
+LABEL _sub_end\n\
+PUSHS TF@ret_str\n\
+PUSHS TF@err\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
+
+//TODO dodělat implementaci build-in funkcí
+/*
+int generate_inputi();
+int generate_inputf();
+*/
 int generator_init()
 {
     // Initiation of counters for LABLE creation
@@ -258,7 +313,7 @@ int generate_build_in_function(){
         generate_int2float()!=OK    || 
         generate_float2int()!=OK    || 
         generate_len()!=OK          || 
-        //generate_substr()!=OK       || 
+        generate_substr()!=OK       || 
         generate_ord()!=OK          || 
         generate_print()!=OK){
             return INTERNAL_COMPILER_ERR;
