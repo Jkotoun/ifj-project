@@ -257,7 +257,7 @@ int generate_build_in_function(){
         generate_chr()!=OK        || 
         generate_int2float()!=OK    || 
         generate_float2int()!=OK    || 
-        //generate_len()!=OK          || 
+        generate_len()!=OK          || 
         //generate_substr()!=OK       || 
         generate_ord()!=OK          || 
         generate_print()!=OK){
