@@ -148,7 +148,7 @@ int generator_init()
         return INTERNAL_COMPILER_ERR;
     }
     // Add prefix to the output string
-    if(strAddConstStr(&output,".IFJcode20\nDEFVAR GF@expr\nDEFVAR GF@trash\nDEFVAR GF@concat_l\nDEFVAR GF@concat_r\nJUMP main\n")==STR_ERROR){
+    if(strAddConstStr(&output,".IFJcode20\nDEFVAR GF@expr\nDEFVAR GF@tmp\nDEFVAR GF@trash\nDEFVAR GF@concat_l\nDEFVAR GF@concat_r\nJUMP main\nLABEL _div_0\nEXIT int@9\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     // Add build-in functions to the output string
@@ -294,13 +294,13 @@ int generate_stack_operation(instruction_type operation)
         }
         break;
     case DIVS:
-        if (strAddConstStr(&output, "DIVS\n") == STR_ERROR)
+        if (strAddConstStr(&output, "POPS GF@tmp\nEQ GF@expr GF@tmp int@0x0p+0\nJUMPIFEQ _div_0 GF@expr bool@true\nPUSHS GF@tmp\nDIVS\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
         break;
     case IDIVS:
-        if (strAddConstStr(&output, "IDIVS\n") == STR_ERROR)
+        if (strAddConstStr(&output, "POPS GF@tmp\nEQ GF@expr GF@tmp int@0\nJUMPIFEQ _div_0 GF@expr bool@true\nPUSHS GF@tmp\nIDIVS\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
