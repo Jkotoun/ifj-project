@@ -200,10 +200,10 @@ NOT TF@l_limit TF@l_limit\n\
 GT TF@r_limit TF@i int@255\n\
 NOT TF@r_limit TF@r_limit\n\
 AND TF@l_limit TF@l_limit TF@r_limit\n\
-JUMPIFNEQ _ord_end TF@l_limit bool@true\n\
+JUMPIFNEQ _chr_end TF@l_limit bool@true\n\
 MOVE TF@err int@0\n\
 INT2CHAR TF@ret_str TF@i\n\
-LABEL _ord_end\n\
+LABEL _chr_end\n\
 PUSHS TF@ret_str\n\
 PUSHS TF@err\n\
 POPFRAME\n\
@@ -431,7 +431,7 @@ int generate_stack_operation(instruction_type operation)
         }
         break;
     case DIVS:
-        if (strAddConstStr(&output, "POPS GF@tmp\nEQ GF@expr GF@tmp int@0x0p+0\nJUMPIFEQ _div_0 GF@expr bool@true\nPUSHS GF@tmp\nDIVS\n") == STR_ERROR)
+        if (strAddConstStr(&output, "POPS GF@tmp\nEQ GF@expr GF@tmp float@0x0p+0\nJUMPIFEQ _div_0 GF@expr bool@true\nPUSHS GF@tmp\nDIVS\n") == STR_ERROR)
         {
             return INTERNAL_COMPILER_ERR;
         }
@@ -700,8 +700,7 @@ int generate_for_assignment(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_code\n")==STR_ERROR                                  ||\
-        strAddConstStr(&output,"\n")==STR_ERROR ){
+        strAddConstStr(&output,"_assignment\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK; 
@@ -720,8 +719,7 @@ int generate_for_before_code(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR                ||\
-        strAddConstStr(&output,"_compare\n")                                          ||\
-        strAddConstStr(&output,"LABEL _for_")==STR_ERROR                          ||\
+        strAddConstStr(&output,"_compare\nLABEL _for_")==STR_ERROR                          ||\
         strAddConstStr(&output,name_of_function)==STR_ERROR                         ||\
         strAddConstStr(&output,"_")==STR_ERROR                                      ||\
         strAddConstStr(&output,scope_string)==STR_ERROR                             ||\
@@ -748,8 +746,7 @@ int generate_for_end(int scope, char* name_of_function)
         strAddConstStr(&output, scope_string) == STR_ERROR ||
         strAddConstStr(&output, "_") == STR_ERROR ||
         strAddConstStr(&output, cnt_for_in_scope_string) == STR_ERROR ||
-        strAddConstStr(&output, "_assignment\n") ||
-        strAddConstStr(&output, "LABEL _for_") == STR_ERROR ||
+        strAddConstStr(&output, "_assignment\nLABEL _for_") == STR_ERROR ||
         strAddConstStr(&output, name_of_function) == STR_ERROR ||
         strAddConstStr(&output, "_") == STR_ERROR ||
         strAddConstStr(&output, scope_string) == STR_ERROR ||
