@@ -84,7 +84,8 @@ POPFRAME\n\
 }
 
 int generate_int2float(){
-    if(strAddConstStr(&output, "LABEL int2float\n\
+    if(strAddConstStr(&output, "\
+LABEL int2float\n\
 POPS GF@trash\n\
 INT2FLOATS\n\
                                 RETURN\n")==STR_ERROR)
@@ -93,9 +94,10 @@ INT2FLOATS\n\
 }
 
 int generate_float2int(){
-    if(strAddConstStr(&output, "LABEL int2float\n \
+    if(strAddConstStr(&output, "\
+LABEL float2int\n\
 POPS GF@trash\n\
-                                FLOAT2INTS\n \
+FLOAT2INTS\n\
                                 RETURN\n")==STR_ERROR)
     return INTERNAL_COMPILER_ERR;
     return OK;
@@ -142,6 +144,42 @@ RETURN\n")==STR_ERROR)
 }
 
 
+int generate_ord(){
+        if(strAddConstStr(&output, "\
+LABEL ord\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@ascii\n\
+DEFVAR TF@err\n\
+MOVE TF@ascii string@\n\
+MOVE TF@err int@1\n\
+DEFVAR TF@l_limit\n\
+DEFVAR TF@r_limit\n\
+DEFVAR TF@string\n\
+DEFVAR TF@i\n\
+POPS TF@string\n\
+POPS TF@i\n\
+DEFVAR TF@str_len\n\
+MOVE TF@str_len int@0\n\
+STRLEN TF@str_len TF@string\n\
+SUB TF@str_len TF@str_len int@1\n\
+LT TF@l_limit TF@i int@0\n\
+NOT TF@l_limit TF@l_limit\n\
+GT TF@r_limit TF@i TF@str_len\n\
+NOT TF@r_limit TF@r_limit\n\
+AND TF@l_limit TF@l_limit TF@r_limit\n\
+JUMPIFNEQ _ord_end TF@l_limit bool@true\n\
+MOVE TF@err int@0\n\
+STRI2INT TF@ascii TF@string TF@i\n\
+LABEL _ord_end\n\
+PUSHS TF@ascii\n\
+PUSHS TF@err\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
 int generate_chr(){
         if(strAddConstStr(&output, "\
@@ -217,11 +255,11 @@ int generate_build_in_function(){
         //generate_inputi()!=OK       || 
         //generate_inputf()!=OK       || 
         generate_chr()!=OK        || 
-        //generate_int2float()!=OK    || 
-        //generate_float2int()!=OK    || 
+        generate_int2float()!=OK    || 
+        generate_float2int()!=OK    || 
         //generate_len()!=OK          || 
         //generate_substr()!=OK       || 
-        //generate_ord()!=OK          || 
+        generate_ord()!=OK          || 
         generate_print()!=OK){
             return INTERNAL_COMPILER_ERR;
         }
