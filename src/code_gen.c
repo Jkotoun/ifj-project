@@ -66,7 +66,8 @@ static dArray for_counter;
 int generate_len()
 {
     // Creates parameter variables
-    if (strAddConstStr(&output, "LABEL len\n\
+    if (strAddConstStr(&output, "\
+LABEL len\n\
 PUSHFRAME\n\
 CREATEFRAME\n\
 POPS GF@trash\n\
@@ -123,13 +124,55 @@ RETURN\n")==STR_ERROR)
     return INTERNAL_COMPILER_ERR;
     return OK;
 }
-//TODO dodělat implementaci build-in funkcí
-/*int generate_inputs();
-int generate_inputi();
-int generate_inputf();
-int generate_print();
+
+int generate_inputs(){
+    if(strAddConstStr(&output, "\
+LABEL inputs\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@out_string\n\
+READ TF@out_string string\n\
+PUSHS TF@out_string\n\
+PUSHS int@0\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
 
+
+int generate_chr(){
+        if(strAddConstStr(&output, "\
+LABEL chr\n\
+PUSHFRAME\n\
+CREATEFRAME\n\
+POPS GF@trash\n\
+DEFVAR TF@ret_str\n\
+MOVE TF@ret_str string@\n\
+DEFVAR TF@err\n\
+MOVE TF@err int@1\n\
+DEFVAR TF@l_limit\n\
+DEFVAR TF@r_limit\n\
+DEFVAR TF@i\n\
+POPS TF@i\n\
+LT TF@l_limit TF@i int@0\n\
+NOT TF@l_limit TF@l_limit\n\
+GT TF@r_limit TF@i int@255\n\
+NOT TF@r_limit TF@r_limit\n\
+AND TF@l_limit TF@l_limit TF@r_limit\n\
+JUMPIFNEQ _ord_end TF@l_limit bool@true\n\
+MOVE TF@err int@0\n\
+INT2CHAR TF@ret_str TF@i\n\
+LABEL _ord_end\n\
+PUSHS TF@ret_str\n\
+PUSHS TF@err\n\
+POPFRAME\n\
+RETURN\n")==STR_ERROR)
+        return INTERNAL_COMPILER_ERR;
+    return OK;
+}
 
 int generate_substr();
 int generate_ord();
@@ -170,10 +213,10 @@ void generator_print_output(){
 }
 
 int generate_build_in_function(){
-    if( //generate_inputs()!=OK       || 
+    if( generate_inputs()!=OK       || 
         //generate_inputi()!=OK       || 
         //generate_inputf()!=OK       || 
-        //generate_chr()!=OK        || 
+        generate_chr()!=OK        || 
         //generate_int2float()!=OK    || 
         //generate_float2int()!=OK    || 
         //generate_len()!=OK          || 
@@ -189,7 +232,8 @@ int generate_build_in_function(){
 
 // Generationg stack operations --------------------------------------------------------------
 int generate_add_concat_to_stack(){
-    if( strAddConstStr(&output,"POPS GF@concat_l\n\
+    if( strAddConstStr(&output,"\
+POPS GF@concat_l\n\
                                 POPS GF@concat_r\n\
                                 CONCAT GF@concat_l GF@concat_r GF@concat_l\n\
                                 PUSHS GF@concat_l\n")==STR_ERROR){
