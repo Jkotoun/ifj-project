@@ -134,9 +134,15 @@ PUSHFRAME\n\
 CREATEFRAME\n\
 POPS GF@trash\n\
 DEFVAR TF@out_string\n\
+DEFVAR TF@err\n\
+MOVE TF@err int@0\n\
 READ TF@out_string string\n\
+EQ GF@expr TF@out_string nil@nil\n\
+JUMPIFNEQ _inputs_skip GF@expr bool@true\n\
+MOVE TF@err int@1\n\
+LABEL _inputs_skip\n\
 PUSHS TF@out_string\n\
-PUSHS int@0\n\
+PUSHS TF@err\n\
 POPFRAME\n\
 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
@@ -150,9 +156,16 @@ PUSHFRAME\n\
 CREATEFRAME\n\
 POPS GF@trash\n\
 DEFVAR TF@out_int\n\
+MOVE TF@out_int int@\n\
+DEFVAR TF@err\n\
+MOVE TF@err int@0\n\
 READ TF@out_int int\n\
+EQ GF@expr TF@out_int nil@nil\n\
+JUMPIFNEQ _inputi_skip GF@expr bool@true\n\
+MOVE TF@err int@1\n\
+LABEL _inputi_skip\n\
 PUSHS TF@out_int\n\
-PUSHS int@10\n\
+PUSHS TF@err\n\
 POPFRAME\n\
 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
@@ -166,9 +179,15 @@ PUSHFRAME\n\
 CREATEFRAME\n\
 POPS GF@trash\n\
 DEFVAR TF@out_float\n\
+DEFVAR TF@err\n\
+MOVE TF@err int@0\n\
 READ TF@out_float float\n\
+EQ GF@expr TF@out_float nil@nil\n\
+JUMPIFNEQ _inputf_skip GF@expr bool@true\n\
+MOVE TF@err int@1\n\
+LABEL _inputf_skip\n\
 PUSHS TF@out_float\n\
-PUSHS int@10\n\
+PUSHS TF@err\n\
 POPFRAME\n\
 RETURN\n")==STR_ERROR)
         return INTERNAL_COMPILER_ERR;
