@@ -39,6 +39,7 @@ tDLList scoped_symtables;
 typeQueue typeQ;
 tokenQueue tokenQ;
 tokenQueue exprTokenQ;
+varQueue varQ;
 
 token* leftTokenArr;
 int leftSideLength;
@@ -52,7 +53,7 @@ void init_builtins()
     string func_name;
     strInit(&func_name);
 
-    varType returnArr[] = { STRING, INT };
+    varType returnArr[] = {STRING, INT};
     strAddConstStr(&func_name, "inputs");
     symtable_insert_node_func(&functions_symtable, &func_name, 2, returnArr, 0, NULL, true);
     strClear(&func_name);
@@ -71,7 +72,7 @@ void init_builtins()
     symtable_insert_node_func(&functions_symtable, &func_name, 0, NULL, -1, NULL, true);
     strClear(&func_name);
 
-    varType paramArr[] = { INT, INT, INT };
+    varType paramArr[] = {INT, INT, INT};
     returnArr[0] = FLOAT;
     strAddConstStr(&func_name, "int2float");
     symtable_insert_node_func(&functions_symtable, &func_name, 1, returnArr, 1, paramArr, true);
@@ -229,6 +230,7 @@ void rule_func_decl()
     {
         generate_function_start(func_name.str);
     }
+    varQueueInit(&varQ);
 
     get_next_token();
     assert_token_is(LEFT_BRACKET_TOKEN);
@@ -258,6 +260,15 @@ void rule_func_decl()
     functionHasReturn = false;
 
     rule_body();
+    generate_function_before_new_var(current_function->name->str);
+    int qSize = varQueueLength(&varQ);
+    for (size_t i = 0; i < qSize; i++)
+    {
+        varT var;
+        varQueueGet(&varQ, &var);
+        generate_new_var(var.scope, var.name.str);
+    }
+
     if (strCmpConstStr(&func_name, "main") == 0)
     {
         generate_main_end();
@@ -308,7 +319,9 @@ void rule_param(symbol_node** function_root)
     varType type = rule_type();
     symtable_insert_node_var(function_root, &param_name, type);
     typeQueueUp(&typeQ, type);
-    generate_function_param(0, param_name.str);
+    generate_assign_var(0, param_name.str);
+    varQueueUp(&varQ, &param_name, 0);
+    // generate_function_param(0, param_name.str);
     strFree(&param_name);
 }
 
@@ -345,9 +358,9 @@ void rule_type_first_next()
         return;
     }
     else if (current_token.type == KEYWORD_TOKEN &&
-        (current_token.keyword == INT_KEYWORD ||
-            current_token.keyword == FLOAT64_KEYWORD ||
-            current_token.keyword == STRING_KEYWORD))
+             (current_token.keyword == INT_KEYWORD ||
+              current_token.keyword == FLOAT64_KEYWORD ||
+              current_token.keyword == STRING_KEYWORD))
     {
         varType type = rule_type();
         typeQueueUp(&typeQ, type);
@@ -433,9 +446,9 @@ void rule_statement_next()
         rule_statement_action_next();
     }
     else if (current_token.type == LEFT_BRACKET_TOKEN ||
-        current_token.type == INTEGER_LITERAL_TOKEN ||
-        current_token.type == STRING_LITERAL_TOKEN ||
-        current_token.type == DECIMAL_LITERAL_TOKEN)
+             current_token.type == INTEGER_LITERAL_TOKEN ||
+             current_token.type == STRING_LITERAL_TOKEN ||
+             current_token.type == DECIMAL_LITERAL_TOKEN)
     {
         rule_literal_expr_next();
     }
@@ -498,7 +511,6 @@ void rule_statement_next()
         assert_true(result == 0, result);
         assert_true(type == BOOL, DATATYPE_COMPATIBILITY_ERR);
 
-
         generate_for_assignment(for_scope, current_function->name->str);
         get_next_token();
         rule_assignment_next();
@@ -525,9 +537,9 @@ void rule_statement_next()
         assert_true(rightSideLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
         varType* returnTypeArr = typeQueueToArray(&typeQ);
         assert_true(types_equal(returnTypeArr,
-            ((symbol_function*)current_function->data)->return_types,
-            rightSideLength),
-            ARGS_RETURNS_COUNT_ERR);
+                                ((symbol_function*)current_function->data)->return_types,
+                                rightSideLength),
+                    ARGS_RETURNS_COUNT_ERR);
         generate_function_return(current_function->name->str);
     }
     else
@@ -644,8 +656,9 @@ void rule_statement_action_next()
         int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         assert_true(result == 0, result);
         def_var(varToken.str, type);
-        generate_new_var(scoped_symtables.Last->scope_index, varToken.str->str);
+        // generate_new_var(scoped_symtables.Last->scope_index, varToken.str->str);
         generate_assign_var(scoped_symtables.Last->scope_index, varToken.str->str);
+        varQueueUp(&varQ, varToken.str, scoped_symtables.Last->scope_index);
     }
     else
     {
@@ -810,8 +823,9 @@ void rule_definition_next()
         int result = parse_expression(&scoped_symtables, tokenArr, tokenCount, &type);
         assert_true(result == 0, result);
         def_var(&var_name, type);
-        generate_new_var(scoped_symtables.Last->scope_index, var_name.str);
+        // generate_new_var(scoped_symtables.Last->scope_index, var_name.str);
         generate_assign_var(scoped_symtables.Last->scope_index, var_name.str);
+        varQueueUp(&varQ, &var_name, scoped_symtables.Last->scope_index);
 
         strFree(&var_name);
     }
@@ -957,20 +971,20 @@ void func_handle_error(int errType, char const* func)
 
     switch (errType)
     {
-        case SYNTAX_ERR:
-            fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
+    case SYNTAX_ERR:
+        fprintf(stderr, "[Call from '%s']. Syntax error. Unexpected token '%s' of type %d on line %d\n",
                 func, token, current_token.type, current_token.source_line);
-            exit(SYNTAX_ERR);
-            break;
-        case LEX_ERR:
-            fprintf(stderr, "Lexical error on line %d\n",
+        exit(SYNTAX_ERR);
+        break;
+    case LEX_ERR:
+        fprintf(stderr, "Lexical error on line %d\n",
                 current_token.source_line);
-            exit(LEX_ERR);
+        exit(LEX_ERR);
 
-        default:
-            fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
+    default:
+        fprintf(stderr, "[Call from '%s']. Error no %d. On line %d\n",
                 func, errType, current_token.source_line);
-            exit(errType);
+        exit(errType);
     }
 }
 
@@ -1141,20 +1155,20 @@ varType get_varType_from_literal(token_type type)
 {
     switch (type)
     {
-        case DECIMAL_LITERAL_TOKEN:
-            return FLOAT;
-            break;
-        case INTEGER_LITERAL_TOKEN:
-            return INT;
-            break;
-        case STRING_LITERAL_TOKEN:
-            return STRING;
-            break;
+    case DECIMAL_LITERAL_TOKEN:
+        return FLOAT;
+        break;
+    case INTEGER_LITERAL_TOKEN:
+        return INT;
+        break;
+    case STRING_LITERAL_TOKEN:
+        return STRING;
+        break;
 
-        default:
-            handle_error(SYNTAX_ERR);
-            return UNDEFINED;
-            break;
+    default:
+        handle_error(SYNTAX_ERR);
+        return UNDEFINED;
+        break;
     }
 }
 
