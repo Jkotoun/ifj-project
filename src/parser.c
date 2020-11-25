@@ -533,7 +533,10 @@ void rule_statement_next()
         typeQueueInit(&typeQ);
 
         get_next_token();
-        rule_statement_value_next();
+        if (current_token.type != EOL_TOKEN)
+        {
+            rule_statement_value_next();
+        }
         assert_true(rightSideLength == ((symbol_function*)current_function->data)->return_types_count, ARGS_RETURNS_COUNT_ERR);
         varType* returnTypeArr = typeQueueToArray(&typeQ);
         assert_true(types_equal(returnTypeArr,
@@ -689,6 +692,10 @@ void rule_statement_value_next()
         rule_literal_expr_next();
         rule_expr_n_next();
     }
+    else
+    {
+        handle_error(SYNTAX_ERR);
+    }
 }
 
 void rule_arg_expr_next(string* prevTokenName)
@@ -837,13 +844,13 @@ void rule_assignment_next()
 {
     if (current_token.type == ID_TOKEN)
     {
-        assert_true(check_var_defined(current_token.str), VAR_DEFINITION_ERR);
         string var_name;
         strInit(&var_name);
         strCopyString(&var_name, current_token.str);
 
         get_next_token();
         assert_token_is(ASSIGNMENT_TOKEN);
+        assert_true(check_var_defined(&var_name), VAR_DEFINITION_ERR);
 
         tokenQueueInit(&exprTokenQ);
 
