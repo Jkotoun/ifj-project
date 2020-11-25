@@ -621,7 +621,16 @@ int generate_assign_var(int scope, char* name_of_var)
 
 int generate_main_start()
 {
-    if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\n") == STR_ERROR){
+    if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\nJUMP new_var_of_main\nLABEL start_of_main\n") == STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+
+    return OK;
+}
+
+int generate_main_before_new_var()
+{
+    if (strAddConstStr(&output, "JUMP end_of_main\nLABEL new_var_of_main\n") == STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -630,7 +639,7 @@ int generate_main_start()
 
 int generate_main_end()
 {
-    if (strAddConstStr(&output, "LABEL end_of_main\nCLEARS\n") == STR_ERROR){
+    if (strAddConstStr(&output, "JUMP start_of_main\nLABEL end_of_main\nCLEARS\n") == STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -831,7 +840,11 @@ int generate_function_start(char* name_of_function)
 
     if( strAddConstStr(&output,"LABEL ")==STR_ERROR        ||
         strAddConstStr(&output,name_of_function)==STR_ERROR||
-        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\nPOPS GF@trash\n")==STR_ERROR){
+        strAddConstStr(&output,"\nPUSHFRAME\nCREATEFRAME\nPOPS GF@trash\nJUMP new_var_of_") == STR_ERROR   ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
+        strAddConstStr(&output, "\nLABEL start_of_") == STR_ERROR   ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
+        strAddConstStr(&output, "\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK;
@@ -868,9 +881,23 @@ int generate_function_return(char* name_of_function)
     return OK;
 }
 
+int generate_function_before_new_var(char* name_of_function)
+{
+    if (strAddConstStr(&output, "JUMP end_of_") == STR_ERROR   ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
+        strAddConstStr(&output, "\nLABEL new_var_of_") == STR_ERROR   ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
+        strAddConstStr(&output, "\n") == STR_ERROR){
+        return INTERNAL_COMPILER_ERR;
+    }
+    return OK;
+}
+
 int generate_function_end(char* name_of_function)
 {
-    if (strAddConstStr(&output, "LABEL end_of_") == STR_ERROR   ||
+    if (strAddConstStr(&output, "JUMP start_of_") == STR_ERROR   ||
+        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
+        strAddConstStr(&output, "\nLABEL end_of_") == STR_ERROR   ||
         strAddConstStr(&output, name_of_function) == STR_ERROR  ||
         strAddConstStr(&output, "\nPOPFRAME\nRETURN\n") == STR_ERROR){
         return INTERNAL_COMPILER_ERR;
