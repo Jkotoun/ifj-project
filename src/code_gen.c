@@ -138,6 +138,7 @@ READ TF@out_string string\n\
 EQ GF@expr TF@out_string nil@nil\n\
 JUMPIFNEQ _inputs_skip GF@expr bool@true\n\
 MOVE TF@err int@1\n\
+MOVE TF@out_string string@\n\
 LABEL _inputs_skip\n\
 PUSHS TF@out_string\n\
 PUSHS TF@err\n\
@@ -161,6 +162,7 @@ READ TF@out_int int\n\
 EQ GF@expr TF@out_int nil@nil\n\
 JUMPIFNEQ _inputi_skip GF@expr bool@true\n\
 MOVE TF@err int@1\n\
+MOVE TF@out_int int@0\n\
 LABEL _inputi_skip\n\
 PUSHS TF@out_int\n\
 PUSHS TF@err\n\
@@ -183,6 +185,7 @@ READ TF@out_float float\n\
 EQ GF@expr TF@out_float nil@nil\n\
 JUMPIFNEQ _inputf_skip GF@expr bool@true\n\
 MOVE TF@err int@1\n\
+MOVE TF@out_float float@0x0p+0\n\
 LABEL _inputf_skip\n\
 PUSHS TF@out_float\n\
 PUSHS TF@err\n\
