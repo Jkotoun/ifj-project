@@ -633,7 +633,9 @@ void rule_statement_action_next()
 
         for (int i = leftSideLength - 1; i >= 0; i--)
         {
-            generate_assign_var(scoped_symtables.Last->scope_index, leftTokenArr[i].str->str);
+            varType type;
+            int scope = get_varType_from_symtable(&scoped_symtables, leftTokenArr[i].str, &type);
+            generate_assign_var(scope, leftTokenArr[i].str->str);
         }
     }
     else if (current_token.type == SHORT_VAR_DECLARATION_TOKEN)
