@@ -65,3 +65,15 @@ func ajaj(a int,b int) (int, int) {
             -generate_add_var_to_stack(scope, "ret2")
 -dále se vygeneruje skok na konec funkce pomocí funkce generate_function_return(ajaj)
 -když se dostaneme na konec funkce, tak vygenerujeme konce funkce pomocí funkce generate_function_end(ajaj)
+
+
+/-Go code - vytváření funkce
+a,b = ajaj(c,b)
+/-end Go
+-pomocí generate_add_... funkcí nastrkáme parametry funkce do zásobníku
+                -generate_add_var_to_stack(scope,"b");
+                -generate_add_var_to_stack(scope,"c");
+-následně se vygeneruje samotné volání vunkce pomocí generate_function_call("ajaj");
+-a nakonec se ze zásobníku nastrkají návratové hodnoty do proměnných pomocí funkce generate_function_return_var
+                -generate_return_var(scope,b)
+                -generate_return_var(scope,a)

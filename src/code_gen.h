@@ -34,6 +34,29 @@ void dArray_despose(dArray* array);                  // Free memory of array
 // Generator of 3AC --------------------------------------------------------------------------
 #define MAX_DIGITS_OF_SCOPE 48
 
+typedef enum instruction_type
+{
+    // Stack
+    PUSHS,
+    POPS,
+    CLEARS,
+
+    // Stack aritmetic instructions
+    ADDS,
+    SUBS,
+    MULS,
+    DIVS,
+    IDIVS,
+
+    // Relational instructions
+    LTS,
+    GTS,
+    EQS,
+    NEQS,
+    LSES,
+    GTES,
+}instruction_type;
+
 // Initiation of generator
 int generator_init();
 int generate_build_in_function();              
@@ -51,10 +74,11 @@ int generate_add_var_to_stack(int scope, char *name_of_var);
 int generate_add_string_to_stack(char *value);
 int generate_add_int_to_stack(int value);
 int generate_add_float_to_stack(double value);
-int generate_stack_operation(enum instruction_type operation);
+int generate_stack_operation(instruction_type operation);
+int generate_add_concat_to_stack();
 
 // Generating relations
-int generate_relation(enum instruction_type relation);
+int generate_relation(instruction_type relation);
 
 // Generating for variables
 int generate_new_var(int scope, char *name_of_var);
@@ -78,42 +102,21 @@ int generate_if_start(int scope, char *name_of_function);
 int generate_if_else(int scope, char *name_of_function);
 int generate_if_end(int scope, char *name_of_function);
 // -- Generating body of for loop
-int generate_for_start(int scope, char *name_of_function);
-int generate_for_assignment_end(int scope, char *name_of_function);
-int generate_for_comperation(int scope, char *name_of_function);
+int generate_for_compare(int scope, char *name_of_function);
+int generate_for_assignment(int scope, char *name_of_function);
+int generate_for_before_code(int scope, char *name_of_function);
 int generate_for_end(int scope, char *name_of_function);
 // -- Generating body of function
 int generate_function_start(char *name_of_function);
-int generate_function_param(int scope, char *name_of_parameter);
+int generate_function_before_new_var(char* name_of_function);
 int generate_function_return(char *name_of_parameter);
 int generate_function_end(char *name_of_parameter);
 
 // Calling function
-int generate_function_call(char *function_name);
+int generate_function_call(char *function_name, int number_of_parameters);
 int generate_function_return_var(int scope, char *name_of_var);
 
 // -------------------------------------------------------------------------------------------
 
-enum instruction_type
-{
-    // Stack
-    PUSHS,
-    POPS,
-    CLEARS,
 
-    // Stack aritmetic instructions
-    ADDS,
-    SUBS,
-    MULS,
-    DIVS,
-    IDIVS,
-
-    // Relational instructions
-    LTS,
-    GTS,
-    EQS,
-    NEQS,
-    LSES,
-    GTES,
-};
 #endif

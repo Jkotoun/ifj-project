@@ -61,7 +61,8 @@
       "variant": "cpp",
       "cerrno": "c",
       "dl_list.h": "c",
-      "numeric": "cpp"
+      "numeric": "cpp",
+      "code_gen.h": "c"
     },
     "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: LLVM, PointerAlignment: Left,  UseTab: Never, IndentWidth: 4, TabWidth: 4, BreakBeforeBraces: Allman, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 0, AccessModifierOffset: -4 }"
   }

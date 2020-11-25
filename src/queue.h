@@ -7,13 +7,13 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
-#include <stdio.h>
-#include "symtable.h"
 #include "scanner.h"
+#include "symtable.h"
+#include <stdio.h>
 
 #define MAX_QUEUE 50
 // int QUEUE_SIZE = MAX_QUEUE;
-int err_flag;                   /* Indikuje, zda operace volala chybu. */
+int err_flag; /* Indikuje, zda operace volala chybu. */
 
 /*
  * Hodnota MAX_QUEUE udává skutečnou velikost statického pole pro uložení
@@ -25,29 +25,41 @@ int err_flag;                   /* Indikuje, zda operace volala chybu. */
  * aby bylo možné odlišit prázdnou frontu od plné.
  */
 
- /* Chybové kódy pro funkci queueError */
-#define MAX_QERR    5                                   /* počet možných chyb */
-#define QERR_UP     1                                   /* chyba při stackTop */
-#define QERR_FRONT  2                                   /* chyba při stackPop */
-#define QERR_REMOVE 3                                  /* chyba při stackPush */
-#define QERR_GET    4                                  /* chyba při stackPush */
-#define QERR_INIT   5                                     /* chyba při malloc */
+/* Chybové kódy pro funkci queueError */
+#define MAX_QERR 5    /* počet možných chyb */
+#define QERR_UP 1     /* chyba při stackTop */
+#define QERR_FRONT 2  /* chyba při stackPop */
+#define QERR_REMOVE 3 /* chyba při stackPush */
+#define QERR_GET 4    /* chyba při stackPush */
+#define QERR_INIT 5   /* chyba při malloc */
 
-                               /* ADT fronta implementovaný ve statickém poli */
+/* ADT fronta implementovaný ve statickém poli */
 typedef struct
 {
-    varType arr[MAX_QUEUE];                           /* pole pro uložení hodnot */
-    int f_index;                                       /* index prvního prvku */
-    int b_index;                                  /* index první volné pozice */
+    string name;
+    int scope;
+} varT;
+
+typedef struct
+{
+    varType arr[MAX_QUEUE]; /* pole pro uložení hodnot */
+    int f_index;            /* index prvního prvku */
+    int b_index;            /* index první volné pozice */
 } typeQueue;
 
 typedef struct
 {
-    token arr[MAX_QUEUE];                           /* pole pro uložení hodnot */
-    int f_index;                                       /* index prvního prvku */
-    int b_index;                                  /* index první volné pozice */
+    token arr[MAX_QUEUE]; /* pole pro uložení hodnot */
+    int f_index;          /* index prvního prvku */
+    int b_index;          /* index první volné pozice */
 } tokenQueue;
 
+typedef struct
+{
+    varT arr[MAX_QUEUE]; /* pole pro uložení hodnot */
+    int f_index;         /* index prvního prvku */
+    int b_index;         /* index první volné pozice */
+} varQueue;
 
 /* Hlavičky funkcí pro práci s frontou. */
 void queueError(int error_code);
@@ -70,5 +82,15 @@ void tokenQueueGet(tokenQueue* q, token* token);
 void tokenQueueUp(tokenQueue* q, token token);
 token* tokenQueueToArray(tokenQueue* q);
 int tokenQueueLength(tokenQueue* q);
+
+void varQueueInit(varQueue* q);
+int varQueueEmpty(const varQueue* q);
+int varQueueFull(const varQueue* q);
+void varQueueFront(const varQueue* q, varT* var);
+void varQueueRemove(varQueue* q);
+void varQueueGet(varQueue* q, varT* var);
+void varQueueUp(varQueue* q, string* name, int scope);
+varT* varQueueToArray(varQueue* q);
+int varQueueLength(varQueue* q);
 
 #endif

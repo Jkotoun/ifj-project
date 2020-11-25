@@ -8,7 +8,7 @@
 
 void queueError(int error_code)
 {
-    static const char* QERR_STRINGS[MAX_QERR + 1] = { "Unknown error", "Queue error: UP", "Queue error: FRONT", "Queue error: REMOVE", "Queue error: GET", "Queue error: INIT" };
+    static const char* QERR_STRINGS[MAX_QERR + 1] = {"Unknown error", "Queue error: UP", "Queue error: FRONT", "Queue error: REMOVE", "Queue error: GET", "Queue error: INIT"};
     if (error_code <= 0 || error_code > MAX_QERR)
         error_code = 0;
     printf("%s\n", QERR_STRINGS[error_code]);
@@ -107,7 +107,6 @@ void typeQueueUp(typeQueue* q, varType c)
     }
     q->arr[q->b_index] = c;
     q->b_index = nextIndex(q->b_index);
-
 }
 
 int typeQueueLength(typeQueue* q)
@@ -142,7 +141,6 @@ void tokenQueueInit(tokenQueue* q)
     q->f_index = 0;
     q->b_index = 0;
 }
-
 
 int tokenQueueEmpty(const tokenQueue* q)
 {
@@ -218,7 +216,6 @@ void tokenQueueUp(tokenQueue* q, token token)
     strCopyString(q->arr[q->b_index].str, token.str);
 
     q->b_index = nextIndex(q->b_index);
-
 }
 
 int tokenQueueLength(tokenQueue* q)
@@ -234,6 +231,114 @@ token* tokenQueueToArray(tokenQueue* q)
         return NULL;
     }
     token* arr = malloc(sizeof(token) * size);
+    for (size_t i = 0; i < size; i++)
+    {
+        arr[i] = q->arr[q->f_index + i];
+    }
+    return arr;
+}
+
+//------------VARQUEUE------------------
+
+void varQueueInit(varQueue* q)
+{
+    if (!q)
+    {
+        queueError(QERR_INIT);
+        return;
+    }
+    q->f_index = 0;
+    q->b_index = 0;
+}
+
+int varQueueEmpty(const varQueue* q)
+{
+    /*
+** Vrací nenulovou hodnotu, pokud je frona prázdná, jinak vrací hodnotu 0.
+*/
+
+    return q->f_index == q->b_index;
+}
+
+int varQueueFull(const varQueue* q)
+{
+    /*
+** Vrací nenulovou hodnotu, je-li fronta plná, jinak vrací hodnotu 0.
+*/
+
+    return nextIndex(q->b_index) == q->f_index;
+}
+
+void varQueueFront(const varQueue* q, varT* var)
+{
+    /*
+** Prostřednictvím parametru c vrátí znak ze začátku fronty q.
+*/
+    if (varQueueEmpty(q))
+    {
+        queueError(QERR_FRONT);
+        return;
+    }
+    *var = q->arr[q->f_index];
+}
+
+void varQueueRemove(varQueue* q)
+{
+    /*
+** Odstraní znak ze začátku fronty q.
+*/
+    if (varQueueEmpty(q))
+    {
+        queueError(QERR_REMOVE);
+        return;
+    }
+    q->f_index = nextIndex(q->f_index);
+}
+
+void varQueueGet(varQueue* q, varT* var)
+{
+    /*
+** Odstraní znak ze začátku fronty a vrátí ho prostřednictvím parametru c.
+*/
+    if (varQueueEmpty(q))
+    {
+        queueError(QERR_GET);
+        return;
+    }
+    varQueueFront(q, var);
+    varQueueRemove(q);
+}
+
+void varQueueUp(varQueue* q, string* name, int scope)
+{
+    /*
+** Vloží znak c do fronty.
+*/
+    if (varQueueFull(q))
+    {
+        queueError(QERR_UP);
+        return;
+    }
+    strInit(&q->arr[q->b_index].name);
+    strCopyString(&q->arr[q->b_index].name, name);
+    q->arr[q->b_index].scope = scope;
+
+    q->b_index = nextIndex(q->b_index);
+}
+
+int varQueueLength(varQueue* q)
+{
+    return q->b_index - q->f_index;
+}
+
+varT* varQueueToArray(varQueue* q)
+{
+    int size = varQueueLength(q);
+    if (size == 0)
+    {
+        return NULL;
+    }
+    varT* arr = malloc(sizeof(var) * size);
     for (size_t i = 0; i < size; i++)
     {
         arr[i] = q->arr[q->f_index + i];

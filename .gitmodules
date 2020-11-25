@@ -3,4 +3,4 @@
 	url = https://github.com/google/googletest
 [submodule "ifj-testsuite"]
 	path = ifj-testsuite
-	url = https://gitlab.com/kam29/ifj-testsuite/
+	url = https://github.com/18NAKEDCOWBOYS/IFJ-testsuite

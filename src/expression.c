@@ -10,6 +10,7 @@
 #include "scanner.h"
 #include "expression_stack.h"
 #include "symtable.h"
+#include "code_gen.h"
 #include "error_codes.h"
 #include "parser_helpers.h"
 
@@ -336,6 +337,26 @@ derived_value get_reduced_const_value(expression_stack_node *reduce_element_0,
     return not_det_val;
 }
 
+instruction_type convert_reduction_rule_to_relation(reduction_rule rule){
+    switch(rule)
+    {
+        case nt_eq_nt:
+            return EQS;
+        case nt_neq_nt:
+            return NEQS;
+        case nt_less_nt:
+            return LTS;
+        case nt_less_eq_nt:
+            return LSES;
+        case nt_more_nt:
+            return GTS;
+        case nt_more_eq_nt:
+            return GTES;
+        default:
+            return CLEARS; // TO DO error handle - clears is symbolizing error (při překladu to házelo warning, že tady není default)
+    }
+}
+
 int parse_expression_inner(tDLList *scoped_symtables,
     token *token_arr, 
     int token_count,
@@ -440,14 +461,14 @@ int parse_expression_inner(tDLList *scoped_symtables,
                         case id:
                             {
                                 varType var_type;
-                                if(get_varType_from_symtable(scoped_symtables, input_token->str, &var_type) != -1){
+                                int var_scope=get_varType_from_symtable(scoped_symtables, input_token->str, &var_type);
+                                if(var_scope != -1){
                                     int push_code_2 = stack_push(&stack, input_symbol, var_type, not_determined_val);
                                     if(push_code_2 != OK){
                                         stack_dispose(&stack);
                                         return push_code_2;
                                     }
-                                    // TO DO: GENERATE_CODE(PUSHS(sym_node))
-                                    // pushes to the stack variable defined in sym_node
+                                    generate_add_var_to_stack(var_scope,input_token->str->str);
                                 }
                                 else{
                                     stack_dispose(&stack);
@@ -467,8 +488,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                     stack_dispose(&stack);
                                     return push_code_2;
                                 }
-                                // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
-                                // pushes const value of a type to the stack
+                                generate_add_int_to_stack(derived_val.integer);
                             }
                             break;
                         case float64_lit:
@@ -483,8 +503,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                     stack_dispose(&stack);
                                     return push_code_2;
                                 }
-                                // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
-                                // pushes const value of a type to the stack
+                                generate_add_float_to_stack(derived_val.decimal);
                             }
                             break;
                         case string_lit:
@@ -495,8 +514,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                     stack_dispose(&stack);
                                     return push_code_2;
                                 }
-                                // TO DO: GENERATE_CODE(PUSHS(input_token, literal_type))
-                                // pushes const value of a type to the stack
+                                generate_add_string_to_stack(input_token->str->str);
                             }
                             break;
                         default:
@@ -569,14 +587,13 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             break;
                         case nt_plus_nt:
                             if(reduce_element_0->type == STRING && reduce_element_2->type == STRING){
-                                // TO DO: GENERATE_CODE(CONCAT) and GENERATE_CODE(PUSHS(result of concat)) 
-                                // concates strings (symbols on stack) and pushes output to the stack
+                                generate_add_concat_to_stack();
                                 reduced_type = STRING;
                             }
                             else if(reduce_element_0->type == reduce_element_2->type
                                 && reduce_element_0->type != BOOL
                                 && reduce_element_0->type != UNDEFINED){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs ADDS on the stack
+                                generate_stack_operation(ADDS);
                                 reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
                                     reduce_element_2, reduction_rule);
                                 reduced_type = reduce_element_0->type;
@@ -592,7 +609,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                 && reduce_element_0->type != BOOL 
                                 && reduce_element_0->type != STRING
                                 && reduce_element_0->type != UNDEFINED){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs SUBS on the stack
+                                generate_stack_operation(SUBS);
                                 reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
                                     reduce_element_2, reduction_rule);
                                 reduced_type = reduce_element_0->type;
@@ -608,7 +625,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                 && reduce_element_0->type != BOOL 
                                 && reduce_element_0->type != STRING
                                 && reduce_element_0->type != UNDEFINED){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs MULS on the stack
+                                generate_stack_operation(MULS);
                                 reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
                                     reduce_element_2, reduction_rule);
                                 reduced_type = reduce_element_0->type;
@@ -627,7 +644,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                     return DIVIDE_ZERO_ERR;
                                 }                       
                                 else{
-                                    // TO DO: GENERATE_CODE(reduction_rule) - performs IDIVS - integer division on the stack
+                                    generate_stack_operation(IDIVS);
                                     reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
                                         reduce_element_2, reduction_rule);
                                     reduced_type = INT;
@@ -640,7 +657,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                                     return DIVIDE_ZERO_ERR;
                                 }
                                 else{
-                                    // TO DO: GENERATE_CODE(reduction_rule) - performs DIVS - floating point division on the stack
+                                    generate_stack_operation(DIVS);
                                     reduced_val = get_reduced_const_value(reduce_element_0, reduce_element_1, 
                                         reduce_element_2, reduction_rule);
                                     reduced_type = FLOAT;
@@ -661,9 +678,7 @@ int parse_expression_inner(tDLList *scoped_symtables,
                             if(reduce_element_0->type == reduce_element_2->type
                                 && reduce_element_0->type != BOOL
                                 && reduce_element_0->type != UNDEFINED){
-                                // TO DO: GENERATE_CODE(reduction_rule) - performs comparision on the stack
-                                // uses LTS/GTS/EQS determined by the reduction_rule
-                                // uses NOTS if negation needed nt_neq_nt (!=) -> EQS + NOTS 
+                                generate_relation(convert_reduction_rule_to_relation(reduction_rule));
                                 reduced_type = BOOL;
                             }
                             else{
