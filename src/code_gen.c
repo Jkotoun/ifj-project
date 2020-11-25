@@ -590,45 +590,6 @@ int generate_new_var(int scope, char* name_of_var)
     }
     return OK;
 }
-
-int generate_new_var_in_for(int scope, char* name_of_var,int for_scope,char* name_of_function)
-{
-    char scope_string[MAX_DIGITS_OF_SCOPE];
-    char for_scope_string[MAX_DIGITS_OF_SCOPE];
-
-    if (sprintf(scope_string, "%d", scope) < 0&& sprintf(for_scope_string, "%d", for_scope) < 0){
-        return INTERNAL_COMPILER_ERR;
-    }
-
-    if (strAddConstStr(&output, "JUMPIFEQ skip_")==STR_ERROR    ||
-        strAddConstStr(&output, name_of_var) == STR_ERROR       ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, scope_string) == STR_ERROR      ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, for_scope_string) == STR_ERROR  ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, name_of_function) == STR_ERROR  ||
-        strAddConstStr(&output, " TF@_")==STR_ERROR             ||
-        strAddConstStr(&output, name_of_function)==STR_ERROR     ||
-        strAddConstStr(&output, "_")==STR_ERROR                  ||
-        strAddConstStr(&output, for_scope_string)==STR_ERROR         ||
-        strAddConstStr(&output, "_first bool@false\nDEFVAR TF@") == STR_ERROR      ||
-        strAddConstStr(&output, name_of_var) == STR_ERROR       ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, scope_string) == STR_ERROR      ||
-        strAddConstStr(&output, "\nLABEL skip_")==STR_ERROR    ||
-        strAddConstStr(&output, name_of_var) == STR_ERROR       ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, scope_string) == STR_ERROR      ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, for_scope_string) == STR_ERROR  ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, name_of_function) == STR_ERROR){
-        return INTERNAL_COMPILER_ERR;
-    }
-    return OK;
-}
-
 int generate_assign_var(int scope, char* name_of_var)
 {
     char scope_string[MAX_DIGITS_OF_SCOPE];
@@ -660,7 +621,7 @@ int generate_assign_var(int scope, char* name_of_var)
 
 int generate_main_start()
 {
-    if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\nDEFVAR TF@_0_main_first\nMOVE TF@_0_main_first bool@true\n") == STR_ERROR){
+    if (strAddConstStr(&output, "LABEL main\nCREATEFRAME\n") == STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
@@ -763,20 +724,12 @@ int generate_for_compare(int scope, char *name_of_function){
     if(sprintf(scope_string, "%d", scope)<0 || sprintf(cnt_for_in_scope_string, "%d", for_counter.count_in_scope[scope])<0){
         return INTERNAL_COMPILER_ERR;
     }
-    if( strAddConstStr(&output,"DEFVAR TF@_")==STR_ERROR                    ||
-        strAddConstStr(&output,name_of_function)==STR_ERROR                 ||
-        strAddConstStr(&output,"_")==STR_ERROR                              ||
-        strAddConstStr(&output,scope_string)==STR_ERROR                     ||
-        strAddConstStr(&output,"_first\nMOVE TF@_")==STR_ERROR              ||
-        strAddConstStr(&output,name_of_function)==STR_ERROR                 ||
-        strAddConstStr(&output,"_")==STR_ERROR                              ||
-        strAddConstStr(&output,scope_string)==STR_ERROR                     ||
-        strAddConstStr(&output,"_first bool@true\nLABEL _for_")==STR_ERROR  ||
-        strAddConstStr(&output,name_of_function)==STR_ERROR                 ||
-        strAddConstStr(&output,"_")==STR_ERROR                              ||
-        strAddConstStr(&output,scope_string)==STR_ERROR                     ||
-        strAddConstStr(&output,"_")==STR_ERROR                              ||
-        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR          ||
+    if( strAddConstStr(&output,"LABEL _for_")==STR_ERROR            ||
+        strAddConstStr(&output,name_of_function)==STR_ERROR         ||
+        strAddConstStr(&output,"_")==STR_ERROR                      ||
+        strAddConstStr(&output,scope_string)==STR_ERROR             ||
+        strAddConstStr(&output,"_")==STR_ERROR                      ||
+        strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR  ||
         strAddConstStr(&output,"_compare\n")){
         return INTERNAL_COMPILER_ERR;
     }
@@ -810,11 +763,7 @@ int generate_for_assignment(int scope, char *name_of_function){
         strAddConstStr(&output,scope_string)==STR_ERROR                     ||
         strAddConstStr(&output,"_")==STR_ERROR                              ||
         strAddConstStr(&output,cnt_for_in_scope_string)==STR_ERROR          ||
-        strAddConstStr(&output,"_assignment\nMOVE TF@_")==STR_ERROR         ||
-        strAddConstStr(&output,name_of_function)==STR_ERROR                 ||
-        strAddConstStr(&output,"_")==STR_ERROR                              ||
-        strAddConstStr(&output,scope_string)==STR_ERROR                     ||
-        strAddConstStr(&output,"_first bool@false\n")==STR_ERROR){
+        strAddConstStr(&output,"_assignment\n")==STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
     return OK; 
