@@ -857,11 +857,7 @@ int generate_function_param(int scope, char* name_of_parameter)
     if (sprintf(scope_string, "%d", scope) < 0){
         return INTERNAL_COMPILER_ERR;
     }
-    if (strAddConstStr(&output, "DEFVAR TF@") == STR_ERROR      ||
-        strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, scope_string) == STR_ERROR      ||
-        strAddConstStr(&output, "\nPOPS TF@") == STR_ERROR      ||
+    if (strAddConstStr(&output, "POPS TF@") == STR_ERROR      ||
         strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
         strAddConstStr(&output, "_") == STR_ERROR               ||
         strAddConstStr(&output, scope_string) == STR_ERROR      ||
