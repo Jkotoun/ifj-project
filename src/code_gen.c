@@ -850,23 +850,6 @@ int generate_function_start(char* name_of_function)
     return OK;
 }
 
-int generate_function_param(int scope, char* name_of_parameter)
-{
-    char scope_string[MAX_DIGITS_OF_SCOPE];
-
-    if (sprintf(scope_string, "%d", scope) < 0){
-        return INTERNAL_COMPILER_ERR;
-    }
-    if (strAddConstStr(&output, "POPS TF@") == STR_ERROR      ||
-        strAddConstStr(&output, name_of_parameter) == STR_ERROR ||
-        strAddConstStr(&output, "_") == STR_ERROR               ||
-        strAddConstStr(&output, scope_string) == STR_ERROR      ||
-        strAddConstStr(&output, "\n") == STR_ERROR){
-        return INTERNAL_COMPILER_ERR;
-    }
-    return OK;
-}
-
 int generate_function_return(char* name_of_function)
 {
     if (strAddConstStr(&output, "JUMP end_of_") == STR_ERROR    ||
