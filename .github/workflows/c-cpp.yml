@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Checkout submodules
-      run: git submodule update --init
+      run: git submodule update --init --remote
     - name: make
       run: make
     - name: Run google tests
