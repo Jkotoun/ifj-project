@@ -357,7 +357,7 @@ void generator_clear()
 }
 
 void generator_print_output(){
-    printf("%s",output.str);
+    printf("%sLABEL end_of_file\n",output.str);
 }
 
 int generate_build_in_function(){
@@ -642,7 +642,7 @@ int generate_main_before_new_var()
 
 int generate_main_end()
 {
-    if (strAddConstStr(&output, "JUMP start_of_main\nLABEL end_of_main\nCLEARS\n") == STR_ERROR){
+    if (strAddConstStr(&output, "JUMP start_of_main\nLABEL end_of_main\nCLEARS\nJUMP end_of_file\n") == STR_ERROR){
         return INTERNAL_COMPILER_ERR;
     }
 
