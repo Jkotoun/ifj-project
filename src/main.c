@@ -1,3 +1,8 @@
+/****
+ * Implementace překladače imperativního jazyka IFJ20.
+ * Jiří Vlasák (xvlasa15)
+ * main function
+*/
 #include "parser.h"
 #include <stdio.h>
 
