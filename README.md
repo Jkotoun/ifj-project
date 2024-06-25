@@ -1,5 +1,4 @@
-# Implementace překladače imperativního jazyka IFJ20.
-
+# Implementace překladače imperativního jazyka IFJ20 (podmnožina jazyka GO) do pseudo-assembleru IFJCODE20.
 Autoři
 ------
 - xvlasa15 Jiří Vlasák 
